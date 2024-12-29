@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { last } from 'rxjs';
 
@@ -25,22 +25,38 @@ export class CompanyRegisterComponent {
   companyForm: FormGroup = new FormGroup({
     company_name: new FormControl("",[Validators.required,Validators.minLength(3)]),
     registration_number: new FormControl("",[
-      Validators.minLength(5),
-      Validators.required
+      Validators.required,
+      Validators.minLength(5)
+      
     ]),
-    company_email: new FormControl("",[Validators.email]),
+    company_email: new FormControl("",[Validators.required,Validators.email]),
     company_phone: new FormControl("",[ 
       Validators.required,
-      Validators.minLength(10),
       Validators.maxLength(10),
       Validators.pattern("^[0-9]*$") ]),
-    company_address: new FormControl("",[Validators.minLength(3)]),
+    company_address: new FormControl("",[Validators.required]),
     company_password: new FormControl("",[Validators.required,Validators.minLength(8)]),
-    conform_Password: new FormControl("",[Validators.required, Validators.minLength(8)]),
-    company_username: new FormControl("",[Validators.minLength(3)]),
-    is_AcceptTerms:new FormControl("",[Validators.required])
-  })
+    conform_password: new FormControl("",[Validators.required, Validators.minLength(8)]),
+    company_username: new FormControl("",[Validators.required,Validators.minLength(8)])
+  },
+  {
+    validators:this.passwordMatchValidator
+  }
 
+)
+
+
+passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('company_password');
+  const confirmPassword = control.get('conform_password');
+
+  if (password && confirmPassword && password.value !== confirmPassword.value) {
+    return {
+      passwordMatch: true
+    };
+  }
+  return null;
+}
 
 
   filteredOptions: string[] = [];

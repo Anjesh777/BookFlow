@@ -27,26 +27,67 @@
             <label class="text-gray-800 text-sm mb-2 block">Company Name</label>
             <input name="name" type="text" formControlName="company_name" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter Company name" />
             <div>
-              @if (companyForm.controls['company_name'].errors?.['required']) {
-                
+              @if (companyForm.controls['company_name'].touched && companyForm.controls['company_name'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Company Is Empty</span>
               }
               @else if (companyForm.controls['company_name'].errors?.['minlength']) {
-                <i class="fa-solid fa-triangle-exclamation" style="color: #ff0000;"></i>
-
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Company must be 3 Character long</span>
               }
             </div>
           </div>
           <div>
             <label class="text-gray-800 text-sm mb-2 block">User Name</label>
             <input name="lname" type="text" formControlName="company_username" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter User name" />
+            <div>
+              @if (companyForm.controls['company_username'].touched && companyForm.controls['company_username'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Username Is Empty</span>
+              }
+              @else if (companyForm.controls['company_username'].errors?.['minlength']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Username must be 4 Character long</span>
+              }
+              
+            </div>
+          
           </div>
           <div>
             <label class="text-gray-800 text-sm mb-2 block">Email Id</label>
             <input name="email" type="text" formControlName="company_email" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter email" />
+            <div>
+
+              @if (companyForm.controls['company_email'].touched && companyForm.controls['company_email'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Email Is Empty</span>
+              }
+              @else if (companyForm.controls['company_email'].errors?.['email']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Invalid Email</span>
+              }
+              
+
+            </div>
           </div>
           <div>
             <label class="text-gray-800 text-sm mb-2 block">Mobile No.</label>
             <input name="number" type="number" formControlName="company_phone" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter mobile number" />
+            <div>
+              @if (companyForm.controls['company_phone'].touched && companyForm.controls['company_phone'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Phone Is Empty</span>
+              }
+              @else if (companyForm.controls['company_phone'].errors?.['minlength'] || companyForm.controls['company_phone'].errors?.['maxlength']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Phone must be 10 Character long</span>
+              }
+              @else if(companyForm.controls['company_phone'].errors?.['pattern']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Please enter numbers only</span>
+              }
+            </div>
+            
           </div>
           <div >
             <label class="text-gray-800 text-sm mb-2 block">Address</label>
@@ -74,31 +115,59 @@
                     <li class='py-2.5 px-4 hover:bg-blue-50 text-black text-sm cursor-pointer rounded' (click)="selectOption(item)">{{item}}</li>
                   }
                 </ul>
+              
             </div>
+            <div>
+              @if (companyForm.controls['company_address'].touched && companyForm.controls['company_address'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Address Is Required</span>
+
+              }
+            </div>
+
         </div>
           <div>
             <label class="text-gray-800 text-sm mb-2 block">Registration Number</label>
-            <input name="cpassword" type="password" formControlName="registration_number" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter confirm password" />
-          </div>
+            <input name="cpassword" type="text" formControlName="registration_number" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter confirm password" />
+            @if (companyForm.controls['registration_number'].touched && companyForm.controls['registration_number'].errors?.['required']) {
+              <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+              <span class="text-red-900 text-sm">Registration Number Is Empty</span>
+            }
+           </div>
           <div>
             <label class="text-gray-800 text-sm mb-2 block">Password</label>
             <input name="password" type="password" formControlName="company_password" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter password" />
+            <div>
+              @if (companyForm.controls['company_password'].errors?.['minlength']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Password must be at least 8 Character</span>
+              }
+              @else if (companyForm.controls['company_password'].touched && companyForm.controls['company_password'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Password is Required</span>
+              }
+            </div>
+           
+          
           </div>
           <div>
             <label class="text-gray-800 text-sm mb-2 block">Confirm Password</label>
-            <input name="cpassword" type="password" formControlName="conform_Password" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter confirm password" />
+            <input name="cpassword" type="password" formControlName="conform_password" class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" placeholder="Enter confirm password" />
+            <div>
+              @if (companyForm.controls['conform_password'].touched && companyForm.controls['conform_password'].errors?.['required']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Confirm Password Is Required</span>
+              }
+              @else if (companyForm.errors?.['passwordMatch']) {
+                <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                <span class="text-red-900 text-sm">Password not matched</span>
+              }
+            </div>
           </div>
         </div>
 
-        <div class="flex items-center mt-6">
-          <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 rounded" formControlName="is_AcceptTerms"/>
-          <label for="remember-me" class="ml-3 block text-sm">
-            I accept the <a href="javascript:void(0);" class="text-blue-500 font-semibold hover:underline ml-1">Terms and Conditions</a>
-          </label>
-        </div>
-
-        <div class="mt-6">
-          <button type="button" class="py-3 px-6 text-sm tracking-wide font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all" (click)="onSave()">
+        <div class="mt-6 text-center">
+          <button type="button" class="py-3  px-6 text-sm tracking-wide font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all" (click)="onSave()">
             Sign up
           </button>
         </div>
