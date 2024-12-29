@@ -1,0 +1,34 @@
+package com.BookFlow.bookflow.dto.Company;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class RegisterCompanyDTO {
+
+    @JsonProperty("company_name")
+    private String companyName;
+
+    @JsonProperty("registration_number")
+    private String registrationNumber;
+
+    @JsonProperty("company_email")
+    private String companyEmail;
+
+    @JsonProperty("company_phone")
+    private String companyPhone;
+
+    @JsonProperty("company_address")
+    private String companyAddress;
+
+    @JsonProperty("company_status")
+    private String companyStatus;
+
+    @JsonProperty("company_password")
+    private String companyPassword;
+
+    @JsonProperty("company_user")
+    private String companyUser;
+}
