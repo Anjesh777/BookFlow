@@ -1,7 +1,6 @@
 package com.BookFlow.bookflow.services;
 
-import com.BookFlow.bookflow.contoller.Company.RegisterCompanyController;
-import com.BookFlow.bookflow.dto.Company.RegisterCompanyDTO;
+import com.BookFlow.bookflow.dto.Company.CompanyDTO;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.repository.company.CompanyRepo;
 import jakarta.transaction.Transactional;
@@ -20,7 +19,9 @@ public class RegisterCompanyService {
     }
 
     @Transactional
-    public void registerCompany(RegisterCompanyDTO companyDTO){
+    public void registerCompany(CompanyDTO companyDTO){
+
+
 
         Company company = new Company();
         company.setCompany_name(companyDTO.getCompanyName());
@@ -30,7 +31,7 @@ public class RegisterCompanyService {
         company.setCompany_address(companyDTO.getCompanyAddress());
         company.setCompany_status(companyDTO.getCompanyStatus());
         company.setCompany_password(companyDTO.getCompanyPassword());
-        company.setCompany_user(company.getCompany_user());
+        company.setSuper_admin(companyDTO.getSuper_admin());
 
         companyRepo.save(company);
 

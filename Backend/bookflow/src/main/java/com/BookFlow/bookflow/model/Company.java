@@ -31,6 +31,6 @@ public class Company {
     private Date company_createdAt;
     private Date company_updated_at;
     private String company_password;
-    private String company_user;
+    private String super_admin;
 
 }

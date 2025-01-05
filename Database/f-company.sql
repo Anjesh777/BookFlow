@@ -15,3 +15,5 @@ CREATE TRIGGER company_insert_trigger
 BEFORE INSERT ON company
 FOR EACH ROW
 EXECUTE FUNCTION trigger_hash_company_password();
+
+

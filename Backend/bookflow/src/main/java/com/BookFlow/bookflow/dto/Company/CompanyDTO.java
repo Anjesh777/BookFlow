@@ -6,7 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegisterCompanyDTO {
+
+public class CompanyDTO {
 
     @JsonProperty("company_name")
     private String companyName;
@@ -29,6 +30,6 @@ public class RegisterCompanyDTO {
     @JsonProperty("company_password")
     private String companyPassword;
 
-    @JsonProperty("company_user")
-    private String companyUser;
+    @JsonProperty("super_admin")
+    private String super_admin;
 }
