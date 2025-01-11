@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("all")
-public class User_CompanyController {
+public class AllController {
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("getListOFDistrict")

@@ -18,7 +18,6 @@ public class RegisterCompanyService {
         this.companyRepo = companyRepo;
     }
 
-    @Transactional
     public void registerCompany(CompanyDTO companyDTO){
 
 
@@ -29,9 +28,9 @@ public class RegisterCompanyService {
         company.setCompany_email(companyDTO.getCompanyEmail());
         company.setCompany_phone(companyDTO.getCompanyPhone());
         company.setCompany_address(companyDTO.getCompanyAddress());
-        company.setCompany_status(companyDTO.getCompanyStatus());
         company.setCompany_password(companyDTO.getCompanyPassword());
         company.setSuper_admin(companyDTO.getSuper_admin());
+
 
         companyRepo.save(company);
 

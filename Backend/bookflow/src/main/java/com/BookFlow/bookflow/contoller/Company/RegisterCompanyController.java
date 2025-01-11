@@ -2,6 +2,7 @@ package com.BookFlow.bookflow.contoller.Company;
 
 import com.BookFlow.bookflow.dto.Company.CompanyDTO;
 import com.BookFlow.bookflow.services.EmailService;
+import com.BookFlow.bookflow.services.EmailVerificactionService;
 import com.BookFlow.bookflow.services.RegisterCompanyService;
 import com.BookFlow.bookflow.utils.customException.DuplicateFieldException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,21 +22,25 @@ public class RegisterCompanyController {
 
     private final RegisterCompanyService registerCompanyService;
     private final EmailService emailService;
+    private final EmailVerificactionService emailVerificactionService;
+
 
     @Autowired
-    public RegisterCompanyController(RegisterCompanyService registerCompanyService, EmailService emailService) {
+    public RegisterCompanyController(RegisterCompanyService registerCompanyService, EmailService emailService, EmailVerificactionService emailVerificactionService) {
         this.registerCompanyService = registerCompanyService;
         this.emailService = emailService;
+        this.emailVerificactionService = emailVerificactionService;
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("register")
     public ResponseEntity<Map<String, String>> registerCompany(@RequestBody CompanyDTO CompanyDTO) {
         Map<String, String> response = new HashMap<>();
 
         try {
             registerCompanyService.registerCompany(CompanyDTO);
-            emailService.sendEmail(CompanyDTO.getCompanyEmail(),"This For test","this for text dont replay");
+            emailVerificactionService.createVerificationToken(CompanyDTO);
+
+
             log.info("Company Register Successful");
             response.put("status", "success");
             response.put("message", "Company Register Successful. We have sent you a link to activate account");
@@ -49,7 +54,7 @@ public class RegisterCompanyController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
         catch (DataAccessException var2) {
-            System.out.println(CompanyDTO.getCompanyEmail());
+            System.out.println(CompanyDTO.getCompanyPassword());
             log.error("Error occurred while registering the company: {}", var2.getMessage());
             response.put("status", "error");
             response.put("message", "An error occurred while registering the company.");
