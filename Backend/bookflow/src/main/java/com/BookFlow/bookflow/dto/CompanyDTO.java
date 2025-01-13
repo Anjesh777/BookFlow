@@ -1,9 +1,8 @@
-package com.BookFlow.bookflow.dto.Company;
+package com.BookFlow.bookflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.w3c.dom.Text;
 
 @Getter
 @Setter
@@ -30,4 +29,6 @@ public class CompanyDTO {
 
     @JsonProperty("super_admin")
     private String super_admin;
+
+
 }

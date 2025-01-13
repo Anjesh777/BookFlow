@@ -111,7 +111,7 @@ onSave() {
     const formData = this.companyForm.value;
     this.isLoading = true;
     
-    this.http.post<ApiResponse>('http://localhost:8811/Company/register', formData)
+    this.http.post<ApiResponse>('http://localhost:8811/all/registercmp', formData)
       .subscribe({
         next: (response) => {
           console.log('Success:', response);

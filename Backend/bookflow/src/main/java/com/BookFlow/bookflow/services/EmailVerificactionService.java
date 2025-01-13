@@ -1,16 +1,14 @@
 package com.BookFlow.bookflow.services;
 
-import com.BookFlow.bookflow.dto.Company.CompanyDTO;
+import com.BookFlow.bookflow.dto.CompanyDTO;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.VerificationToken;
 import com.BookFlow.bookflow.repository.company.CompanyRepo;
 import com.BookFlow.bookflow.repository.company.VerificationTokenRepo;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

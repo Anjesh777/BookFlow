@@ -1,6 +1,6 @@
 package com.BookFlow.bookflow.contoller.Company;
 
-import com.BookFlow.bookflow.dto.Company.CompanyDTO;
+import com.BookFlow.bookflow.dto.CompanyDTO;
 import com.BookFlow.bookflow.services.EmailService;
 import com.BookFlow.bookflow.services.EmailVerificactionService;
 import com.BookFlow.bookflow.services.RegisterCompanyService;
@@ -17,22 +17,20 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("Company")
+@RequestMapping("all")
 public class RegisterCompanyController {
 
     private final RegisterCompanyService registerCompanyService;
-    private final EmailService emailService;
     private final EmailVerificactionService emailVerificactionService;
 
 
     @Autowired
     public RegisterCompanyController(RegisterCompanyService registerCompanyService, EmailService emailService, EmailVerificactionService emailVerificactionService) {
         this.registerCompanyService = registerCompanyService;
-        this.emailService = emailService;
         this.emailVerificactionService = emailVerificactionService;
     }
 
-    @PostMapping("register")
+    @PostMapping("registercmp")
     public ResponseEntity<Map<String, String>> registerCompany(@RequestBody CompanyDTO CompanyDTO) {
         Map<String, String> response = new HashMap<>();
 

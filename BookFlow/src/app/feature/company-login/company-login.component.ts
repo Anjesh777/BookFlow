@@ -47,7 +47,7 @@ export class CompanyLoginComponent {
     if (this.companyLoginform.valid) {
       const formData = this.companyLoginform.value
       this.isLoading = true;
-      this.http.post<ApiResponse>('http://localhost:8811/Company/logincmp', formData)
+      this.http.post<ApiResponse>('http://localhost:8811/All/logincmp', formData)
       .subscribe({
         
         next: (response) => {
