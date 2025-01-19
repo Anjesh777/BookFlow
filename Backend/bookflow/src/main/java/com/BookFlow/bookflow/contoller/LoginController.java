@@ -32,6 +32,7 @@ public class LoginController {
             response.put("message", "Login successful");
             response.put("accessToken", authResponse.getAuthenticationToken());
             response.put("refreshToken", authResponse.getRefreshToken());
+            response.put("role",authResponse.getUser_role());
 
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {

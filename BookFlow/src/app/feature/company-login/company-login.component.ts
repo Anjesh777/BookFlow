@@ -6,6 +6,8 @@ import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupComponent } from '../../core/popup/popup.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from '../../core/auth/service/auth.service';
+
 
 
 interface ApiResponse {
@@ -28,6 +30,7 @@ export class CompanyLoginComponent {
   isLoading: boolean = false;
   http = inject(HttpClient);
   validationError:Boolean =false
+  private authService = inject(AuthService);
 
   constructor(public dialog: MatDialog) {}
 
@@ -35,45 +38,39 @@ export class CompanyLoginComponent {
   
 
   companyLoginform: FormGroup = new FormGroup({
-    company_name: new FormControl("",[Validators.required,Validators.minLength(3)]),
-    company_password: new FormControl("",[Validators.required,Validators.minLength(8)]),
-  })
+    user_name: new FormControl("", [Validators.required, Validators.minLength(3)]),
+    user_password: new FormControl("", [Validators.required, Validators.minLength(8)]),
+  });
 
-  
-
-  onLogin(){
-    this.validationError = false;
+  onLogin(): void {
+    this.validationError = true;
     
     if (this.companyLoginform.valid) {
-      const formData = this.companyLoginform.value
+      const formData = this.companyLoginform.value;
       this.isLoading = true;
-      this.http.post<ApiResponse>('http://localhost:8811/All/logincmp', formData)
-      .subscribe({
-        
+
+      // Transform the form data to match API expectations
+      const loginRequest = {
+        user_name: formData.user_name,
+        user_password: formData.user_password
+      };
+
+      this.authService.login(loginRequest).subscribe({
         next: (response) => {
-          console.log('Success:', response);
-          this.isLoading =false
-          if (response.status === 'success') {
-            this.openSuccessDialog('Company registered successfully!');
-          } else {
-            this.openErrorDialog(response.message || 'Registration failed');
-          }
+          this.isLoading = false;
+          console.log(response.authenticationToken)
+
+          this.openSuccessDialog('Login successful!');
         },
         error: (error) => {
-          this.isLoading = false
-          console.error('Error:', error);
-          const errorMessage = error.error?.message || 'An error occurred while registering the company';
+          this.isLoading = false;
+          const errorMessage = error.error?.message || 'An error occurred during login';
           this.openErrorDialog(errorMessage);
         }
       });
-
-
-
     }
-
-
-
   }
+
 
   private openSuccessDialog(message: string): void {
     const dialogRef = this.dialog.open(PopupComponent, {

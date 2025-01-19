@@ -8,11 +8,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("test")
+@RequestMapping("api")
 public class TestController {
 
-    @GetMapping("api")
+    @GetMapping("v1/user")
     public String testapi(){
+        return "This is test validation sucess";
+    }
+    @GetMapping("v1/superadmin")
+    public String testapisuper(){
         return "This is test validation sucess";
     }
 }

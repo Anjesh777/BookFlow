@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,8 +47,18 @@ public class JwtService {
     }
 
     public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+
+
+        String role = userDetails.getAuthorities().stream()
+                        .findFirst()
+                                .map(GrantedAuthority::getAuthority)
+                                .orElse(null);
+
+        extraClaims.put("roles",role);
+
+
         return buildToken(extraClaims, userDetails, ACCESS_TOKEN_VALIDITY)
-                .claim("roles", userDetails.getAuthorities())
+//                .claim("roles", userDetails.getAuthorities())
                 .compact();
     }
 
