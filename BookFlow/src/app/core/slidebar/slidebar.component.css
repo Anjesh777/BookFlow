@@ -1,0 +1,16 @@
+.sidenav-container {
+    height: 100vh;
+  }
+  
+  .sidenav {
+    width: 250px;
+  }
+  
+  .sidenav-container .mat-sidenav-content {
+    padding: 16px;
+  }
+  
+  .content {
+    padding: 16px;
+  }
+  

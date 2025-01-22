@@ -1,0 +1,19 @@
+export interface User {
+  username: string;
+  email?: string;
+
+}
+
+export interface LoginRequest {
+    user_name: string;      
+    user_password: string;  
+  }
+  
+  export interface AuthResponse {
+    role: string;           
+    accessToken: string;    
+    refreshToken: string;
+    status: string;
+    message: string;
+    
+  }

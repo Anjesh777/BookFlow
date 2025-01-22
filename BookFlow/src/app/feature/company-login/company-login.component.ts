@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -31,6 +31,7 @@ export class CompanyLoginComponent {
   http = inject(HttpClient);
   validationError:Boolean =false
   private authService = inject(AuthService);
+  private router = inject(Router); // Inject Router
 
   constructor(public dialog: MatDialog) {}
 
@@ -49,7 +50,6 @@ export class CompanyLoginComponent {
       const formData = this.companyLoginform.value;
       this.isLoading = true;
 
-      // Transform the form data to match API expectations
       const loginRequest = {
         user_name: formData.user_name,
         user_password: formData.user_password
@@ -58,9 +58,14 @@ export class CompanyLoginComponent {
       this.authService.login(loginRequest).subscribe({
         next: (response) => {
           this.isLoading = false;
-          console.log(response.authenticationToken)
-
+          console.log(response.accessToken)
           this.openSuccessDialog('Login successful!');
+          debugger
+          const userRole = this.authService.getUserRole();
+          this.navigateBasedOnRole(userRole);
+
+
+
         },
         error: (error) => {
           this.isLoading = false;
@@ -103,6 +108,35 @@ export class CompanyLoginComponent {
       console.log('The dialog was closed');
     });
   }
+
+  private navigateBasedOnRole(userRole: string | null): void {
+    console.log('Navigating based on role:', userRole);
+    
+    switch (userRole) {
+      case 'COMPANY_SUPERADMIN':
+        this.router.navigate(['/superadmin-dashboard'])
+          .then(() => console.log('Navigation to superadmin dashboard completed'))
+          .catch(err => console.error('Navigation error:', err));
+        break;
+      case 'COMPANY_ADMIN':
+        this.router.navigate(['/admin-dashboard'])
+          .then(() => console.log('Navigation to admin dashboard completed'))
+          .catch(err => console.error('Navigation error:', err));
+        break;
+      case 'COMPANY_USER':
+        this.router.navigate(['/user-dashboard'])
+          .then(() => console.log('Navigation to user dashboard completed'))
+          .catch(err => console.error('Navigation error:', err));
+        break;
+      default:
+        console.warn('Unknown role:', userRole);
+        this.router.navigate(['/home'])
+          .then(() => console.log('Navigation to home completed'))
+          .catch(err => console.error('Navigation error:', err));
+    }
+  }
+
+  
 
 
 }
