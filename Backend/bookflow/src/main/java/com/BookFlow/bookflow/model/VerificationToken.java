@@ -37,6 +37,7 @@ public class VerificationToken {
         this.isUsed = false;
     }
 
+
     @Transient
     public boolean isExpired() {
         return expireAt != null && LocalDateTime.now().isAfter(expireAt);
