@@ -36,7 +36,7 @@ public class RegisterCompanyController {
 
         try {
             registerCompanyService.registerCompany(CompanyDTO);
-            emailVerificactionService.createVerificationToken(CompanyDTO);
+            emailVerificactionService.createCompanyVerificationToken(CompanyDTO);
 
 
             log.info("Company Register Successful");

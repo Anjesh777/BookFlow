@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
+import { AuthService } from '../auth/service/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -12,25 +13,34 @@ import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
   styleUrl: './header.component.css'
 })
 
-export class HeaderComponent {
+export class HeaderComponent implements OnInit{
+
+  public authService = inject(AuthService);
+  public router = inject(Router); 
+
+  ngOnInit(): void {
+
+    if(!this.authService.isLoggedIn()){
+      this.router.navigate(['/login-cmp']);
+    }
+    
+  }
+
+  checkLoginStatus() {
+    return this.authService.isLoggedIn();
+  }
+
+
+ 
+
+
 
   
-    isLoading: boolean = false;
-    http = inject(HttpClient);
-    constructor(public dialog: MatDialog) {}
-    openDialog():void{}
+    
 
 
 
 
  
-  onClick(){
-
-    this.http.get<string>("http://localhost:8811/api/v1/superadmin").subscribe(
-      (res: string) => {
-        console.log(res);
-      }
-    );
-  }
 
 }

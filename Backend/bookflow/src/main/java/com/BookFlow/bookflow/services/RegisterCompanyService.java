@@ -14,45 +14,48 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RegisterCompanyService {
 
-    private final CompanyRepo companyRepo;
-    private final UserRepo userRepo;
-    private final PasswordEncoder passwordEncoder;
-
 
     @Autowired
-    public RegisterCompanyService(CompanyRepo companyRepo, UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    private CompanyRepo companyRepo;
+    @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EmailVerificactionService emailVerificationService;
 
-        this.companyRepo = companyRepo;
-        this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
-    }
+
+
+//    @Autowired
+//    public RegisterCompanyService(CompanyRepo companyRepo, UserRepo userRepo, PasswordEncoder passwordEncoder) {
+//
+//        this.companyRepo = companyRepo;
+//        this.userRepo = userRepo;
+//        this.passwordEncoder = passwordEncoder;
+//    }
 
     @Transactional
     public void registerCompany(CompanyDTO companyDTO){
 
-
-
-        Company company = new Company();
-        company.setCompany_name(companyDTO.getCompanyName());
-        company.setRegistration_number(companyDTO.getRegistrationNumber());
-        company.setCompany_email(companyDTO.getCompanyEmail());
-        company.setCompany_phone(companyDTO.getCompanyPhone());
-        company.setCompany_address(companyDTO.getCompanyAddress());
-//      company.setCompany_password(companyDTO.getCompanyPassword());
-//      company.setSuper_admin(companyDTO.getSuper_admin());
-
-        Company savedCompany=companyRepo.save(company);
-
+        Company company = companyRepo.findByCompanyEmail(companyDTO.getCompanyEmail())
+                .orElseGet(() -> {
+                    Company newCompany = new Company();
+                    newCompany.setCompany_name(companyDTO.getCompanyName());
+                    newCompany.setRegistration_number(companyDTO.getRegistrationNumber());
+                    newCompany.setCompany_email(companyDTO.getCompanyEmail());
+                    newCompany.setCompany_phone(companyDTO.getCompanyPhone());
+                    newCompany.setCompany_address(companyDTO.getCompanyAddress());
+                    return companyRepo.save(newCompany);
+                });
 
         User user = new User();
-        user.setCompany_id(savedCompany);
+        user.setCompany_id(company);
         user.setEmail(companyDTO.getCompanyEmail());
         user.setUsername(companyDTO.getCompanyName());
         user.setPassword(passwordEncoder.encode(companyDTO.getCompanyPassword()));
         user.setRole(Role.COMPANY_SUPERADMIN);
+
         userRepo.save(user);
-
-
 
 
 

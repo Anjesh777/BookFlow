@@ -21,6 +21,11 @@ public class VerificationToken {
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    //sss
+
     @Transient
     private LocalDateTime created_at;
 
@@ -36,6 +41,15 @@ public class VerificationToken {
         this.expireAt = LocalDateTime.now().plusMinutes(60);
         this.isUsed = false;
     }
+
+    public VerificationToken(String token, User user) {
+        this.token = token;
+        this.user = user;
+        this.created_at = LocalDateTime.now();
+        this.expireAt = LocalDateTime.now().plusMinutes(60);
+        this.isUsed = false;
+    }
+
 
 
     @Transient

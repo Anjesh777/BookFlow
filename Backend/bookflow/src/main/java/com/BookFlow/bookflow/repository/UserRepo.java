@@ -18,10 +18,6 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     Optional<User> findByRole(String username);
     //void deleteByCompanyId(UUID id);
 
-////    @Query("SELECT u.userId FROM User u WHERE u.email = :email")
-//    Optional<UUID> findUsersIdByEmail(@Param("email") String email);
-
-
-
+    Optional<User> findByEmail(String email);
 
 }

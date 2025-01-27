@@ -1,8 +1,11 @@
 <header class='shadow-md font-sans tracking-wide relative z-50'>
+  @if (!authService.isLoggedIn()) {
+
     <section class='py-2 bg-blue-500 text-white text-right px-10'>
       <p class='text-sm'><strong class="mx-3">Address:</strong>Jhapa Nepal 57200<strong class="mx-3">Contact
         No:</strong>9745261661</p>
     </section>
+  }
   
     <div class='flex flex-wrap items-center justify-between gap-4 px-10 py-4 bg-white min-h-[70px]'>
         <a href="">
@@ -65,7 +68,16 @@
         </button>
       </div>
   
-   
+      @if (authService.isLoggedIn()) {
+
+        <div class="font-[sans-serif] space-x-4 space-y-4 text-center">
+          <button type="button" (click)="authService.logout()" routerLink="/login-cmp"
+            class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-medium border border-current outline-none  text-red-400 hover:text-red-600 transition-all duration-300">Logout</button>
+        </div>
+
+      }
+      @else {
+        
       <div class="font-[sans-serif] space-x-4 space-y-4 text-center">
         <button type="button" routerLink="/register-cmp"
            class="px-8 py-2.5 rounded-lg text-sm tracking-wider font-medium border border-current outline-none bg-blue-600 hover:bg-transparent text-white hover:text-blue-700 transition-all duration-300">Sign up</button>
@@ -73,7 +85,16 @@
         <button type="button" routerLink="/login-cmp"
           class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-medium border border-current outline-none  text-black hover:text-blue-600 transition-all duration-300">Login</button>
       </div>
+
+      }
+   
+
+
+     
+
   
+
+
     </div>
     
   </header>

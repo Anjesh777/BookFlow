@@ -3,9 +3,12 @@ package com.BookFlow.bookflow.contoller;
 import com.BookFlow.bookflow.dto.AuthenticationResponse;
 import com.BookFlow.bookflow.dto.UserDTO;
 import com.BookFlow.bookflow.services.AuthenticationService;
+import com.BookFlow.bookflow.utils.customException.UserNotVerifiedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -26,6 +29,8 @@ public class LoginController {
         Map<String, String> response = new HashMap<>();
 
         try {
+
+
             AuthenticationResponse authResponse = authenticationService.login(userDTO);
 
             response.put("status", "success");
@@ -35,7 +40,19 @@ public class LoginController {
             response.put("role",authResponse.getUser_role());
 
             return ResponseEntity.ok().body(response);
-        } catch (Exception e) {
+        }
+        catch (UserNotVerifiedException e) {
+            response.put("status", "error");
+            response.put("message", "Please verify your account before logging in");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+
+        }
+        catch (BadCredentialsException | UsernameNotFoundException e) {
+            response.put("status", "error");
+            response.put("message", "Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        catch (Exception e) {
             log.error("Login failed", e);
             response.put("status", "error");
             response.put("message", "Invalid credentials");
