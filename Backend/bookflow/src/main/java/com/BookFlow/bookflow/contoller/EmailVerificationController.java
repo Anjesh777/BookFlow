@@ -1,6 +1,7 @@
 package com.BookFlow.bookflow.contoller;
 
 import com.BookFlow.bookflow.services.EmailVerificactionService;
+import com.BookFlow.bookflow.utils.customException.DuplicateFieldException;
 import com.BookFlow.bookflow.utils.customException.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,19 +25,19 @@ public class EmailVerificationController {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    @GetMapping("/verify-cmp")
-    public ResponseEntity<?> verifyCompanyEmail(@RequestParam("token") String token) {
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
         try {
-            emailVerificactionService.verifyCompanyToken(token);
+            emailVerificactionService.verifyUserToken(token);
 
-            String redirectUrl = frontendUrl + "/login-cmp";
+            String redirectUrl = frontendUrl + "/login";
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(redirectUrl));
 
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (TokenExpiredException e) {
-            log.error("Error verifying email: {}", e.getMessage());
+            log.error("Error verifying  email: {}", e.getMessage());
 
             String errorRedirectUrl = frontendUrl + "/verification-error?message=" + e.getMessage();
             HttpHeaders headers = new HttpHeaders();
@@ -53,91 +55,48 @@ public class EmailVerificationController {
         }
     }
 
-    @GetMapping("/verify-user")
-    public ResponseEntity<?> verifyUserEmail(@RequestParam("token") String token) {
-        try {
-            emailVerificactionService.verifyUserToken(token);
-
-            String redirectUrl = frontendUrl + "/login";
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(redirectUrl));
-
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
-
-        } catch (TokenExpiredException e) {
-            log.error("Error verifying user email: {}", e.getMessage());
-
-            String errorRedirectUrl = frontendUrl + "/verification-error?message=" + e.getMessage();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(errorRedirectUrl));
-
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
-        } catch (Exception e) {
-            log.error("Unexpected error during user email verification: {}", e.getMessage());
-
-            String errorRedirectUrl = frontendUrl + "/error";
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(errorRedirectUrl));
-
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
-        }
-    }
-
     @PostMapping("/resend-token")
-    public ResponseEntity<?> resendVerificationToken(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<Map<String, String>> resendVerificationToken(@RequestBody Map<String, String> payload) {
         try {
-            String companyEmail = payload.get("email");
+            String username = payload.get("username");
 
-            if (companyEmail == null || companyEmail.isEmpty()) {
+            if (username == null || username.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "status", "error",
-                        "message", "Email is required"
+                        "message", "Username is required"
                 ));
             }
 
-            emailVerificactionService.resendCompanyVerificationToken(companyEmail);
+            emailVerificactionService.resendUserVerificationToken(username);
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "message", "Company verification link resent successfully"
+                    "message", "Verification link resent successfully"
             ));
 
-        } catch (RuntimeException e) {
-            log.error("Error resending company verification token: {}", e.getMessage());
+        } catch (UsernameNotFoundException e) {
+            log.error("User not found while resending verification token: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", "error",
+                    "message", "User not found"
+            ));
+
+        } catch (DuplicateFieldException e) {
+            log.error("User already verified: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "status", "error",
-                    "message", e.getMessage()
+                    "message", "User is already verified"
+            ));
+
+        } catch (Exception e) {
+            log.error("Unexpected error while resending verification token: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "Failed to resend verification token"
             ));
         }
     }
 
-//    @PostMapping("/resend-user-token")
-//    public ResponseEntity<?> resendUserVerificationToken(@RequestBody Map<String, String> payload) {
-//        try {
-//            String userEmail = payload.get("email");
-//
-//            if (userEmail == null || userEmail.isEmpty()) {
-//                return ResponseEntity.badRequest().body(Map.of(
-//                        "status", "error",
-//                        "message", "Email is required"
-//                ));
-//            }
-//
-//            emailVerificactionService.resendUserVerificationToken(userEmail);
-//
-//            return ResponseEntity.ok(Map.of(
-//                    "status", "success",
-//                    "message", "User verification link resent successfully"
-//            ));
-//
-//        } catch (RuntimeException e) {
-//            log.error("Error resending user verification token: {}", e.getMessage());
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-//                    "status", "error",
-//                    "message", e.getMessage()
-//            ));
-//        }
-//    }
 }
 
 

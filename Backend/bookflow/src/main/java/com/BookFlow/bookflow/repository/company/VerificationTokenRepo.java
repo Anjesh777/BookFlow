@@ -16,14 +16,15 @@ public interface VerificationTokenRepo extends JpaRepository<VerificationToken, 
 
     Optional<VerificationToken> findByToken(String token);
 
-    @Modifying
-    @Query("DELETE FROM VerificationToken vt WHERE vt.company.company_id = :companyId")
-    void deleteByCompanyId(@Param("companyId") UUID companyId);
+//    @Modifying
+//    @Query("DELETE FROM VerificationToken vt WHERE vt.company.company_id = :companyId")
+//    void deleteByCompanyId(@Param("companyId") UUID companyId);
 //
     @Modifying
     @Query("DELETE FROM VerificationToken vt WHERE vt.user.user_id = :userId")
     void deleteByUserId(@Param("userId") UUID userId);
 
+    //****
 //    @Query("SELECT vt FROM VerificationToken vt WHERE vt.company.company_id = :companyId")
 //    Optional<VerificationToken> findByCompanyId(@Param("companyId") UUID companyId);
 
@@ -31,8 +32,8 @@ public interface VerificationTokenRepo extends JpaRepository<VerificationToken, 
 //    Optional<VerificationToken> findByUserId(@Param("userId") UUID userId);
 
 
-    @Query("SELECT vt FROM VerificationToken vt WHERE vt.company.company_id = :companyId AND vt.isUsed = false")
-    Optional<VerificationToken> findByCompanyId(@Param("companyId") UUID companyId);
+//    @Query("SELECT vt FROM VerificationToken vt WHERE vt.company.company_id = :companyId AND vt.isUsed = false")
+//    Optional<VerificationToken> findByCompanyId(@Param("companyId") UUID companyId);
 
     @Query("SELECT vt FROM VerificationToken vt WHERE vt.user.user_id = :userId")
     Optional<VerificationToken> findByUserId(@Param("userId") UUID userId);

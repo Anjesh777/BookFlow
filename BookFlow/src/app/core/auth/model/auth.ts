@@ -17,3 +17,12 @@ export interface LoginRequest {
     message: string;
     
   }
+  export interface ResendVerificationRequest {
+    username: string
+  }
+
+  export interface ApiResponse   {
+    status: string;
+    message: string;
+    
+  }

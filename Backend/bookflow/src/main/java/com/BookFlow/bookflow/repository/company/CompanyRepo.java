@@ -19,8 +19,8 @@ public interface CompanyRepo extends JpaRepository<Company, UUID> {
     @Query("SELECT c.company_id FROM Company c WHERE c.company_email = :email")
     Optional<UUID> findCompanyIdByEmail(@Param("email") String email);
 
-    @Query("SELECT c FROM Company c WHERE c.is_verified = false AND c.company_createdAt < :expirationTime")
-    List<Company> findUnverifiedCompaniesBefore(@Param("expirationTime") Date expirationTime);
+//    @Query("SELECT c FROM Company c WHERE c.is_verified = false AND c.company_createdAt < :expirationTime")
+//    List<Company> findUnverifiedCompaniesBefore(@Param("expirationTime") Date expirationTime);
 
 
 

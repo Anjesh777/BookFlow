@@ -43,6 +43,7 @@ public class Company {
     @Transient
     private boolean is_enabled = false;
 
+    @Transient
     @Column(name = "is_verified", nullable = false)
     private boolean is_verified = false;
 

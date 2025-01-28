@@ -32,8 +32,8 @@ export class CompanyLoginComponent {
   validationError:Boolean =false
   private authService = inject(AuthService);
   private router = inject(Router); // Inject Router
-
   constructor(public dialog: MatDialog) {}
+  tokenTriger:Boolean = false;
 
   openDialog():void{}
   
@@ -42,6 +42,57 @@ export class CompanyLoginComponent {
     user_name: new FormControl("", [Validators.required, Validators.minLength(3)]),
     user_password: new FormControl("", [Validators.required, Validators.minLength(8)]),
   });
+
+  
+  sendVerificationLink(): void {
+    console.log('sendVerificationLink called');
+    const username = this.companyLoginform.get('user_name')?.value;
+    
+    if (!username || username.trim().length === 0) {
+      this.openErrorDialog('Please enter a username');
+      return;
+    }
+
+    if (this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+    console.log('Sending verification request for username:', username.trim());
+
+    const resendTokenRequest = {
+      username: username.trim()
+    };
+
+    this.authService.resendVerificationToken(resendTokenRequest)
+      .subscribe({
+        next: (response) => {
+          console.log('Success response:', response);
+          this.isLoading = false;
+          if (response.status === 'success') {
+            this.openSuccessDialog(response.message);
+          } else {
+            this.openErrorDialog(response.message);
+          }
+        },
+        error: (error) => {
+          console.error('Error details:', error);
+          this.isLoading = false;
+          const errorMessage = error.error?.message || 
+                             error.message || 
+                             'Failed to send verification token. Please try again.';
+          this.openErrorDialog(errorMessage);
+          this.tokenTriger = true; 
+        },
+        complete: () => {
+          this.isLoading = false;
+        }
+      });
+  }
+
+
+  
+  
 
   onLogin(): void {
     this.validationError = true;
@@ -58,19 +109,34 @@ export class CompanyLoginComponent {
       this.authService.login(loginRequest).subscribe({
         next: (response) => {
           this.isLoading = false;
-          console.log(response.accessToken)
           this.openSuccessDialog('Login successful!');
           debugger
           const userRole = this.authService.getUserRole();
           this.navigateBasedOnRole(userRole);
-
-
-
         },
         error: (error) => {
+
           this.isLoading = false;
-          const errorMessage = error.error?.message || 'An error occurred during login';
+          let errorMessage: string;
+
+          if (error instanceof Error) {
+            this.tokenTriger=true ;
+            errorMessage = error.message;
+          } else if (error.error?.message) {
+            console.log("err1")
+            errorMessage = error.error.message;
+          } else if (error.message) {
+            console.log("err2")
+
+            errorMessage = error.message;
+          } else {
+            console.log("err3")
+
+            errorMessage = 'An unexpected error occurred';
+          }
           this.openErrorDialog(errorMessage);
+          console.error('Login error:', error);
+
         }
       });
     }

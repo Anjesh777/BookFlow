@@ -7,13 +7,16 @@ import com.BookFlow.bookflow.model.VerificationToken;
 import com.BookFlow.bookflow.repository.UserRepo;
 import com.BookFlow.bookflow.repository.company.CompanyRepo;
 import com.BookFlow.bookflow.repository.company.VerificationTokenRepo;
+import com.BookFlow.bookflow.utils.customException.DuplicateFieldException;
 import com.BookFlow.bookflow.utils.customException.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -33,50 +36,6 @@ public class EmailVerificactionService {
     private String backendurl;
 
 
-//    @Autowired
-//    public EmailVerificactionService(VerificationTokenRepo tokenRepo, CompanyRepo companyRepo, EmailService emailService, UserRepo userRepository) {
-//        this.tokenRepo = tokenRepo;
-//        this.companyRepo = companyRepo;
-//        this.emailService = emailService;
-//        this.userRepository = userRepository;
-//    }
-
-
-//
-//
-//    public void createVerificationToken(CompanyDTO companyDTO){
-//
-//        String token = UUID.randomUUID().toString();
-//        UUID id = companyRepo.findCompanyIdByEmail(companyDTO.getCompanyEmail())
-//                .orElseThrow(() -> new RuntimeException("Company ID not found for email: " + companyDTO.getCompanyEmail()));
-//
-//
-//        Company company = new Company();
-//        company.setCompany_name(companyDTO.getCompanyName());
-//        company.setCompany_email(companyDTO.getCompanyEmail());
-//        company.setCompany_id(id);
-//
-//
-//
-//        VerificationToken verificationToken = new VerificationToken(token, company);
-//        tokenRepo.save(verificationToken);
-//
-//        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
-//
-//        try {
-//            String emailBody = createEmailBody(company.getCompany_name(),verificationLink);
-//            emailService.sendEmail(
-//                    company.getCompany_email(),
-//                    "Verify Your Email Address",
-//                    emailBody
-//            );
-//
-//        }catch (MatchException e){
-//            throw new RuntimeException("Failed to send verification email", e);
-//        }
-//    }
-//
-
     @Transactional
     public void createCompanyVerificationToken(CompanyDTO companyDTO) {
         Company company = companyRepo.findByCompanyEmail(companyDTO.getCompanyEmail())
@@ -90,15 +49,17 @@ public class EmailVerificactionService {
         verificationToken.setUser(user);
         tokenRepo.save(verificationToken);
 
-        String verificationLink = backendurl + "/api/verification/verify-cmp?token=" + token;
+        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
         sendVerificationEmail(company.getCompany_email(), company.getCompany_name(), verificationLink);
     }
+
+
     public void createUserVerificationToken(User user) {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(token, user);
         tokenRepo.save(verificationToken);
 
-        String verificationLink = backendurl + "/api/verification/verify-user?token=" + token;
+        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
         sendVerificationEmail(user.getEmail(), user.getUsername(), verificationLink);
     }
 
@@ -115,27 +76,6 @@ public class EmailVerificactionService {
         }
     }
 
-    public void verifyCompanyToken(String token) {
-        VerificationToken verificationToken = tokenRepo.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
-
-        if (verificationToken.isExpired()) {
-            throw new TokenExpiredException("Token has expired");
-        }
-
-        if (verificationToken.isUsed()) {
-            throw new RuntimeException("Token has already been used");
-        }
-
-        Company company = verificationToken.getCompany();
-        company.set_verified(true);
-        companyRepo.save(company);
-
-        verificationToken.setUsed(true);
-        tokenRepo.save(verificationToken);
-
-    }
-
     public void verifyUserToken(String token) {
         VerificationToken verificationToken = tokenRepo.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid verification token"));
@@ -149,8 +89,7 @@ public class EmailVerificactionService {
         }
 
         User user = verificationToken.getUser();
-        // Add any user-specific verification logic here
-        // For example: user.setEnabled(true);
+
         userRepository.save(user);
 
         verificationToken.setUsed(true);
@@ -159,95 +98,49 @@ public class EmailVerificactionService {
     }
 
     @Transactional
-    public void resendCompanyVerificationToken(String companyEmail) {
-        Company company = companyRepo.findByCompanyEmail(companyEmail)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+    public void resendUserVerificationToken(String userName) {
+        try {
+            User user = userRepository.findByUsername(userName)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (company.is_verified()) {
-            throw new RuntimeException("Company is already verified");
+            Optional<VerificationToken> tokenObj = tokenRepo.findByUserId(user.getUser_id());
+            if (tokenObj.isPresent() && tokenObj.get().isUsed()) {
+                log.error("User is already verified: {}", userName);
+                throw new DuplicateFieldException("User is already verified");
+            }
+
+            if (tokenObj.isPresent()) {
+                tokenRepo.deleteByUserId(user.getUser_id());
+            }
+
+            String token = UUID.randomUUID().toString();
+            VerificationToken verificationToken = new VerificationToken(token, user);
+            tokenRepo.save(verificationToken);
+
+            String verificationLink = backendurl + "/api/verification/verify?token=" + token;
+
+            try {
+                sendVerificationEmail(user.getEmail(), user.getUsername(), verificationLink);
+                log.info("Verification email resent successfully to user: {}", userName);
+            } catch (Exception e) {
+                log.error("Failed to send verification email to user: {}", userName, e);
+                throw new RuntimeException("Failed to send verification email");
+            }
+
+        } catch (UsernameNotFoundException e) {
+            log.error("Failed to resend verification token - User not found: {}", userName);
+            throw e;
+        } catch (DuplicateFieldException e) {
+            log.error("Failed to resend verification token - User already verified: {}", userName);
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to resend verification token - Unexpected error for user: {}", userName, e);
+            throw new RuntimeException("Failed to resend verification token: " + e.getMessage());
         }
-
-        tokenRepo.deleteByCompanyId(company.getCompany_id());
-
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(token, company);
-        tokenRepo.save(verificationToken);
-
-        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
-        sendVerificationEmail(company.getCompany_email(), company.getCompany_name(), verificationLink);
     }
 
-    @Transactional
-    public void resendUserVerificationToken(String userEmail) {
-        User user = userRepository.findByUsername(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Add any additional checks for user verification status if needed
-
-        tokenRepo.deleteByUserId(user.getUser_id());
-
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(token, user);
-        tokenRepo.save(verificationToken);
-
-        String verificationLink = backendurl + "/api/verification/verify-user?token=" + token;
-        sendVerificationEmail(user.getEmail(), user.getUsername(), verificationLink);
-    }
-
-
-
-    public boolean verifyToken(String token){
-
-        VerificationToken verificationToken = tokenRepo.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
-
-        if (verificationToken.isExpired()) {
-            throw new TokenExpiredException("Token has expired");
-        }
-
-        if (verificationToken.isUsed()) {
-            throw new RuntimeException("Token has already been used");
-        }
-
-
-        Company company = verificationToken.getCompany();
-        company.set_verified(true);
-        companyRepo.save(company);
-
-        verificationToken.setUsed(true);
-        tokenRepo.save(verificationToken);
-
-        return true;
-
-    }
-//    @Transactional
-//    public void resendVerificationToken(String companyEmail) {
-//        Company company = companyRepo.findByCompanyEmail(companyEmail)
-//                .orElseThrow(() -> new RuntimeException("Company not found with email: " + companyEmail));
-//
-//        if (company.is_verified()) {
-//            throw new RuntimeException("Company is already verified");
-//        }
-//
-//        // Delete existing token for this company
-//        tokenRepo.deleteByCompanyId(company.getCompany_id());
-//
-//        // Create new verification token
-//        String token = UUID.randomUUID().toString();
-//        VerificationToken verificationToken = new VerificationToken(token, company);
-//        tokenRepo.save(verificationToken);
-//
-//        // Send verification email
-//        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
-//        emailService.sendEmail(
-//                company.getCompany_email(),
-//                "Resend Verification Link",
-//                createEmailBody(company.getCompany_name(), verificationLink)
-//        );
-//    }
-
-
-    private String createEmailBody(String companyName, String verificationLink) {
+    private String createEmailBody(String UserName, String verificationLink) {
         return String.format("""
                   <html>
                           <head>
@@ -298,7 +191,7 @@ public class EmailVerificactionService {
                               </div>
                           </body>
                       </html>
-            """, companyName, verificationLink);
+            """, UserName, verificationLink);
     }
 
 

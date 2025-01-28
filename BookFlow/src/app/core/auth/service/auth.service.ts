@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthResponse, LoginRequest } from '../model/auth';
+import { ApiResponse, AuthResponse, LoginRequest, ResendVerificationRequest } from '../model/auth';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
@@ -12,6 +12,9 @@ import { Inject, PLATFORM_ID } from '@angular/core';
 export class AuthService {
 
   private readonly API_URL = 'http://localhost:8811/all';
+  private readonly API_URL1 = 'http://localhost:8811/api';
+
+
   private isAuthenticated = signal<boolean>(false);
   private isBrowser: boolean;
 
@@ -24,7 +27,7 @@ export class AuthService {
   ) {
 
     const token = this.getToken();
-    console.log('Auth Service Init - Token:', token ? 'exists' : 'none');
+    // console.log('Auth Service Init - Token:', token ? 'exists' : 'none');
     this.isBrowser = isPlatformBrowser(this.platformId);
 
     if (this.isBrowser) {
@@ -49,12 +52,46 @@ export class AuthService {
           }
         }),
         catchError(error => {
-          console.error('Login error:', error);
           this.isAuthenticated.set(false);
           return throwError(() => new Error(error.error?.message || 'Login failed'));
         })
       );
   }
+
+  resendVerificationToken(request: ResendVerificationRequest): Observable<ApiResponse> {
+
+    return this.http.post<ApiResponse>(
+      `${this.API_URL1}/verification/resend-token`,request)
+      .pipe(
+      tap(response => console.log('API Response:', response)),
+      catchError(this.handleError)
+    );
+  }
+
+
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'An error occurred';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = error.error.message;
+    } else {
+      if (error.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error.status === 404) {
+        errorMessage = 'User not found';
+      } else if (error.status === 400) {
+        errorMessage = 'Invalid request. Please check your input.';
+      } else if (error.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+    }
+
+    console.error('Error:', error);
+    return throwError(() => new Error(errorMessage));
+  }
+  
+ 
+
 
   private setSession(authResult: AuthResponse) {
     if (this.isBrowser) {
@@ -78,7 +115,6 @@ export class AuthService {
   getToken(): string | null {
     if(this.isBrowser){
     const token = localStorage.getItem('accessToken');
-    console.log('Auth Service - getToken:', token ? 'exists' : 'none');
     return token;
     }
     return null
@@ -88,9 +124,7 @@ export class AuthService {
 
     if(this.isBrowser){
       const isLoggedIn = !!this.getToken();
-      console.log('Auth Service - isLoggedIn:', isLoggedIn);
       return isLoggedIn;
-
     }
     return false;
 
@@ -100,15 +134,13 @@ export class AuthService {
 
     if(this.isBrowser){
       const role = localStorage.getItem('userRole');
-      console.log('Auth Service - getUserRole:', role);
       return role;
     }
     else{
       return null;
-    }
-
-    
+    } 
   }
- 
+
+  
 
 }

@@ -16,15 +16,14 @@ public class VerificationToken {
 
     @Column(name = "token")
     private String token;
-
-    @OneToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
+//
+//    @OneToOne
+//    @JoinColumn(name = "company_id")
+//    private Company company;
 
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    //sss
 
     @Transient
     private LocalDateTime created_at;
@@ -36,7 +35,7 @@ public class VerificationToken {
 
     public VerificationToken(String token, Company company) {
         this.token = token;
-        this.company = company;
+//        this.company = company;
         this.created_at = LocalDateTime.now();
         this.expireAt = LocalDateTime.now().plusMinutes(60);
         this.isUsed = false;

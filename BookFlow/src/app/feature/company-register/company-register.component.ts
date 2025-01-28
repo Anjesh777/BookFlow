@@ -34,8 +34,8 @@ export class CompanyRegisterComponent {
     registration_number: new FormControl("",[
       Validators.required,
       Validators.minLength(5)
-      
     ]),
+
     company_email: new FormControl("",[Validators.required,Validators.email]),
     company_phone: new FormControl("",[ 
       Validators.required,
