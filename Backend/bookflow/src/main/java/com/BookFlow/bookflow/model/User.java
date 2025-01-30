@@ -22,7 +22,9 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "company_id",nullable = false)
     private Company company_id;
+    @Column(unique = true)
     private String email;
+    @Column(unique = true)
     private String username;
     private String password;
     @Enumerated(EnumType.STRING)

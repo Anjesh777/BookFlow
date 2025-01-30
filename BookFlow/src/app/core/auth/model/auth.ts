@@ -21,6 +21,13 @@ export interface LoginRequest {
     username: string
   }
 
+  export interface userpassword{
+
+    token:string,
+    newPassword:string
+
+  }
+
   export interface ApiResponse   {
     status: string;
     message: string;

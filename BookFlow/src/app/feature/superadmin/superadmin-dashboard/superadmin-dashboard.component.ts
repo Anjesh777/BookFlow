@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../../../core/auth/service/auth.service';
 import { SlidebarComponent } from "../../../core/slidebar/slidebar.component";
+import { UiServiceService } from '../../../core/ui/ui-service.service';
 
 @Component({
   selector: 'app-superadmin-dashboard',
@@ -15,16 +16,20 @@ import { SlidebarComponent } from "../../../core/slidebar/slidebar.component";
 export class SuperadminDashboardComponent {
 
 
-  isLoading: boolean = false;
+    isLoading: boolean = false;
     http = inject(HttpClient);
-    constructor(public dialog: MatDialog) {}
-    openDialog():void{}
     response: string | null = null;
     private authService = inject(AuthService);
 
+    constructor(
+        private uiService: UiServiceService,
+        public dialog: MatDialog
+    ) {}
+    
 
 
-      onClick() {
+
+    onClick() {
     const token = this.authService.getToken();
     
     const headers = new HttpHeaders({

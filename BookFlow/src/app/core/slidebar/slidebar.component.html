@@ -1,31 +1,70 @@
-<mat-sidenav-container class="sidenav-container">
+<!-- slidebar.component.html -->
+<div class="app-container">
+  <mat-sidenav-container>
     <mat-sidenav #sidenav mode="side" opened class="sidenav">
+      @if (authService.getUserRole()=="COMPANY_SUPERADMIN") {
+        <div class="logo-container  mt-4 ml-3">
+          <a href="">
+            <h1 class="font-bold font-mono text-4xl ">B<span class="text-green-500">OO</span>K<span class="text-red-500">F</span>LOW</h1>
+        </a>
+
+        </div>
+
+      }
+      <hr class="bg-white">
+
+      <!-- <div class="logo-container">
+        <img src="assets/logo.png" alt="Logo" class="logo">
+        <h2>Company Name</h2>
+      </div> -->
+      
       <mat-nav-list>
-        <a mat-list-item routerLink="/" routerLinkActive="active">
-          <mat-icon>home</mat-icon>
-          <span>Home</span>
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
         </a>
-        <a mat-list-item routerLink="/books" routerLinkActive="active">
-          <mat-icon>library_books</mat-icon>
-          <span>Books</span>
-        </a>
-        <a mat-list-item routerLink="/authors" routerLinkActive="active">
+        
+        <a mat-list-item routerLink="/profile" routerLinkActive="active">
           <mat-icon>person</mat-icon>
-          <span>Authors</span>
+          <span>Profile</span>
         </a>
+        
+        <a mat-list-item routerLink="/settings" routerLinkActive="active">
+          <mat-icon>settings</mat-icon>
+          <span>Settings</span>
+        </a>
+        
+        <a mat-list-item routerLink="/reports" routerLinkActive="active">
+          <mat-icon>assessment</mat-icon>
+          <span>Reports</span>
+        </a>
+
+        <a mat-list-item routerLink="/reports" routerLinkActive="active">
+          <mat-icon>work</mat-icon>
+          <span>Company</span>
+        </a>
+
+        <a mat-list-item (click)="authService.logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Logout</span>
+        </a>
+
       </mat-nav-list>
+      
+     
     </mat-sidenav>
-  
+    
     <mat-sidenav-content>
-      <mat-toolbar color="primary">
-        <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle sidenav">
+      <mat-toolbar>
+        <button mat-icon-button (click)="sidenav.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
-        <span>BooK</span>
+        <span>Current Page Title</span>
       </mat-toolbar>
+      
       <div class="content">
         <router-outlet></router-outlet>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>
-  
+</div>

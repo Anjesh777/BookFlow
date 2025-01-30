@@ -1,7 +1,18 @@
 <div>
+  <!-- Show header when user is NOT logged in -->
+@if (!authService.isLoggedIn()) {
   <app-header></app-header>
+}
+
+
+  <!-- Main content without sidebar -->
   <router-outlet></router-outlet>
+
+
+<!-- Show footer when user is NOT logged in -->
+@if (!authService.isLoggedIn()) {
   <app-footer></app-footer>
+}
 </div>
 
 

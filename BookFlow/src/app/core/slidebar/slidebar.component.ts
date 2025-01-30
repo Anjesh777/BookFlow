@@ -1,30 +1,50 @@
-import { Component, ViewChild } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
+// slidebar.component.ts
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
-import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { RouterModule, RouterOutlet } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../auth/service/auth.service';
 
+interface ExpandedItems {
+  [key: string]: boolean;
+}
 
 @Component({
   selector: 'app-slidebar',
   standalone: true,
-  imports: [RouterModule,MatDialogModule,
-    MatButtonModule,MatDialogModule,MatIconModule,MatSidenavModule,
-    MatButtonModule,MatToolbarModule,MatListModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatButtonModule
+  ],
   templateUrl: './slidebar.component.html',
-  styleUrl: './slidebar.component.css'
+  styleUrls: ['./slidebar.component.css']
 })
 export class SlidebarComponent {
-  @ViewChild('sidenav') sidenav!: MatSidenav;
-  title = 'BookFlow';
+  expandedItems: ExpandedItems = {
+    profile: false,
+    settings: false,
+    general: false,
+    company: false
+  };
 
-  toggleSidenav() {
-    this.sidenav.toggle();
+  public authService = inject(AuthService);
+  public router = inject(Router);
+  
+
+  toggleSubmenu(key: string) {
+    // If toggling a parent menu, close all child menus
+    if (key === 'settings') {
+      this.expandedItems['general'] = false;
+    }
+    this.expandedItems[key] = !this.expandedItems[key];
   }
-
-
-
 }

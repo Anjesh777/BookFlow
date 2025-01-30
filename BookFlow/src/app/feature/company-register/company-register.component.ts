@@ -4,8 +4,8 @@ import { RouterModule } from '@angular/router';
 import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { PopupComponent } from '../../core/popup/popup.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { UiServiceService } from '../../core/ui/ui-service.service';
 
 
 
@@ -24,10 +24,14 @@ interface ApiResponse {
 })
 export class CompanyRegisterComponent {
 
+  constructor(
+      private uiService: UiServiceService,
+      public dialog: MatDialog
+    ) {}
+  
+
   isLoading: boolean = false;
   http = inject(HttpClient);
-  constructor(public dialog: MatDialog) {}
-  openDialog():void{}
 
   companyForm: FormGroup = new FormGroup({
     company_name: new FormControl("",[Validators.required,Validators.minLength(3)]),
@@ -104,7 +108,6 @@ passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     );
 }
 
-formValue:any;
 
 onSave() {
   if (this.companyForm.valid) {
@@ -117,18 +120,18 @@ onSave() {
           console.log('Success:', response);
           this.isLoading =false
           if (response.status === 'success') {
-            this.openSuccessDialog('Company registered successfully!');
+            this.uiService.showSuccessDialog('Company registered successfully!');
             this.companyForm.reset();
             this.selectedOption = "Select Option";
           } else {
-            this.openErrorDialog(response.message || 'Registration failed');
+            this.uiService.showErrorDialog(response.message || 'Registration failed');
           }
         },
         error: (error) => {
           this.isLoading = false
           console.error('Error:', error);
           const errorMessage = error.error?.message || 'An error occurred while registering the company';
-          this.openErrorDialog(errorMessage);
+          this.uiService.showErrorDialog(errorMessage);
         }
       });
   } else {
@@ -136,41 +139,10 @@ onSave() {
     Object.keys(this.companyForm.controls).forEach(key => {
       this.companyForm.get(key)?.markAsTouched();
     });
-    this.openErrorDialog('Please fill all required fields correctly');
+    this.uiService.showErrorDialog('Please fill all required fields correctly');
   }
 }
 
-private openSuccessDialog(message: string): void {
-  const dialogRef = this.dialog.open(PopupComponent, {
-    width: '400px',
-    disableClose: false,
-    hasBackdrop: true,
-    data: { 
-      title: 'Successfully accepted!',
-      message: message,
-      type: 'success'
-    }
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-    console.log('The dialog was closed');
-  });
-}
-
-private openErrorDialog(message: string): void {
-  const dialogRef = this.dialog.open(PopupComponent, {
-    width: '300px',
-    data: { 
-      title: 'Error',
-      message: message,
-      type: 'error'
-    }
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-    console.log('The dialog was closed');
-  });
-}
 ngOnChanges():void{
     this.filterOptions()
   }

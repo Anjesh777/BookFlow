@@ -1,33 +1,28 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { ApiResponse, AuthResponse, LoginRequest, ResendVerificationRequest } from '../model/auth';
+import { ApiResponse, AuthResponse, LoginRequest, ResendVerificationRequest, userpassword } from '../model/auth';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
+import { response } from 'express';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
   private readonly API_URL = 'http://localhost:8811/all';
   private readonly API_URL1 = 'http://localhost:8811/api';
 
-
   private isAuthenticated = signal<boolean>(false);
   private isBrowser: boolean;
-
-
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: object,
     private http: HttpClient,
     private router: Router
   ) {
-
     const token = this.getToken();
-    // console.log('Auth Service Init - Token:', token ? 'exists' : 'none');
     this.isBrowser = isPlatformBrowser(this.platformId);
 
     if (this.isBrowser) {
@@ -40,7 +35,6 @@ export class AuthService {
       .pipe(
         tap(response => {
           if (response.accessToken && this.isBrowser) {
-
             this.setSession(response)        
             this.isAuthenticated.set(true);
             
@@ -59,15 +53,31 @@ export class AuthService {
   }
 
   resendVerificationToken(request: ResendVerificationRequest): Observable<ApiResponse> {
-
     return this.http.post<ApiResponse>(
-      `${this.API_URL1}/verification/resend-token`,request)
+      `${this.API_URL1}/verification/resend-token`, request)
       .pipe(
-      tap(response => console.log('API Response:', response)),
-      catchError(this.handleError)
-    );
+        tap(response => console.log('API Response:', response)),
+        catchError(this.handleError)
+      );
   }
 
+  resendForgetTokenPassword(request: ResendVerificationRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(
+      `${this.API_URL}/forgot`, request)
+      .pipe(
+        tap(response => console.log('API Response:', response)),
+        catchError(this.handleError)
+      );
+  }
+
+  resetPassword(request: userpassword): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(
+      `${this.API_URL}/reset?token=${request.token}`, request)
+      .pipe(
+        tap(response => console.log('API Response:', response)),
+        catchError(this.handleError)
+      );
+  }
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An error occurred';
@@ -85,62 +95,49 @@ export class AuthService {
         errorMessage = 'Server error. Please try again later.';
       }
     }
-
     console.error('Error:', error);
     return throwError(() => new Error(errorMessage));
   }
   
- 
-
-
   private setSession(authResult: AuthResponse) {
     if (this.isBrowser) {
-      localStorage.setItem('accessToken', authResult.accessToken);
-      localStorage.setItem('refreshToken', authResult.refreshToken);
-      localStorage.setItem('userRole', authResult.role);
+      sessionStorage.setItem('accessToken', authResult.accessToken);
+      sessionStorage.setItem('refreshToken', authResult.refreshToken);
+      sessionStorage.setItem('userRole', authResult.role);
     }
   }
-
 
   logout(): void {
     if (this.isBrowser) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userRole');
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('userRole');
     }
     this.isAuthenticated.set(false);
-    this.router.navigate(['/login-cmp']);
+    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
-    if(this.isBrowser){
-    const token = localStorage.getItem('accessToken');
-    return token;
+    if (this.isBrowser) {
+      const token = sessionStorage.getItem('accessToken');
+      return token;
     }
-    return null
+    return null;
   }
 
   isLoggedIn(): boolean {
-
-    if(this.isBrowser){
+    if (this.isBrowser) {
       const isLoggedIn = !!this.getToken();
       return isLoggedIn;
     }
     return false;
-
   }
 
   getUserRole(): string | null {
-
-    if(this.isBrowser){
-      const role = localStorage.getItem('userRole');
+    if (this.isBrowser) {
+      const role = sessionStorage.getItem('userRole');
       return role;
     }
-    else{
-      return null;
-    } 
+    return null;
   }
-
-  
-
 }

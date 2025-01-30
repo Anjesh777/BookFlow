@@ -20,7 +20,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
 
   if (!authService.isLoggedIn()) {
-    return router.createUrlTree(['/login-cmp']);
+    return router.createUrlTree(['/login']);
   } 
 
   const userRole = authService.getUserRole();
@@ -40,6 +40,6 @@ export const authGuard: CanActivateFn = (route, state) => {
 
 
   console.log('Auth Guard - Access denied');
-  return router.createUrlTree(['/login-cmp']);
+  return router.createUrlTree(['/login']);
 
 };

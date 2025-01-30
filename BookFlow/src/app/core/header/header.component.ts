@@ -13,18 +13,12 @@ import { AuthService } from '../auth/service/auth.service';
   styleUrl: './header.component.css'
 })
 
-export class HeaderComponent implements OnInit{
+export class HeaderComponent {
 
   public authService = inject(AuthService);
   public router = inject(Router); 
 
-  ngOnInit(): void {
 
-    if(!this.authService.isLoggedIn()){
-      this.router.navigate(['/login-cmp']);
-    }
-    
-  }
 
   checkLoginStatus() {
     return this.authService.isLoggedIn();

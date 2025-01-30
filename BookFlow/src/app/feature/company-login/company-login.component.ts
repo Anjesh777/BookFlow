@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PopupComponent } from '../../core/popup/popup.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/auth/service/auth.service';
+import { UiServiceService } from '../../core/ui/ui-service.service';
 
 
 
@@ -26,17 +27,18 @@ interface ApiResponse {
 })
 export class CompanyLoginComponent {
 
-
   isLoading: boolean = false;
   http = inject(HttpClient);
   validationError:Boolean =false
   private authService = inject(AuthService);
   private router = inject(Router); // Inject Router
-  constructor(public dialog: MatDialog) {}
   tokenTriger:Boolean = false;
 
-  openDialog():void{}
-  
+  constructor(
+    private uiService: UiServiceService,
+    public dialog: MatDialog
+  ) {}
+
 
   companyLoginform: FormGroup = new FormGroup({
     user_name: new FormControl("", [Validators.required, Validators.minLength(3)]),
@@ -49,7 +51,7 @@ export class CompanyLoginComponent {
     const username = this.companyLoginform.get('user_name')?.value;
     
     if (!username || username.trim().length === 0) {
-      this.openErrorDialog('Please enter a username');
+      this.uiService.showErrorDialog('Please enter a username');
       return;
     }
 
@@ -70,9 +72,9 @@ export class CompanyLoginComponent {
           console.log('Success response:', response);
           this.isLoading = false;
           if (response.status === 'success') {
-            this.openSuccessDialog(response.message);
+            this.uiService.showSuccessDialog(response.message)
           } else {
-            this.openErrorDialog(response.message);
+            this.uiService.showErrorDialog(response.message)
           }
         },
         error: (error) => {
@@ -81,7 +83,9 @@ export class CompanyLoginComponent {
           const errorMessage = error.error?.message || 
                              error.message || 
                              'Failed to send verification token. Please try again.';
-          this.openErrorDialog(errorMessage);
+
+          this.uiService.showErrorDialog(errorMessage);
+
           this.tokenTriger = true; 
         },
         complete: () => {
@@ -90,9 +94,6 @@ export class CompanyLoginComponent {
       });
   }
 
-
-  
-  
 
   onLogin(): void {
     this.validationError = true;
@@ -109,7 +110,7 @@ export class CompanyLoginComponent {
       this.authService.login(loginRequest).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.openSuccessDialog('Login successful!');
+          this.uiService.showSuccessDialog('Login successful!');
           debugger
           const userRole = this.authService.getUserRole();
           this.navigateBasedOnRole(userRole);
@@ -120,8 +121,10 @@ export class CompanyLoginComponent {
           let errorMessage: string;
 
           if (error instanceof Error) {
-            this.tokenTriger=true ;
             errorMessage = error.message;
+            if(errorMessage=="Please verify your account before logging in"){
+              this.tokenTriger=true ;
+            }
           } else if (error.error?.message) {
             console.log("err1")
             errorMessage = error.error.message;
@@ -134,47 +137,15 @@ export class CompanyLoginComponent {
 
             errorMessage = 'An unexpected error occurred';
           }
-          this.openErrorDialog(errorMessage);
+          this.uiService.showErrorDialog(errorMessage);
           console.error('Login error:', error);
-
         }
       });
     }
   }
 
 
-  private openSuccessDialog(message: string): void {
-    const dialogRef = this.dialog.open(PopupComponent, {
-      width: '300px',
-      disableClose: false,
-      hasBackdrop: true,
-      data: { 
-        title: 'Successfully accepted!',
-        message: message,
-        type: 'success'
-      }
-    });
   
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-    });
-  }
-  
-  private openErrorDialog(message: string): void {
-    const dialogRef = this.dialog.open(PopupComponent, {
-      width: '300px',
-      data: { 
-        title: 'Error',
-        message: message,
-        type: 'error'
-      }
-    });
-  
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-    });
-  }
-
   private navigateBasedOnRole(userRole: string | null): void {
     console.log('Navigating based on role:', userRole);
     
@@ -196,7 +167,7 @@ export class CompanyLoginComponent {
         break;
       default:
         console.warn('Unknown role:', userRole);
-        this.router.navigate(['/home'])
+        this.router.navigate(['/login'])
           .then(() => console.log('Navigation to home completed'))
           .catch(err => console.error('Navigation error:', err));
     }

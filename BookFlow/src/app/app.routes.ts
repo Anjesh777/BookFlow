@@ -4,17 +4,18 @@ import { HomeComponent } from './core/home/home.component';
 import { CompanyLoginComponent } from './feature/company-login/company-login.component';
 import { SuperadminDashboardComponent } from './feature/superadmin/superadmin-dashboard/superadmin-dashboard.component';
 import { authGuard } from '../app/core/auth/guards/auth.guard';
+import { SendtokenComponent } from './core/reset/sendtoken/sendtoken.component';
+import { ForgotpasswordComponent } from './core/reset/forgotpassword/forgotpassword.component';
 
 export const routes: Routes = [
 
     {
-        path: '',
-        redirectTo: 'home',
-        pathMatch: 'full'
+        path: 'set-password',
+        component:ForgotpasswordComponent,
     },
     
     {
-        path: 'register-cmp',
+        path: 'register',
         component: CompanyRegisterComponent,
     },
     
@@ -24,10 +25,13 @@ export const routes: Routes = [
     },
     
     {
-        path: 'login-cmp',
+        path: 'login',
         component: CompanyLoginComponent
     },
-    
+    {
+        path: 'resend-token',
+        component:SendtokenComponent
+    },
     {
         path: 'superadmin-dashboard',
         component: SuperadminDashboardComponent,
@@ -37,11 +41,7 @@ export const routes: Routes = [
         }
     },
 
-    {
-        path: '**',
-        redirectTo: 'home'
-    }
-    
+   
     
 
 ];
