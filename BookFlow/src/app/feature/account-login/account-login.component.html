@@ -37,20 +37,29 @@
                     </div>
                 </div>
 
-                <div>
+                <div class="password-field">
                     <label class="text-gray-800 text-sm mb-2 block">Password</label>
-                    <input name="password" type="password" formControlName="user_password" 
-                           class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" 
-                           placeholder="Enter Account password" />
-
-                
-                    <div>
-                        @if (validationError &&  companyLoginform.controls['user_password'].errors?.['required']) {
-                            <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
-                            <span class="text-red-900 text-sm">Password Is Required</span>
-                        }
-                        
+                    <div class="input-group">
+                        <input 
+                            name="password" 
+                            type="password" 
+                            formControlName="user_password"
+                            [type]="showPassword ? 'text' : 'password'"
+                            class="bg-gray-100 w-full text-gray-800 text-sm px-4 py-3 rounded-md outline-blue-500" 
+                            placeholder="Enter Account password" />
+                        <button 
+                            type="button" 
+                            class="toggle-password btn btn-outline-secondary"
+                            (click)="toggleShowPassword()"
+                        >
+                            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" id="togglePasswordIcon"></i>
+                        </button>
                     </div>
+                
+                    @if (validationError && companyLoginform.controls['user_password'].errors?.['required']) {
+                        <i class="fa-solid fa-triangle-exclamation fa-lg" style="color: #ff0000;"></i>
+                        <span class="text-red-900 text-sm">Password Is Required</span>
+                    }
                 </div>
 
                 <div class="flex items-center justify-between">

@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { PopupComponent } from '../../core/popup/popup.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/auth/service/auth.service';
 import { UiServiceService } from '../../core/ui/ui-service.service';
@@ -19,13 +18,13 @@ interface ApiResponse {
 
 
 @Component({
-  selector: 'app-company-login',
+  selector: 'app-account-login',
   standalone: true,
   imports: [CommonModule,RouterModule,FormsModule,ReactiveFormsModule,MatProgressSpinnerModule],
-  templateUrl: './company-login.component.html',
-  styleUrl: './company-login.component.css'
+  templateUrl: './account-login.component.html',
+  styleUrl: './account-login.component.css'
 })
-export class CompanyLoginComponent {
+export class AccountLoginComponent implements OnInit {
 
   isLoading: boolean = false;
   http = inject(HttpClient);
@@ -38,6 +37,32 @@ export class CompanyLoginComponent {
     private uiService: UiServiceService,
     public dialog: MatDialog
   ) {}
+
+
+  ngOnInit(): void {
+    const userRole = this.authService.getUserRole();
+    
+    switch (userRole) {
+      case 'COMPANY_SUPERADMIN':
+        this.router.navigate(['/superadmin']);
+        break;
+      case 'COMPANY_ADMIN':
+        this.router.navigate(['/admin']);
+        break;
+      case 'COMPANY_USER':
+        this.router.navigate(['/user']);
+        break;
+      
+    }
+  }
+
+  get showPassword(): boolean {
+    return this.uiService.showPassword;
+  }
+  
+  toggleShowPassword(): void {
+    this.uiService.toggleShowPassword();
+  }
 
 
   companyLoginform: FormGroup = new FormGroup({
@@ -111,7 +136,6 @@ export class CompanyLoginComponent {
         next: (response) => {
           this.isLoading = false;
           this.uiService.showSuccessDialog('Login successful!');
-          debugger
           const userRole = this.authService.getUserRole();
           this.navigateBasedOnRole(userRole);
         },
@@ -151,17 +175,17 @@ export class CompanyLoginComponent {
     
     switch (userRole) {
       case 'COMPANY_SUPERADMIN':
-        this.router.navigate(['/superadmin-dashboard'])
+        this.router.navigate(['/superadmin'])
           .then(() => console.log('Navigation to superadmin dashboard completed'))
           .catch(err => console.error('Navigation error:', err));
         break;
       case 'COMPANY_ADMIN':
-        this.router.navigate(['/admin-dashboard'])
+        this.router.navigate(['/admin'])
           .then(() => console.log('Navigation to admin dashboard completed'))
           .catch(err => console.error('Navigation error:', err));
         break;
       case 'COMPANY_USER':
-        this.router.navigate(['/user-dashboard'])
+        this.router.navigate(['/user'])
           .then(() => console.log('Navigation to user dashboard completed'))
           .catch(err => console.error('Navigation error:', err));
         break;

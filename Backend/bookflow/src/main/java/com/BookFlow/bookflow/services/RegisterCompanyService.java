@@ -25,15 +25,6 @@ public class RegisterCompanyService {
     private EmailVerificactionService emailVerificationService;
 
 
-
-//    @Autowired
-//    public RegisterCompanyService(CompanyRepo companyRepo, UserRepo userRepo, PasswordEncoder passwordEncoder) {
-//
-//        this.companyRepo = companyRepo;
-//        this.userRepo = userRepo;
-//        this.passwordEncoder = passwordEncoder;
-//    }
-
     @Transactional
     public void registerCompany(CompanyDTO companyDTO){
 
@@ -53,7 +44,7 @@ public class RegisterCompanyService {
         user.setEmail(companyDTO.getCompanyEmail());
         user.setUsername(companyDTO.getCompanyName());
         user.setPassword(passwordEncoder.encode(companyDTO.getCompanyPassword()));
-        user.setRole(Role.COMPANY_SUPERADMIN);
+        user.setRole(Role.COMPANY_ADMIN);
 
         userRepo.save(user);
 

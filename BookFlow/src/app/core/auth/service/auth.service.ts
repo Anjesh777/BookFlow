@@ -11,8 +11,8 @@ import { response } from 'express';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8811/all';
-  private readonly API_URL1 = 'http://localhost:8811/api';
+  private readonly public_URL = 'http://localhost:8811/all';
+  private readonly public_URL2 = 'http://localhost:8811/api';
 
   private isAuthenticated = signal<boolean>(false);
   private isBrowser: boolean;
@@ -22,39 +22,49 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    const token = this.getToken();
     this.isBrowser = isPlatformBrowser(this.platformId);
+    this.checkInitialAuthState();
+  }
 
+  
+  private checkInitialAuthState(): void {
     if (this.isBrowser) {
-      this.isAuthenticated.set(!!this.getToken());
+      const token = this.getToken();
+      this.isAuthenticated.set(!!token && token.length > 0);
     }
   }
 
+
   login(loginRequest: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, loginRequest)
+    return this.http.post<AuthResponse>(`${this.public_URL}/login`, loginRequest)
       .pipe(
         tap(response => {
-          if (response.accessToken && this.isBrowser) {
-            this.setSession(response)        
+          if (response?.accessToken && this.isBrowser) {
+            this.setSession(response);
             this.isAuthenticated.set(true);
             
-            console.log('Stored tokens and role:', {
-              accessToken: !!response.accessToken,
-              refreshToken: !!response.refreshToken,
+            console.log('Authentication successful', {
+              isAuthenticated: true,
+              hasAccessToken: !!response.accessToken,
+              hasRefreshToken: !!response.refreshToken,
               role: response.role
             });
+          } else {
+            console.warn('Login response missing token:', response);
           }
         }),
         catchError(error => {
           this.isAuthenticated.set(false);
+          console.error('Login error:', error);
           return throwError(() => new Error(error.error?.message || 'Login failed'));
         })
       );
   }
 
+
   resendVerificationToken(request: ResendVerificationRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
-      `${this.API_URL1}/verification/resend-token`, request)
+      `${this.public_URL2}/verification/resend-token`, request)
       .pipe(
         tap(response => console.log('API Response:', response)),
         catchError(this.handleError)
@@ -63,7 +73,7 @@ export class AuthService {
 
   resendForgetTokenPassword(request: ResendVerificationRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
-      `${this.API_URL}/forgot`, request)
+      `${this.public_URL}/forgot`, request)
       .pipe(
         tap(response => console.log('API Response:', response)),
         catchError(this.handleError)
@@ -72,7 +82,7 @@ export class AuthService {
 
   resetPassword(request: userpassword): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
-      `${this.API_URL}/reset?token=${request.token}`, request)
+      `${this.public_URL}/reset?token=${request.token}`, request)
       .pipe(
         tap(response => console.log('API Response:', response)),
         catchError(this.handleError)
@@ -99,22 +109,41 @@ export class AuthService {
     return throwError(() => new Error(errorMessage));
   }
   
-  private setSession(authResult: AuthResponse) {
-    if (this.isBrowser) {
+  private setSession(authResult: AuthResponse): void {
+    if (!this.isBrowser) return;
+
+    try {
+      if (!authResult?.accessToken) {
+        console.error('Cannot set session: Missing access token');
+        return;
+      }
+
       sessionStorage.setItem('accessToken', authResult.accessToken);
-      sessionStorage.setItem('refreshToken', authResult.refreshToken);
-      sessionStorage.setItem('userRole', authResult.role);
+      if (authResult.refreshToken) {
+        sessionStorage.setItem('refreshToken', authResult.refreshToken);
+      }
+      if (authResult.role) {
+        sessionStorage.setItem('userRole', authResult.role);
+      }
+    } catch (error) {
+      console.error('Error setting session:', error);
+      this.isAuthenticated.set(false);
     }
   }
 
+
   logout(): void {
-    if (this.isBrowser) {
+    if (!this.isBrowser) return;
+
+    try {
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('refreshToken');
       sessionStorage.removeItem('userRole');
+      this.isAuthenticated.set(false);
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Error during logout:', error);
     }
-    this.isAuthenticated.set(false);
-    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
@@ -124,6 +153,7 @@ export class AuthService {
     }
     return null;
   }
+
 
   isLoggedIn(): boolean {
     if (this.isBrowser) {

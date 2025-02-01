@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PopupComponent } from '../popup/popup.component';
+import { PopupComponent } from './popup/popup.component';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +8,17 @@ import { PopupComponent } from '../popup/popup.component';
 export class UiServiceService {
 
   constructor(private dialog: MatDialog) {}
+
+  showPassword = false;
+  showConfirmPassword = false;
+
+  toggleShowPassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   showSuccessDialog(message: string) {
     const dialogRef = this.dialog.open(PopupComponent, {
@@ -36,7 +47,4 @@ export class UiServiceService {
 
     return dialogRef.afterClosed();
   }
-
-
-
 }

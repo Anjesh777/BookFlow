@@ -36,9 +36,11 @@ export class SendtokenComponent {
     ])}
   )
 
+  
   sendForgotLink():void{
     console.log('sendForgotLink called');
     const username = this.userForm.get('username')?.value;
+    console.log('username:', username);
 
     if (!username || username.trim().length === 0) {
       this.uiService.showErrorDialog('Please enter a username');
@@ -80,10 +82,6 @@ export class SendtokenComponent {
           this.isLoading = false;
         }
       });
-
-
-
-
   }
   
 

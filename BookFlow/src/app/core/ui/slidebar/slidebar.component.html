@@ -44,6 +44,11 @@
           <span>Company</span>
         </a>
 
+        <a mat-list-item routerLink="/reports" routerLinkActive="active">
+          <mat-icon>sd_storage</mat-icon>
+          <span>Logs</span>
+        </a>
+
         <a mat-list-item (click)="authService.logout()">
           <mat-icon>exit_to_app</mat-icon>
           <span>Logout</span>
@@ -59,11 +64,11 @@
         <button mat-icon-button (click)="sidenav.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
-        <span>Current Page Title</span>
+        <span>{{getPageTitle()}}</span>
       </mat-toolbar>
       
       <div class="content">
-        <router-outlet></router-outlet>
+        <app-superadmin-dashboard></app-superadmin-dashboard>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>

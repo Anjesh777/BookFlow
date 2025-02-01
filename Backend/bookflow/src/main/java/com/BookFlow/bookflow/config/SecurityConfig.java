@@ -53,9 +53,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/all/**","/api/verification/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/superadmin").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name())
-                        .requestMatchers("/api/v1/admin").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name(), Role.COMPANY_ADMIN.name())
-                        .requestMatchers("api/v1/user").hasAnyAuthority(Role.COMPANY_USER.name())
+                        .requestMatchers("/api/v1/bookflow/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name())
+                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name(), Role.COMPANY_ADMIN.name())
+                        .requestMatchers("api/v1/user/**").hasAnyAuthority(Role.COMPANY_USER.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

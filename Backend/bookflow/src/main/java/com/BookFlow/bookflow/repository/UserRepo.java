@@ -19,5 +19,6 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     //void deleteByCompanyId(UUID id);
 
     Optional<User> findByEmail(String email);
+    Long countByEmail(String email);
 
 }

@@ -7,7 +7,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import { AuthService } from '../auth/service/auth.service';
+import { AuthService } from '../../auth/service/auth.service';
+import { SuperadminDashboardComponent } from "../../../feature/superadmin/superadmin-dashboard/superadmin-dashboard.component";
 
 interface ExpandedItems {
   [key: string]: boolean;
@@ -23,8 +24,9 @@ interface ExpandedItems {
     MatListModule,
     MatIconModule,
     MatToolbarModule,
-    MatButtonModule
-  ],
+    MatButtonModule,
+    SuperadminDashboardComponent
+],
   templateUrl: './slidebar.component.html',
   styleUrls: ['./slidebar.component.css']
 })
@@ -40,8 +42,13 @@ export class SlidebarComponent {
   public router = inject(Router);
   
 
+  getPageTitle(): string {
+    const route = this.router.url.split('/')[2];
+    return route.charAt(0).toUpperCase() + route.slice(1) || 'Dashboard';
+  }
+  
+  
   toggleSubmenu(key: string) {
-    // If toggling a parent menu, close all child menus
     if (key === 'settings') {
       this.expandedItems['general'] = false;
     }

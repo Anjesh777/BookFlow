@@ -57,10 +57,8 @@ export class ForgotpasswordComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Get token from query params using ActivatedRoute
     this.token = this.route.snapshot.queryParamMap.get('token');
 
-    // If in browser environment, also check URL search params as fallback
     if (isPlatformBrowser(this.platformId)) {
       if (!this.token) {
         const searchParams = new URLSearchParams(window.location.search);
@@ -118,4 +116,24 @@ export class ForgotpasswordComponent implements OnInit {
     return this.resetForm.controls.newPassword.value ===
            this.resetForm.controls.conformPassword.value;
   }
+
+
+  toggleShowPassword() {
+    this.uiService.toggleShowPassword();
+  }
+
+  toggleShowConfirmPassword() {
+    this.uiService.toggleShowConfirmPassword();
+  }
+
+  // Access the show/hide state
+  get showPassword() {
+    return this.uiService.showPassword;
+  }
+
+  get showConfirmPassword() {
+    return this.uiService.showConfirmPassword;
+  }
+  
+
 }

@@ -5,7 +5,7 @@ import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModu
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { UiServiceService } from '../../core/ui/ui-service.service';
+import { UiServiceService } from '../../../core/ui/ui-service.service';
 
 
 

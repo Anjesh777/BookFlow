@@ -49,6 +49,7 @@ public class EmailVerificactionService {
         verificationToken.setUser(user);
         tokenRepo.save(verificationToken);
 
+
         String verificationLink = backendurl + "/api/verification/verify?token=" + token;
         sendVerificationEmail(company.getCompany_email(), company.getCompany_name(), verificationLink);
     }

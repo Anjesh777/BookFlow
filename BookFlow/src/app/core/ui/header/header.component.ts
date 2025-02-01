@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
-import { AuthService } from '../auth/service/auth.service';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../auth/service/auth.service';
 
 @Component({
   selector: 'app-header',
