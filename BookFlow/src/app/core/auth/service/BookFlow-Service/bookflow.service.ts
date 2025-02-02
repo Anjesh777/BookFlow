@@ -2,7 +2,8 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { inject, Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';  
 import { Observable, catchError, throwError } from 'rxjs';
-import { CompanyCountResponse, UserCountResponse } from '../../model/bookflow';
+import { companyDetails, CompanyResponse } from '../../model/bookflow';
+// import { CompanyCountResponse, UserCountResponse } from '../../model/bookflow';
 
 @Injectable({
   providedIn: 'root'
@@ -22,23 +23,40 @@ export class BookflowService {
     
    }
 
-   getAllUsers(): Observable<UserCountResponse> {
-    return this.http.get<UserCountResponse>(`${this.private_URL}/bookflow/count-users`).pipe(
+  getAllDashboardDetails(): Observable<CompanyResponse> {
+    return this.http.get<CompanyResponse>(`${this.private_URL}/bookflow/company-details`).pipe(
       catchError((error) => {
-          return new Observable<UserCountResponse>(); 
+          return new Observable<CompanyResponse>(); 
         
       })
     );
   }
 
-  getAllCompany(): Observable<CompanyCountResponse> {
-    return this.http.get<CompanyCountResponse>(`${this.private_URL}/bookflow/count-company`).pipe(
+  getRecentThreeCompanyDetails(): Observable<companyDetails[]> {
+    return this.http.get<companyDetails[]>(`${this.private_URL}/bookflow/recent-3`).pipe(
       catchError((error) => {
-          return new Observable<CompanyCountResponse>(); 
-        
+        return new Observable<companyDetails[]>();  
       })
     );
   }
+
+  getRecentAllCompanyDetails(): Observable<companyDetails[]> {
+    return this.http.get<companyDetails[]>(`${this.private_URL}/bookflow/recent-all`).pipe(
+      catchError((error) => {
+        return new Observable<companyDetails[]>();  
+      })
+    );
+  }
+
+
+
+  // getUserGrowth(): Observable<any> {
+  //   return this.http.get<any>(`${this.private_URL}/bookflow/growth`).pipe(
+  //     catchError((error) => {
+  //         return new Observable<any>();   
+  //     })
+  //   );
+  // }
 
 
 

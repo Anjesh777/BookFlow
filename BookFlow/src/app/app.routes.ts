@@ -7,6 +7,9 @@ import { authGuard } from '../app/core/auth/guards/auth.guard';
 import { SendtokenComponent } from './core/reset/sendtoken/sendtoken.component';
 import { ForgotpasswordComponent } from './core/reset/forgotpassword/forgotpassword.component';
 import { SlidebarComponent } from './core/ui/slidebar/slidebar.component';
+import { ProfileComponent } from './core/ui/profile/profile.component';
+import { UsermanagementComponent } from './feature/superadmin/usermanagement/usermanagement.component';
+import { CompanymanagementComponent } from './feature/superadmin/companymanagement/companymanagement.component';
 
 export const routes: Routes = [
 
@@ -33,15 +36,12 @@ export const routes: Routes = [
         path: 'resend-token',
         component:SendtokenComponent
     },
+    
     {
         path: 'superadmin',
         component: SlidebarComponent,
         canActivate: [authGuard],
-        data: {
-            roles: ['COMPANY_SUPERADMIN']
-        },
         children:[
-
             {
                 path: '',
                 redirectTo: 'dashboard',
@@ -50,13 +50,30 @@ export const routes: Routes = [
             {
                 path: 'dashboard',
                 component: SuperadminDashboardComponent
-            },    
+            }, 
+            {
+                path: 'profile',
+                component:ProfileComponent
+            } ,  
+            {
+                path: 'users',
+                component:UsermanagementComponent
+            },
+            {
+                path: 'companies',
+                component:CompanymanagementComponent
+            } 
 
         ]
 
 
     },
 
+    {
+        path: '**',
+        
+        redirectTo: 'home'
+    }
    
     
 

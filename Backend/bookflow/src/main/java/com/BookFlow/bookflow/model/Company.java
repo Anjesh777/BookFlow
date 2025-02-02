@@ -21,7 +21,7 @@ public class Company {
     @Column(name = "company_name", nullable = false)
     private String company_name;
 
-    @Column(name = "company_registration", nullable = false)
+    @Column(name = "company_registration", nullable = false, unique = true)
     private String registration_number;
 
     @Column(name = "company_email", nullable = false, unique = true)
@@ -34,14 +34,14 @@ public class Company {
     private String company_address;
 
     @CurrentTimestamp
-    @Column(name = "company_createdAt", updatable = false)
+    @Column(name = "company_created_at", updatable = false)
     private Date company_createdAt;
 
     @Column(name = "company_updateAt")
     private Date company_updatedAt;
 
-    @Transient
-    private boolean is_enabled = false;
+    @Column(name = "is_enable")
+    private boolean is_enabled = true;
 
     @Transient
     @Column(name = "is_verified", nullable = false)

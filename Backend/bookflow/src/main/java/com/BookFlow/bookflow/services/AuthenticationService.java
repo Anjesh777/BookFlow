@@ -7,6 +7,7 @@ import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.model.VerificationToken;
 import com.BookFlow.bookflow.repository.UserRepo;
 import com.BookFlow.bookflow.repository.company.VerificationTokenRepo;
+import com.BookFlow.bookflow.utils.customException.AccountBlockException;
 import com.BookFlow.bookflow.utils.customException.UserNotVerifiedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,8 @@ public class AuthenticationService {
             // Check if token doesn't exist or isn't used (meaning user isn't verified)
             if (verificationToken.isEmpty() || !verificationToken.get().isUsed()) {
                 throw new UserNotVerifiedException("Please verify your account before logging in");
+            } else if (!user.is_enabled()) {
+                throw new AccountBlockException("User Account is Blocked please contact our team");
             }
 
             authenticationManager.authenticate(

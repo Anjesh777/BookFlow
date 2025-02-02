@@ -1,6 +1,8 @@
 package com.BookFlow.bookflow.contoller;
 
 
+import com.BookFlow.bookflow.dto.UserGrowthDTO;
+import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.services.CompanyService;
 import com.BookFlow.bookflow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -30,61 +33,60 @@ public class BookFlowController {
         this.companyService = companyService;
     }
 
-    @GetMapping("count-users")
-    public ResponseEntity<Map<String, Object>> getUserCount() {
+    @GetMapping("company-details")
+    public ResponseEntity<Map<String, Object>> getCompanyDetails() {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            long userCount = userService.countServie();
-
-            log.info("Successfully retrieved user count: {}", userCount);
-            response.put("status", "success");
-            response.put("count", userCount);
-            response.put("message", "User count retrieved successfully");
-
-            return ResponseEntity.ok().body(response);
-        }
-        catch (DataAccessException var1) {
-            log.error("Database error while counting users: {}", var1.getMessage());
-            response.put("status", "error");
-            response.put("message", "Error accessing user data");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-        catch (Exception var2) {
-            log.error("Unexpected error occurred while counting users: {}", var2.getMessage());
-            response.put("status", "error");
-            response.put("message", "An unexpected error occurred");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    @GetMapping("count-company")
-    public ResponseEntity<Map<String,Object>> getCompanyCount(){
-        Map<String, Object> response = new HashMap<>();
-
-        try {
+            // Retrieve company count
             long companyCount = companyService.countServie();
-
             log.info("Successfully retrieved company count: {}", companyCount);
+
+            // Retrieve user growth percentage
+            String growthPercentage = companyService.getGrowthPercentage();
+            log.info("Successfully retrieved user growth percentage: {}", growthPercentage);
+
+            // Retrieve user count
+            long userCount = userService.countServie();
+            log.info("Successfully retrieved user count: {}", userCount);
+
+            String companyGrowthPercentage = companyService.getCompanyGrowthPercentage();
+            log.info("Successfully retrieved user count: {}", userCount);
+
+
             response.put("status", "success");
-            response.put("count", companyCount);
-            response.put("message", "company count retrieved successfully");
+            response.put("company_count", companyCount);
+            response.put("user_growth_percentage", growthPercentage);
+            response.put("user_count", userCount);
+            response.put("company_growth_percentage",companyGrowthPercentage);
+            response.put("message", "Company and user details retrieved successfully");
 
             return ResponseEntity.ok().body(response);
-        }
-        catch (DataAccessException var1) {
-            log.error("Database error while counting company: {}", var1.getMessage());
+        } catch (DataAccessException var1) {
+            log.error("Database error while retrieving company and user details: {}", var1.getMessage());
             response.put("status", "error");
-            response.put("message", "Error accessing user data");
+            response.put("message", "Error accessing data");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-        catch (Exception var2) {
-            log.error("Unexpected error occurred while counting company: {}", var2.getMessage());
+        } catch (Exception var2) {
+            log.error("Unexpected error occurred while retrieving company and user details: {}", var2.getMessage());
             response.put("status", "error");
             response.put("message", "An unexpected error occurred");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    @GetMapping("/recent-3")
+    public ResponseEntity<List<Company>> getRecent3Companies() {
+        return ResponseEntity.ok(companyService.get3Companies());
+    }
+
+    @GetMapping("/recent-all")
+    public ResponseEntity<List<Company>> getAllCompanies() {
+        return ResponseEntity.ok(companyService.getAllCompanies());
+    }
+
+
+
 
 
 

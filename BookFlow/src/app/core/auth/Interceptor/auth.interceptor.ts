@@ -13,7 +13,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       '/all/resend-token',
       '/all/set-password',
       '/all/forgot',
-      '/all/getListOFDistrict'
+      '/all/getListOFDistrict',
+      '/verification/resend-token',
+      '/all/reset'
+
   ];
 
   if (publicEndpoints.some(endpoint => req.url.includes(endpoint))) {

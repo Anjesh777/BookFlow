@@ -25,7 +25,7 @@ interface ExpandedItems {
     MatIconModule,
     MatToolbarModule,
     MatButtonModule,
-    SuperadminDashboardComponent
+    // SuperadminDashboardComponent
 ],
   templateUrl: './slidebar.component.html',
   styleUrls: ['./slidebar.component.css']
@@ -38,6 +38,9 @@ export class SlidebarComponent {
     company: false
   };
 
+
+
+
   public authService = inject(AuthService);
   public router = inject(Router);
   
@@ -47,6 +50,11 @@ export class SlidebarComponent {
     return route.charAt(0).toUpperCase() + route.slice(1) || 'Dashboard';
   }
   
+  
+
+
+
+
   
   toggleSubmenu(key: string) {
     if (key === 'settings') {

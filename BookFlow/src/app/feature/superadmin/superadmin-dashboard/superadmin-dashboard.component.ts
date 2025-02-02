@@ -12,11 +12,14 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
+import { companyDetails } from '../../../core/auth/model/bookflow';
+import { TimeAgoPipe } from '../../../core/pipe/shared/pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-superadmin-dashboard',
   standalone: true,
-  imports: [CommonModule,
+  imports: [
+      CommonModule,
       MatIconModule,
       MatButtonModule,
       MatDividerModule,
@@ -25,7 +28,8 @@ import { Router, RouterModule } from '@angular/router';
       MatListModule,
       MatIconModule,
       MatToolbarModule,
-      MatButtonModule
+      MatButtonModule,
+      TimeAgoPipe
   
   ],
   templateUrl: './superadmin-dashboard.component.html',
@@ -38,12 +42,13 @@ export class SuperadminDashboardComponent implements OnInit {
 
     userCount: number = 0;
     companyCount: number = 0;
+    userGrowth: String = '';
+    companyGrowth: String = '';
+    companyList: companyDetails[] = [];
 
     http = inject(HttpClient);
     response: string | null = null;
-
     public router = inject(Router);
-
 
     constructor(
          private uiService: UiServiceService,
@@ -51,24 +56,19 @@ export class SuperadminDashboardComponent implements OnInit {
           private bookflowService: BookflowService,
           private authService: AuthService
         
-    ) {
-      
-    }
+    ) {}
 
   ngOnInit(): void {
-    this.fetchUserData();
     this.fetchCompanyData();
+    this.fetchRecentCompanies();
   }
 
-  
-  fetchUserData() {
-  
+  fetchRecentCompanies() {
     this.isLoading = true;
-    this.bookflowService.getAllUsers()
+    this.bookflowService.getRecentThreeCompanyDetails()
       .subscribe({
         next: (response) => {
-          console.log('User count response:', response);
-          this.userCount = response.count;
+          this.companyList = response;
           this.isLoading = false;
         },
         error: (error) => {
@@ -77,15 +77,18 @@ export class SuperadminDashboardComponent implements OnInit {
         }
       });
   }
+
 
   fetchCompanyData() {
   
     this.isLoading = true;
-    this.bookflowService.getAllCompany()
+    this.bookflowService.getAllDashboardDetails()
       .subscribe({
         next: (response) => {
-          console.log('company count response:', response);
-          this.companyCount = response.count;
+          this.companyCount = response.company_count;
+          this.userGrowth = response.user_growth_percentage;
+          this.userCount = response.user_count;
+          this.companyGrowth = response.company_growth_percentage;
           this.isLoading = false;
         },
         error: (error) => {
@@ -94,39 +97,7 @@ export class SuperadminDashboardComponent implements OnInit {
         }
       });
   }
-  
-    
-    
 
-
-  //   onClick() {
-  //   const token = this.authService.getToken();
-    
-  //   const headers = new HttpHeaders({
-  //     'Accept': 'application/json',
-  //     'Authorization': `Bearer ${token}` 
-  //   });
-
-  //   this.http.get<string>('http://localhost:8811/api/v1/superadmin', { headers })
-  //     .pipe(
-  //       catchError(error => {
-  //         console.error('API Error:', error);
-  //         if (error.status === 403) {
-  //           console.log('Access forbidden - token might be expired');
-  //         }
-  //         return throwError(() => new Error('Something went wrong'));
-  //       })
-  //     )
-  //     .subscribe({
-  //       next: (res) => {
-  //         console.log('Success:', res);
-  //         this.response = res;
-  //       },
-  //       error: (error) => {
-  //         console.error('Error:', error);
-  //         this.response = 'Error occurred while fetching data';
-  //       }
-  //     });
-  // }
   
 }
+
