@@ -1,3 +1,5 @@
+import exp from "constants";
+
 export interface CompanyResponse {
   status: string; 
   company_count: number; 
@@ -6,6 +8,9 @@ export interface CompanyResponse {
   company_growth_percentage: string;
   message: string; 
 }
+
+
+
 export interface companyDetails{
 
   company_id:String;
@@ -16,8 +21,21 @@ export interface companyDetails{
   company_address:String;
   company_createdAt:string;
   company_updatedAt:String;
-  _verified:Boolean;
-  _enabled:Boolean;
+  enabled:Boolean;
+  verified:Boolean;
+
+}
+
+export interface CompanyFilter{
+
+  search?: string;
+  verified?: boolean;
+  status?: boolean;
+  dateRange?: {
+    fromDate: string;
+    toDate: string;
+  };
+
 
 
 }

@@ -1,8 +1,8 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';  
-import { Observable, catchError, throwError } from 'rxjs';
-import { companyDetails, CompanyResponse } from '../../model/bookflow';
+import { Observable, catchError, tap, throwError } from 'rxjs';
+import { companyDetails, CompanyResponse, CompanyFilter } from '../../model/bookflow';
 // import { CompanyCountResponse, UserCountResponse } from '../../model/bookflow';
 
 @Injectable({
@@ -47,6 +47,32 @@ export class BookflowService {
       })
     );
   }
+
+  updateCompanyDetails(companyId: string, companyData: companyDetails): Observable<void> {
+
+    return this.http.put<void>(
+        `${this.private_URL}/bookflow/update/${companyId}`,
+        companyData
+    ).pipe(
+        tap(response => console.log('Full Response:', response)), // Log full response
+        catchError((error: HttpErrorResponse) => {
+            console.error('Detailed Error:', error);
+            return throwError(() => new Error('Failed to update company'));
+        })
+    );
+  }
+
+  searchCompanies(filters: CompanyFilter): Observable<any> {
+    return this.http.post<companyDetails[]>(
+        `${this.private_URL}/bookflow/search`,filters
+    );
+}
+
+  
+
+
+
+
 
 
 

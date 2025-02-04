@@ -1,6 +1,9 @@
 package com.BookFlow.bookflow.contoller;
 
 
+import com.BookFlow.bookflow.dto.CompanyDTO;
+import com.BookFlow.bookflow.dto.CompanyFilterDTO;
+import com.BookFlow.bookflow.dto.CompanyUpdateRequest;
 import com.BookFlow.bookflow.dto.UserGrowthDTO;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.services.CompanyService;
@@ -8,16 +11,15 @@ import com.BookFlow.bookflow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -84,6 +86,37 @@ public class BookFlowController {
     public ResponseEntity<List<Company>> getAllCompanies() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
+
+
+    @PutMapping("/update/{companyId}")
+    public ResponseEntity<Void> updateCompany(
+            @PathVariable UUID companyId,
+            @RequestBody CompanyUpdateRequest request
+    ) {
+
+
+        companyService.updateCompanyDetails(
+                companyId,
+                request.getCompany_name(),
+                request.getRegistration_number(),
+                request.getCompany_email(),
+                request.getCompany_phone(),
+                request.getCompany_address(),
+                request.isEnabled(),
+                request.isVerified()
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/search")
+    public ResponseEntity<List<Company>> searchCompanies(@RequestBody CompanyFilterDTO filter) {
+        List<Company> results = companyService.searchCompanies(filter);
+        return ResponseEntity.ok(results);
+    }
+
+
 
 
 

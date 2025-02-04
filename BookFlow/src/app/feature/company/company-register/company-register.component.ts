@@ -24,6 +24,8 @@ interface ApiResponse {
 })
 export class CompanyRegisterComponent {
 
+  
+
   constructor(
       private uiService: UiServiceService,
       public dialog: MatDialog

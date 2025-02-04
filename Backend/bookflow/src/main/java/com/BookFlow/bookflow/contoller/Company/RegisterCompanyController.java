@@ -64,5 +64,7 @@ public class RegisterCompanyController {
             response.put("message", "An unexpected error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+
+
     }
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CurrentTimestamp;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -35,16 +36,15 @@ public class Company {
 
     @CurrentTimestamp
     @Column(name = "company_created_at", updatable = false)
-    private Date company_createdAt;
+    private LocalDate company_createdAt;
 
     @Column(name = "company_updateAt")
-    private Date company_updatedAt;
+    private LocalDate company_updatedAt;
 
     @Column(name = "is_enable")
-    private boolean is_enabled = true;
+    private boolean enabled = true;
 
-    @Transient
-    @Column(name = "is_verified", nullable = false)
-    private boolean is_verified = false;
+    @Column(name = "is_verified")
+    private boolean verified = false;
 
 }
