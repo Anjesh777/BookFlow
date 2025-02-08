@@ -16,9 +16,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/auth/service/auth.service';
 import { BookflowService } from '../../../core/auth/service/BookFlow-Service/bookflow.service';
 import { UiServiceService } from '../../../core/ui/ui-service.service';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatOptionModule } from '@angular/material/core';
-import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CompanyEditDialogComponentComponent } from '../../../core/ui/popup/company-edit-dialog-component/company-edit-dialog-component.component';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -35,6 +33,7 @@ import { filter } from 'rxjs';
     FormsModule,
     ReactiveFormsModule,
     DaterangeComponent,
+    MatProgressSpinnerModule
 ],
 
 
@@ -83,7 +82,6 @@ export class CompanymanagementComponent implements OnInit {
 
   }
 
-  // In CompanymanagementComponent
 
 openEditDialog(company: companyDetails) {
   const dialogRef = this.dialog.open(CompanyEditDialogComponentComponent, {
@@ -102,7 +100,10 @@ onDateRangeChange(dateRange: {fromDate: string, toDate: string}) {
   this.dateRange=dateRange
   console.log('Date range changed:', dateRange);
 }
+
 applyFilter() {
+  this.isLoading = true;
+
   const filters: CompanyFilter = {
     search: this.searchControl.value || undefined,
     verified: this.verifiedControl.value === null ? undefined : this.verifiedControl.value,
@@ -113,13 +114,20 @@ applyFilter() {
     } : undefined
   };
 
+  setTimeout(() => {
   this.bookflowService.searchCompanies(filters).subscribe({
-    next: (response) => this.companyList = response,
+    next: (response) => {
+      this.isLoading = false;
+      this.companyList = response;
+    },
     error: (error) => {
+      this.isLoading = false;
       console.error('Error:', error);
       this.uiService.showErrorDialog('Failed to fetch companies');
     }
   });
+}, 2000);
+
 }
 
 
@@ -128,6 +136,8 @@ applyFilter() {
 
   fetchAllCompanies() {
     this.isLoading = true;
+    setTimeout(() => {
+
     this.bookflowService.getRecentAllCompanyDetails()
       .subscribe({
         next: (response) => {
@@ -140,6 +150,8 @@ applyFilter() {
           this.isLoading = false;
         }
       });
+
+    }, 500);
   }
 
 

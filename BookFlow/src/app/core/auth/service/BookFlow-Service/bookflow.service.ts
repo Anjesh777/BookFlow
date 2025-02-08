@@ -2,7 +2,8 @@ import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular
 import { inject, Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';  
 import { Observable, catchError, tap, throwError } from 'rxjs';
-import { companyDetails, CompanyResponse, CompanyFilter } from '../../model/bookflow';
+import { companyDetails, CompanyResponse, CompanyFilter, NotificationData, NotificationDataResponse } from '../../model/bookflow';
+import { error } from 'console';
 // import { CompanyCountResponse, UserCountResponse } from '../../model/bookflow';
 
 @Injectable({
@@ -65,8 +66,44 @@ export class BookflowService {
   searchCompanies(filters: CompanyFilter): Observable<any> {
     return this.http.post<companyDetails[]>(
         `${this.private_URL}/bookflow/search`,filters
-    );
+  );
+
+
 }
+pushNotification(message:NotificationData):Observable<NotificationDataResponse> {
+  return this.http.post<NotificationDataResponse>(
+    `${this.private_URL}/bookflow/notification`,message);
+
+}
+
+getAllNotification():Observable<NotificationDataResponse[]>{
+  
+  return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/bookflow/get-notification`).pipe(
+    catchError((error)=>{
+      return new  Observable<NotificationDataResponse[]>();
+    })
+  )
+
+}
+// In bookflow.service.ts
+updateNotification(id: number, notification: NotificationDataResponse): Observable<NotificationDataResponse> {
+  return this.http.put<NotificationDataResponse>(`${this.private_URL}/bookflow/notification/${id}`, notification);
+}
+
+deleteNotification(id: number): Observable<any> {
+  console.log("adsdasdasd")
+  return this.http.delete<any>(`${this.private_URL}/bookflow/notification/${id}`)
+  .pipe(
+    catchError((error) => {
+      console.error('Error deleting notification:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+
+
+
 
   
 

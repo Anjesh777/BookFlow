@@ -242,7 +242,6 @@ export class CompanyEditDialogComponentComponent {
             .subscribe({
                 next: () => {
                     console.log('Company updated successfully');
-                    // Add success handling (e.g., show success message, close dialog)
                 },
                 error: (error) => {
                     console.error('Error updating company:', error);

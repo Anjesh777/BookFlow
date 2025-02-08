@@ -37,5 +37,17 @@ export interface CompanyFilter{
   };
 
 
+}
 
+export interface NotificationData {
+  title: string;
+  message: string;
+  targetAudience: string;
+  notificationType: string;
+}
+
+export interface NotificationDataResponse extends NotificationData {
+
+  id: number;         
+  createdAt: string;
 }

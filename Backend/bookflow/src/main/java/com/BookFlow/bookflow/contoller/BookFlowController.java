@@ -1,10 +1,7 @@
 package com.BookFlow.bookflow.contoller;
 
 
-import com.BookFlow.bookflow.dto.CompanyDTO;
-import com.BookFlow.bookflow.dto.CompanyFilterDTO;
-import com.BookFlow.bookflow.dto.CompanyUpdateRequest;
-import com.BookFlow.bookflow.dto.UserGrowthDTO;
+import com.BookFlow.bookflow.dto.*;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.services.CompanyService;
 import com.BookFlow.bookflow.services.UserService;
@@ -109,12 +106,17 @@ public class BookFlowController {
         return ResponseEntity.ok().build();
     }
 
-
     @PostMapping("/search")
     public ResponseEntity<List<Company>> searchCompanies(@RequestBody CompanyFilterDTO filter) {
         List<Company> results = companyService.searchCompanies(filter);
         return ResponseEntity.ok(results);
     }
+
+
+
+
+
+
 
 
 

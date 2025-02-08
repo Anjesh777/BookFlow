@@ -10,6 +10,7 @@ import { SlidebarComponent } from './core/ui/slidebar/slidebar.component';
 import { ProfileComponent } from './core/ui/profile/profile.component';
 import { UsermanagementComponent } from './feature/superadmin/usermanagement/usermanagement.component';
 import { CompanymanagementComponent } from './feature/superadmin/companymanagement/companymanagement.component';
+import { NotificationComponent } from './feature/superadmin/notification/notification.component';
 
 export const routes: Routes = [
 
@@ -62,6 +63,10 @@ export const routes: Routes = [
             {
                 path: 'companies',
                 component:CompanymanagementComponent
+            },
+            {
+                path:'notifications',
+                component:NotificationComponent
             } 
 
         ]
