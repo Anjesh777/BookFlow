@@ -6,6 +6,9 @@ import { PopupComponent } from './popup/popup.component';
   providedIn: 'root'
 })
 export class UiServiceService {
+  showError(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
 
   constructor(private dialog: MatDialog) {}
 

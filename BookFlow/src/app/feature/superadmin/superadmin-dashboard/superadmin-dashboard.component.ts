@@ -12,8 +12,13 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
-import { companyDetails } from '../../../core/auth/model/bookflow';
+import { companyDetails, NotificationData, NotificationDataResponse } from '../../../core/auth/model/bookflow';
 import { TimeAgoPipe } from '../../../core/pipe/shared/pipes/time-ago.pipe';
+import { ResourceUsage } from '../../../core/auth/model/resourceusage';
+import { ResourceUsageService } from '../../../core/auth/service/Resource-Service/resource-usage.service';
+import { MatMenuModule } from '@angular/material/menu';
+import { interval } from 'rxjs';
+
 
 @Component({
   selector: 'app-superadmin-dashboard',
@@ -29,13 +34,17 @@ import { TimeAgoPipe } from '../../../core/pipe/shared/pipes/time-ago.pipe';
       MatIconModule,
       MatToolbarModule,
       MatButtonModule,
-      TimeAgoPipe
+      TimeAgoPipe,
+      MatMenuModule
   
   ],
   templateUrl: './superadmin-dashboard.component.html',
   styleUrl: './superadmin-dashboard.component.css'
 })
 export class SuperadminDashboardComponent implements OnInit {
+
+
+  notificationList: NotificationDataResponse[] = []; 
 
 
     isLoading: boolean = false;
@@ -46,6 +55,13 @@ export class SuperadminDashboardComponent implements OnInit {
     companyGrowth: String = '';
     companyList: companyDetails[] = [];
 
+    resourceUsage: ResourceUsage = {
+      storage: { used: 0, total: 0, percentage: 0 },
+      memory: { used: 0, total: 0, percentage: 0 },
+      cpu: { percentage: 0 }
+    };
+    
+
     http = inject(HttpClient);
     response: string | null = null;
     public router = inject(Router);
@@ -54,14 +70,27 @@ export class SuperadminDashboardComponent implements OnInit {
          private uiService: UiServiceService,
           public dialog: MatDialog,
           private bookflowService: BookflowService,
-          private authService: AuthService
+          private resourceService: ResourceUsageService
+
+
         
     ) {}
+
+
+ 
+
+
 
   ngOnInit(): void {
     this.fetchCompanyData();
     this.fetchRecentCompanies();
+    this.getAllThreeComment();
+    this.fetchResourceUsage();
+    
+
   }
+
+
 
   fetchRecentCompanies() {
     this.isLoading = true;
@@ -77,6 +106,60 @@ export class SuperadminDashboardComponent implements OnInit {
         }
       });
   }
+
+  // getAllComment(){
+
+  //   setTimeout(() =>{
+
+  //     this.bookflowService.getAllNotification()
+  //       .subscribe({
+  //         next:(response) =>{
+  //           this.notificationList=response;
+  //           console.log(this.notificationList)
+  //         },
+  //         error:(error) =>{
+  //           console.log('Error', error)
+  //         }
+
+
+  //       })
+  //   })
+  // }
+
+
+  fetchResourceUsage() {
+    this.resourceService.getResourceUsage()
+      .subscribe({
+        next: (data) => {
+          this.resourceUsage = data;
+        },
+        error: (error) => {
+          console.error('Error fetching resource usage:', error);
+        }
+      });
+  }
+
+
+    getAllThreeComment(){
+  
+      setTimeout(() =>{
+  
+        this.bookflowService.getThreeNotification()
+          .subscribe({
+            next:(response) =>{
+              this.notificationList=response;
+              console.log("message is "+this.notificationList)
+            },
+            error:(error) =>{
+              console.log('Error', error)
+            }
+  
+  
+          })
+      })
+      
+    }
+  
 
 
   fetchCompanyData() {

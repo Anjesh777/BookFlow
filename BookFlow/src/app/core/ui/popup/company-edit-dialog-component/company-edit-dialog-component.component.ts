@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -91,10 +91,16 @@ import { UiServiceService } from '../../../ui/ui-service.service';
                 <div class="space-y-2">
                     <label class="text-sm text-gray-700 font-medium">Enable</label>
                     <select formControlName="enabled"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option [ngValue]="true" class="text-green-600">Active</option>
-                        <option [ngValue]="false" class="text-red-600">Inactive</option>
+                    [disabled]="data.company_id === 'c0cb0ff3-7b32-4b02-afb7-2f4289c61db4'"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    [ngClass]="{'opacity-50 cursor-not-allowed': data.company_id === 'c0cb0ff3-7b32-4b02-afb7-2f4289c61db4'}">
+                    <option [ngValue]="true" class="text-green-600">Active</option>
+                    <option [ngValue]="false" class="text-red-600">Inactive</option>
                     </select>
+
+                    @if (data.company_id === 'c0cb0ff3-7b32-4b02-afb7-2f4289c61db4') {
+                        <span class="text-sm text-gray-500 italic">Cannot modify super admin status</span>
+                    }
                 </div>
             </div>
 
@@ -169,7 +175,7 @@ import { UiServiceService } from '../../../ui/ui-service.service';
 
   `
 })
-export class CompanyEditDialogComponentComponent {
+export class CompanyEditDialogComponentComponent implements OnInit {
 
   private authService = inject(AuthService);
   private bookflowService = inject(BookflowService);
@@ -197,6 +203,11 @@ export class CompanyEditDialogComponentComponent {
     this.editForm = this.initForm()
 
   }
+    ngOnInit(): void {
+        if (this.data.company_id === 'c0cb0ff3-7b32-4b02-afb7-2f4289c61db4') {
+            this.editForm.get('enabled')?.disable();
+        }
+    }
 
   private initForm(): FormGroup {
     return new FormGroup({

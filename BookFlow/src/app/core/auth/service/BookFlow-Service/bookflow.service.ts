@@ -85,6 +85,18 @@ getAllNotification():Observable<NotificationDataResponse[]>{
   )
 
 }
+
+getThreeNotification():Observable<NotificationDataResponse[]>{
+  
+  return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/bookflow/get-recent-notification`).pipe(
+    catchError((error)=>{
+      return new  Observable<NotificationDataResponse[]>();
+    })
+  )
+
+}
+
+
 // In bookflow.service.ts
 updateNotification(id: number, notification: NotificationDataResponse): Observable<NotificationDataResponse> {
   return this.http.put<NotificationDataResponse>(`${this.private_URL}/bookflow/notification/${id}`, notification);

@@ -1,16 +1,7 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTable, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
 import { TimeAgoPipe } from '../../../core/pipe/shared/pipes/time-ago.pipe';
-import { User } from '../../../core/auth/model/auth';
 import { companyDetails, CompanyFilter } from '../../../core/auth/model/bookflow';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/auth/service/auth.service';
@@ -24,6 +15,7 @@ import { DaterangeComponent } from "../../../core/ui/daterange/daterange.compone
 import { FormBuilder } from '@angular/forms';
 import { filter } from 'rxjs';
 
+
 @Component({
   selector: 'app-companymanagement',
   standalone: true,
@@ -33,10 +25,8 @@ import { filter } from 'rxjs';
     FormsModule,
     ReactiveFormsModule,
     DaterangeComponent,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
 ],
-
-
 
   templateUrl: './companymanagement.component.html',
   styleUrl: './companymanagement.component.css'

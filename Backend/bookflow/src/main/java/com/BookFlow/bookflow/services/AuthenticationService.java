@@ -47,7 +47,16 @@ public class AuthenticationService {
             var user = userRepository.findByUsername(userDTO.getUserName())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+            var userCompany= user.getCompany_id().isEnabled();
+            System.out.println("cmp is "+userCompany);
+
+            if (!userCompany){
+                throw new AccountBlockException("This company is blocked.");
+            }
+
+
             Optional<VerificationToken> verificationToken = verificationTokenRepo.findByUserId(user.getUser_id());
+
 
             // Check if token doesn't exist or isn't used (meaning user isn't verified)
             if (verificationToken.isEmpty() || !verificationToken.get().isUsed()) {
@@ -55,6 +64,8 @@ public class AuthenticationService {
             } else if (!user.is_enabled()) {
                 throw new AccountBlockException("User Account is Blocked please contact our team");
             }
+
+
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

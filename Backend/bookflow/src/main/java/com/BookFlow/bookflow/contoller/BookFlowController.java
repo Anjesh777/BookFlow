@@ -1,6 +1,5 @@
 package com.BookFlow.bookflow.contoller;
 
-
 import com.BookFlow.bookflow.dto.*;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.services.CompanyService;
@@ -8,7 +7,6 @@ import com.BookFlow.bookflow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,21 +35,17 @@ public class BookFlowController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Retrieve company count
             long companyCount = companyService.countServie();
             log.info("Successfully retrieved company count: {}", companyCount);
 
-            // Retrieve user growth percentage
             String growthPercentage = companyService.getGrowthPercentage();
             log.info("Successfully retrieved user growth percentage: {}", growthPercentage);
 
-            // Retrieve user count
             long userCount = userService.countServie();
             log.info("Successfully retrieved user count: {}", userCount);
 
             String companyGrowthPercentage = companyService.getCompanyGrowthPercentage();
             log.info("Successfully retrieved user count: {}", userCount);
-
 
             response.put("status", "success");
             response.put("company_count", companyCount);

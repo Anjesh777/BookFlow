@@ -65,6 +65,19 @@ public class NotificationController {
         }
     }
 
+    @GetMapping("/get-recent-notification")
+    public ResponseEntity<List<Notification>> getRecent3Notifications() {
+        try {
+            List<Notification> notifications = notificationService.get3Notifications();
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.out.println("Error fetching notifications: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
+
     @PutMapping("/notification/{id}")
     public ResponseEntity<?> updateNotification(
             @PathVariable Long id,

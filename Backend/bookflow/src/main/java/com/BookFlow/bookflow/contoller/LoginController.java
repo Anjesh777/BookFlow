@@ -3,6 +3,7 @@ package com.BookFlow.bookflow.contoller;
 import com.BookFlow.bookflow.dto.AuthenticationResponse;
 import com.BookFlow.bookflow.dto.UserDTO;
 import com.BookFlow.bookflow.services.AuthenticationService;
+import com.BookFlow.bookflow.utils.customException.AccountBlockException;
 import com.BookFlow.bookflow.utils.customException.UserNotVerifiedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -41,11 +42,16 @@ public class LoginController {
 
             return ResponseEntity.ok().body(response);
         }
+        catch (AccountBlockException e){
+            response.put("status", "error");
+            response.put("message", "This company is blocked. Please contact our team");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
+
         catch (UserNotVerifiedException e) {
             response.put("status", "error");
             response.put("message", "Please verify your account before logging in");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-
         }
         catch (BadCredentialsException | UsernameNotFoundException e) {
             response.put("status", "error");

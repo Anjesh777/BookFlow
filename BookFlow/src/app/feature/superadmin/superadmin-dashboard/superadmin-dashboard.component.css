@@ -133,6 +133,20 @@
   height: 48px;
 }
 
+.dashboard-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.card-header {
+  @apply p-6 flex justify-between items-center;
+}
+
+/* Add animation for progress bars */
+.progress-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 16px;

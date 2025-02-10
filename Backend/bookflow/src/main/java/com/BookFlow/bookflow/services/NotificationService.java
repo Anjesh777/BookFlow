@@ -28,6 +28,10 @@ public class NotificationService {
         return notificationRepository.findRecentNotifications(PageRequest.of(0, 5));
     }
 
+    public List<Notification> get3Notifications() {
+        return notificationRepository.findRecentNotifications(PageRequest.of(0, 3));
+    }
+
     public List<Notification> getAllNotifications() {
         return notificationRepository.findAll();
     }

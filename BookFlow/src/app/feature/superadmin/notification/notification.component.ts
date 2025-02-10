@@ -60,6 +60,7 @@ export class NotificationComponent implements OnInit  {
   ngOnInit(): void {
 
     this.getAllComment();
+    this.getAllThreeComment();
   }
 
 
@@ -71,7 +72,6 @@ export class NotificationComponent implements OnInit  {
   
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Refresh the notifications list
         this.getAllComment();
       }
     });
@@ -94,14 +94,31 @@ export class NotificationComponent implements OnInit  {
 
 
         })
-
-
-
     })
     
-
-
   }
+
+  getAllThreeComment(){
+
+    setTimeout(() =>{
+
+      this.bookflowService.getThreeNotification()
+        .subscribe({
+          next:(response) =>{
+            this.messageList=response;
+            console.log("message is "+this.messageList)
+          },
+          error:(error) =>{
+            console.log('Error', error)
+          }
+
+
+        })
+    })
+    
+  }
+
+
 
 
   onSubmit() {
