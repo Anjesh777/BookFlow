@@ -10,34 +10,32 @@
 
         </div>
 
-      }
-      <hr class="bg-white">
 
-      <!-- <div class="logo-container">
-        <img src="assets/logo.png" alt="Logo" class="logo">
-        <h2>Company Name</h2>
-      </div> -->
-      @if (authService.getUserRole() == "COMPANY_SUPERADMIN") {
+      }
+      @if (authService.getUserRole() == "COMPANY_ADMIN") {
+        <div class="logo-container">
+          <!-- <img src="assets/logo.png" alt="Logo" class="logo"> -->
+          <h2>CAS</h2>
+        </div>
+        <hr class="bg-white">
+
+
+      }
+
+
       <mat-nav-list>
+
+      <a mat-list-item routerLink="/profile" routerLinkActive="active">
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+      </a>
+  
+
+      @if (authService.getUserRole() == "COMPANY_SUPERADMIN") {
         <a mat-list-item routerLink="/superadmin/dashboard" routerLinkActive="active"
             [routerLinkActiveOptions]="{exact: true}">
             <mat-icon>dashboard</mat-icon>
             <span>Dashboard</span>
-        </a>
-    
-        <a mat-list-item routerLink="/superadmin/profile" routerLinkActive="active">
-            <mat-icon>person</mat-icon>
-            <span>Profile</span>
-        </a>
-    
-        <a mat-list-item routerLink="/superadmin/settings" routerLinkActive="active">
-            <mat-icon>settings</mat-icon>
-            <span>Settings</span>
-        </a>
-    
-        <a mat-list-item routerLink="/superadmin/users" routerLinkActive="active">
-            <mat-icon>supervised_user_circle</mat-icon>
-            <span>Users</span>
         </a>
     
         <a mat-list-item routerLink="/superadmin/companies" routerLinkActive="active">
@@ -50,13 +48,53 @@
           <span>Notification</span>
         </a>
 
-        <a mat-list-item (click)="authService.logout()">
-            <mat-icon>exit_to_app</mat-icon>
-            <span>Logout</span>
-        </a>
       
-    </mat-nav-list>
   }
+  @else if(authService.getUserRole()=="COMPANY_ADMIN") {
+      <a mat-list-item routerLink="/admin/dashboard" routerLinkActive="active"
+          [routerLinkActiveOptions]="{exact: true}">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+      </a>
+  
+      <a mat-list-item routerLink="/admin/backup" routerLinkActive="active">
+        <mat-icon>backup</mat-icon>
+        <span>Backup</span>
+      </a>
+      
+      
+
+      <a mat-list-item routerLink="/admin/users" routerLinkActive="active">
+        <mat-icon>people</mat-icon>
+
+        <span>Users Mangement</span>
+      </a>
+
+      <a mat-list-item routerLink="/admin/Accouting" routerLinkActive="active">
+        <mat-icon>library_books</mat-icon>
+        <span>Accounting</span>
+      </a>
+      <a mat-list-item routerLink="/superadmin/notifications" routerLinkActive="active">
+        <mat-icon>notifications</mat-icon>
+        <span>Notification</span>
+      </a>
+      <a mat-list-item routerLink="/admin/usermanagement" routerLinkActive="active">
+        <mat-icon> attach_money</mat-icon>
+        <span>Banking</span>
+      </a>
+
+
+  }
+
+  <a mat-list-item (click)="authService.logout()">
+    <mat-icon>exit_to_app</mat-icon>
+    <span>Logout</span>
+</a>
+
+</mat-nav-list>
+
+
+
      
     </mat-sidenav>
     

@@ -135,6 +135,7 @@ export class AccountLoginComponent implements OnInit {
       this.authService.login(loginRequest).subscribe({
         next: (response) => {
           this.isLoading = false;
+          localStorage.setItem('username', formData.user_name);
           this.uiService.showSuccessDialog('Login successful!');
           const userRole = this.authService.getUserRole();
           this.navigateBasedOnRole(userRole);

@@ -35,6 +35,7 @@ public class CompanyService {
     private UserRepo userRepo;
 
 
+
     @Transactional
     public long countServie(){
         return companyRepo.count();

@@ -54,6 +54,7 @@ export class SuperadminDashboardComponent implements OnInit {
     userGrowth: String = '';
     companyGrowth: String = '';
     companyList: companyDetails[] = [];
+    companyOnline: number =0;
 
     resourceUsage: ResourceUsage = {
       storage: { used: 0, total: 0, percentage: 0 },

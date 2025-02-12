@@ -11,6 +11,7 @@ import { ProfileComponent } from './core/ui/profile/profile.component';
 import { UsermanagementComponent } from './feature/superadmin/usermanagement/usermanagement.component';
 import { CompanymanagementComponent } from './feature/superadmin/companymanagement/companymanagement.component';
 import { NotificationComponent } from './feature/superadmin/notification/notification.component';
+import { AdminDashboardComponent } from './feature/company/admin/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
 
@@ -73,6 +74,42 @@ export const routes: Routes = [
 
 
     },
+    {
+        path: 'admin',
+        component: SlidebarComponent,
+        canActivate: [authGuard],
+        children:[
+            {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+            },        
+            {
+                path: 'dashboard',
+                component: AdminDashboardComponent
+            }, 
+            {
+                path: 'profile',
+                component:ProfileComponent
+            } ,  
+            {
+                path: 'users',
+                component:UsermanagementComponent
+            },
+            {
+                path: 'companies',
+                component:CompanymanagementComponent
+            },
+            {
+                path:'notifications',
+                component:NotificationComponent
+            } 
+
+        ]
+
+
+    },
+
 
     {
         path: '**',

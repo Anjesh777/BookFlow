@@ -1,6 +1,7 @@
 package com.BookFlow.bookflow.services;
 
 import com.BookFlow.bookflow.dto.CompanyDTO;
+import com.BookFlow.bookflow.dto.UserDetailsDTO;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.model.VerificationToken;
@@ -52,6 +53,43 @@ public class EmailVerificactionService {
 
         String verificationLink = backendurl + "/api/verification/verify?token=" + token;
         sendVerificationEmail(company.getCompany_email(), company.getCompany_name(), verificationLink);
+    }
+
+    @Transactional
+    public void createUserCredentialsAndVerification(UserDetailsDTO userDetailsDTO, String defaultPassword) {
+        // Find the user that was just created
+        User user = userRepository.findByEmail(userDetailsDTO.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Create verification token
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken(token, user);
+        tokenRepo.save(verificationToken);
+
+        // Create verification link
+        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
+
+        // Send email with credentials and verification link
+        sendCredentialsAndVerificationEmail(
+                user.getEmail(),
+                user.getUsername(),
+                defaultPassword,
+                verificationLink
+        );
+    }
+
+    private void sendCredentialsAndVerificationEmail(String email, String username,
+                                                     String password, String verificationLink) {
+        try {
+            String emailBody = createCredentialsEmailBody(username, password, verificationLink);
+            emailService.sendEmail(
+                    email,
+                    "Welcome to BookFlow - Your Account Credentials",
+                    emailBody
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send credentials email", e);
+        }
     }
 
 
@@ -194,6 +232,77 @@ public class EmailVerificactionService {
                       </html>
             """, UserName, verificationLink);
     }
+
+
+    private String createCredentialsEmailBody(String username, String password, String verificationLink) {
+        return String.format("""
+        <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 10px 20px;
+                        background-color: #007bff;
+                        color: white !important;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin: 20px 0;
+                        font-weight: 500;
+                        font-size: 16px;
+                    }
+                    .credentials {
+                        background-color: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 20px 0;
+                    }
+                    .button:hover {
+                        background-color: #0056b3;
+                    }
+                    .footer {
+                        color: #666;
+                        font-size: 0.9em;
+                        margin-top: 30px;
+                    }
+                    a.button {
+                        color: white !important;
+                        text-decoration: none;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2>Welcome to BookFlow, %s!</h2>
+                    <p>Your account has been created successfully. Here are your login credentials:</p>
+                    
+                    <div class="credentials">
+                        <p><strong>Username:</strong> %s</p>
+                        <p><strong>Password:</strong> %s</p>
+                    </div>
+                    
+                    <p>Please click the button below to verify your email address:</p>
+                    <p><a href="%s" class="button">Verify Email Address</a></p>
+                    
+                    <p>For security reasons, please change your password after your first login.</p>
+                    <p>This verification link will expire in 1 hour.</p>
+                    
+                    <p class="footer">If you didn't expect this account creation, please contact your administrator.</p>
+                </div>
+            </body>
+        </html>
+    """, username, username, password, verificationLink);
+    }
+
 
 
 }

@@ -30,6 +30,7 @@ public class EmailVerificationController {
         try {
             emailVerificactionService.verifyUserToken(token);
 
+            System.out.println("before redirct ");
             String redirectUrl = frontendUrl + "/login";
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(redirectUrl));

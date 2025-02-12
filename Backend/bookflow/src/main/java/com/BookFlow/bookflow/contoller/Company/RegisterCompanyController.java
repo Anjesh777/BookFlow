@@ -52,7 +52,6 @@ public class RegisterCompanyController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
         catch (DataAccessException var2) {
-            System.out.println(CompanyDTO.getCompanyPassword());
             log.error("Error occurred while registering the company: {}", var2.getMessage());
             response.put("status", "error");
             response.put("message", "An error occurred while registering the company.");

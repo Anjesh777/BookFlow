@@ -4,11 +4,16 @@ import com.BookFlow.bookflow.dto.UserGrowthDTO;
 import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,11 +23,16 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     Optional<User> findByUsername(String username);
     Optional<User> findByRole(String username);
 
-
     //void deleteByCompanyId(UUID id);
 
     Optional<User> findByEmail(String email);
     Long countByEmail(String email);
+
+    @Query("SELECT u FROM User u WHERE u.company_id.company_id = :companyId")
+    List<User> findByCompanyId(@Param("companyId") UUID companyId);
+
+
+
 
     @Query(value = """
     WITH MonthlyUsers AS (
@@ -51,4 +61,27 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     """,
             nativeQuery = true)
     UserGrowthDTO getUserGrowth();
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET " +
+            "u.fullname = :fullname, " +
+            "u.email = :email, " +
+            "u.phone = :phone, " +
+            "u.username = :username, " +
+            "u.role = :role, " +
+            "u.is_enabled = :isEnabled, " +
+            "u.update_at = :updateDate " +
+            "WHERE u.user_id = :userId")
+    int updateUser(
+            @Param("userId") UUID userId,
+            @Param("username") String username,
+            @Param("email") String email,
+            @Param("phone") String phone,
+            @Param("fullname") String fullname,
+            @Param("role") Role role,
+            @Param("isEnabled") boolean isEnabled,
+            @Param("updateDate") LocalDateTime updateDate
+    );
+
 }

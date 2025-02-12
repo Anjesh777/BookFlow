@@ -23,6 +23,11 @@ public interface CompanyRepo extends JpaRepository<Company, UUID> {
     @Query("SELECT c.company_id FROM Company c WHERE c.company_email = :email")
     Optional<UUID> findCompanyIdByEmail(@Param("email") String email);
 
+    @Query("SELECT c FROM Company c WHERE c.company_name = :name")
+    Optional<Company> findByCompanyName(@Param("name") String name);
+
+
+
     @Modifying
     @Transactional
     @Query("UPDATE Company c SET " +

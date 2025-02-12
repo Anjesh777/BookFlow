@@ -1,5 +1,4 @@
 package com.BookFlow.bookflow.services;
-
 import com.BookFlow.bookflow.dto.CompanyDTO;
 import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.Company;
@@ -11,9 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Service
 public class RegisterCompanyService {
-
 
     @Autowired
     private CompanyRepo companyRepo;
@@ -23,7 +22,6 @@ public class RegisterCompanyService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailVerificactionService emailVerificationService;
-
 
     @Transactional
     public void registerCompany(CompanyDTO companyDTO){
@@ -38,19 +36,15 @@ public class RegisterCompanyService {
                     newCompany.setCompany_address(companyDTO.getCompanyAddress());
                     return companyRepo.save(newCompany);
                 });
-
         User user = new User();
         user.setCompany_id(company);
         user.setEmail(companyDTO.getCompanyEmail());
         user.setUsername(companyDTO.getCompanyName());
         user.setPassword(passwordEncoder.encode(companyDTO.getCompanyPassword()));
         user.setRole(Role.COMPANY_ADMIN);
+        user.setMainuser(true);
+
 
         userRepo.save(user);
-
-
-
     }
-
-
 }

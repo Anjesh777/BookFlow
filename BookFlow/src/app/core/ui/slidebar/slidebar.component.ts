@@ -9,6 +9,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../auth/service/auth.service';
 import { SuperadminDashboardComponent } from "../../../feature/superadmin/superadmin-dashboard/superadmin-dashboard.component";
+import { MatExpansionModule } from '@angular/material/expansion';
+
 
 interface ExpandedItems {
   [key: string]: boolean;
@@ -25,6 +27,7 @@ interface ExpandedItems {
     MatIconModule,
     MatToolbarModule,
     MatButtonModule,
+    MatExpansionModule
     // SuperadminDashboardComponent
 ],
   templateUrl: './slidebar.component.html',

@@ -1,1 +1,105 @@
-<p>usermanagement works!</p>
+
+<div class="max-w-7xl mx-auto bg-white rounded-lg shadow">
+  <div class="p-6">
+    <div class="flex justify-between mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">User Management</h2>
+      <button (click)="openAddDialog()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+        <mat-icon>add</mat-icon>
+        <span>Add User</span>
+      </button>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="flex flex-wrap gap-4 mb-6">
+      <div class="flex-1 min-w-[240px]">
+        <div class="relative">
+          <input type="text" placeholder="Search users..." 
+                 class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black">
+          <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-4">
+        <select class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black">
+          <option value="">All Roles</option>
+          <option value="COMPANY_ADMIN">Admin</option>
+          <option value="COMPANY_USER">User</option>
+          <option value="COMPANY_MANAGER">Manager</option>
+        </select>
+
+        <select class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+          Apply Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b">
+            <th class="p-4 text-left text-gray-900">S.N</th>
+            <th class="p-4 text-left font-semibold text-gray-900">User</th>
+            <th class="p-4 text-left font-semibold text-gray-900">Role</th>
+            <th class="p-4 text-left font-semibold text-gray-900">Phone</th>
+            <th class="p-4 text-left font-semibold text-gray-900">Full Name</th>
+            <th class="p-4 text-left font-semibold text-gray-900">Joined Date</th>
+            <th class="p-4 text-left font-semibold text-gray-900">Status</th>
+            <th class="p-4 text-left font-semibold text-gray-900">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.user_id) {
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-4">
+                <label class="text-gray-700">{{$index + 1}}</label>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center gap-3">
+                  <img src="/api/placeholder/32/32" alt="Profile" class="w-10 h-10 rounded-full">
+                  <div>
+                    <div class="font-medium text-gray-900">{{user.account || 'N/A'}}</div>
+                    <div class="text-sm text-gray-500">{{user.email}}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="p-4 text-gray-700">{{user.role === 'COMPANY_ADMIN' ? 'Admin' : (user.role === 'COMPANY_USER' ? 'User' : 'Manager')}}</td>
+              <td class="p-4 text-gray-700">{{user.phone || 'N/A'}}</td>
+              <td class="p-4 text-gray-700">{{user.fullname || 'N/A'}}</td>
+              <td class="p-4 text-gray-700">{{user.created_at | timeAgo}}</td>
+              <td class="p-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="user.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                  {{ user.status ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center gap-2">
+                  <button (click)="openEditDialog(user)" class="text-blue-600 hover:text-blue-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                    </svg>
+                  </button>
+                  <button (click)="deleteUser(user.user_id)" class="text-red-600 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

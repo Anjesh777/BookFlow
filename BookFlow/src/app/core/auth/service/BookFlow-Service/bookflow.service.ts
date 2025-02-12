@@ -55,7 +55,7 @@ export class BookflowService {
         `${this.private_URL}/bookflow/update/${companyId}`,
         companyData
     ).pipe(
-        tap(response => console.log('Full Response:', response)), // Log full response
+        tap(response => console.log('Full Response:', response)),
         catchError((error: HttpErrorResponse) => {
             console.error('Detailed Error:', error);
             return throwError(() => new Error('Failed to update company'));
