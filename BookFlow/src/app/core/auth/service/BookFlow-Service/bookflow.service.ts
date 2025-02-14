@@ -103,7 +103,6 @@ updateNotification(id: number, notification: NotificationDataResponse): Observab
 }
 
 deleteNotification(id: number): Observable<any> {
-  console.log("adsdasdasd")
   return this.http.delete<any>(`${this.private_URL}/bookflow/notification/${id}`)
   .pipe(
     catchError((error) => {

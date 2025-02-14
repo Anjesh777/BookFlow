@@ -32,6 +32,14 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     List<User> findByCompanyId(@Param("companyId") UUID companyId);
 
 
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM User u WHERE u.user_id = :userId AND u.mainuser = false")
+    void deleteByUserId(@Param("userId") UUID userId);
+
+
+
+
 
 
     @Query(value = """
@@ -81,7 +89,7 @@ public interface UserRepo extends JpaRepository<User,UUID> {
             @Param("fullname") String fullname,
             @Param("role") Role role,
             @Param("isEnabled") boolean isEnabled,
-            @Param("updateDate") LocalDateTime updateDate
+            @Param("updateDate") LocalDate updateDate
     );
 
 }

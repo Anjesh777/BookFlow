@@ -1,9 +1,8 @@
 package com.BookFlow.bookflow.contoller;
 
-import com.BookFlow.bookflow.dto.CompanyUpdateRequest;
-import com.BookFlow.bookflow.dto.UserDetailsDTO;
-import com.BookFlow.bookflow.dto.UserDetailsResponse;
+import com.BookFlow.bookflow.dto.*;
 import com.BookFlow.bookflow.enums.Role;
+import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.services.AdminService;
 import com.BookFlow.bookflow.services.EmailVerificactionService;
@@ -16,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("api/v1/admin")
 public class AdminController {
+
 
     private final AdminService adminService;
     private final EmailVerificactionService emailVerificactionService;
@@ -91,10 +92,13 @@ public class AdminController {
             @PathVariable UUID userId,
             @RequestBody UserDetailsResponse request) {
 
-        var currentTime = LocalDateTime.now();
+        var currentTime = LocalDate.now();
         Role userRole = Role.fromString(request.getRole());
+        System.out.println(userId);
+
 
         try {
+
             adminService.updateUserDetails(
                     userId,
                     request.getAccount(),
@@ -109,6 +113,34 @@ public class AdminController {
         } catch (Exception e) {
             log.error("Error updating user", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable UUID userId) {
+        try {
+            System.out.println("U "+userId);
+
+            adminService.deleteUser(userId);
+            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+        } catch (Exception e) {
+            log.error("Error occurred while deleting user", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to delete user"));
+        }
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<UserFilterDTO>> searchUsers(@RequestBody UserFilterDTO filter) {
+        try {
+            List<UserFilterDTO> result=  adminService.findFilterUser(filter);
+            return ResponseEntity.ok(result);
+
+        }
+        catch (Exception e){
+            log.error("Error is ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         }
     }
 

@@ -17,12 +17,17 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (!authService.isLoggedIn()) {
     console.log('Auth Guard - User not logged in');
-      
     return router.createUrlTree(['/login']);
   }
 
   const userRole = authService.getUserRole();
-  const requiredRoles = route.data['roles'] as string[];
+  
+  // Check for route-specific roles first, then parent route roles
+  const routeRoles = route.data?.['roles'] as string[];
+  const parentRoles = route.parent?.data?.['roles'] as string[];
+  
+  // Use route roles if available, otherwise use parent roles
+  const requiredRoles = routeRoles || parentRoles;
 
   if (!requiredRoles || requiredRoles.length === 0) {
     console.log('Auth Guard - No roles required');
@@ -35,17 +40,19 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   console.log('Auth Guard - Access denied, redirecting based on role:', userRole);
-  switch (userRole) {
-    case 'COMPANY_SUPERADMIN':
-      return router.createUrlTree(['/superadmin']);
-    case 'COMPANY_ADMIN':
-      return router.createUrlTree(['/admin']);
-    case 'COMPANY_USER':
-      return router.createUrlTree(['/user']);
-    default:
-      authService.logout();
-      return router.createUrlTree(['/login']);
+
+  if (userRole === 'COMPANY_SUPERADMIN') {
+    return router.createUrlTree(['/superadmin/dashboard']);
   }
 
+  if (userRole === 'COMPANY_ADMIN') {
+    return router.createUrlTree(['/admin/dashboard']);
+  }
 
+  if (userRole === 'COMPANY_USER') {
+    return router.createUrlTree(['/user']);
+  }
+
+  authService.logout();
+  return router.createUrlTree(['/login']);
 };

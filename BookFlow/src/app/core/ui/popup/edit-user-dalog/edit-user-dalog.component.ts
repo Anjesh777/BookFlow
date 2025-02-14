@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -97,10 +97,15 @@ import { userDetailsResponse } from '../../../auth/model/admin';
             <div class="space-y-2">
                 <label class="text-sm text-gray-700 font-medium">Status</label>
                 <select formControlName="status"
-    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-    <option [ngValue]="true">Active</option>
-    <option [ngValue]="false">Inactive</option>
-</select>
+                [disabled]="data._main_user===true"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white hover:cursor-not-allowed">
+                  <option [ngValue]="true">Active</option>
+                  <option [ngValue]="false">Inactive</option>
+                </select>
+
+                @if (data._main_user === true) {
+                        <span class="text-sm text-gray-500 italic">Cannot modify super admin status</span>
+                    }
             </div>
 
             <!-- Footer Actions -->
@@ -121,7 +126,7 @@ import { userDetailsResponse } from '../../../auth/model/admin';
   `,
   styleUrl: './edit-user-dalog.component.css'
 })
-export class EditUserDalogComponent {
+export class EditUserDalogComponent implements OnInit{
 
 
 
@@ -135,6 +140,11 @@ export class EditUserDalogComponent {
   ) {
     this.editForm = this.initForm();
   }
+  ngOnInit(): void {
+    if(this.data._main_user===true){
+      this.editForm.get('status')?.disable();
+    }
+  }
 
   private initForm(): FormGroup {
     return new FormGroup({
@@ -146,11 +156,15 @@ export class EditUserDalogComponent {
       role: new FormControl(this.data.role, [Validators.required]),
       status: new FormControl(this.data.status, [Validators.required]),
       created_at: new FormControl(this.data.created_at)
+      
     });
   }
 
 
   updateUser(): void {
+
+    
+
     if (this.editForm.valid) {
       const userId = this.editForm.get('user_id')?.value;
       const userData = this.editForm.value;

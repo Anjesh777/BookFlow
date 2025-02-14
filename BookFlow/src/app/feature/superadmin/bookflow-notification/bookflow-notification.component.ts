@@ -12,7 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 
 @Component({
-  selector: 'app-notification',
+  selector: 'app-bookflow-notification',
   standalone: true,
   imports: [
     MatIconModule,
@@ -20,10 +20,10 @@ import { MatDialog } from '@angular/material/dialog';
     CommonModule,
     TimeAgoPipe
   ],
-  templateUrl: './notification.component.html',
-  styleUrl: './notification.component.css'
+  templateUrl: './bookflow-notification.component.html',
+  styleUrl: './bookflow-notification.component.css'
 })
-export class NotificationComponent implements OnInit  {
+export class BookflowNotificationComponent implements OnInit  {
 
   http = inject(HttpClient);
   messageList:NotificationDataResponse[] =[]

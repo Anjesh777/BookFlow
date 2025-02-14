@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { userDetails, userDetailsResponse } from '../../model/admin';
+import { userDetails, userDetailsResponse, UserFilter } from '../../model/admin';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -17,6 +17,12 @@ export class AdminService {
           private http: HttpClient,
           private router: Router
     ) {}
+
+    searchUsers(filter:UserFilter):Observable<any>{
+      return this.http.post<userDetailsResponse[]>(
+        `${this.private_URL}/admin/search`,filter
+      );
+    }
 
     addUsers(user: userDetails): Observable<userDetails> {
       return this.http.post<userDetails>(`${this.private_URL}/admin/add-user`, user).pipe(
@@ -51,16 +57,16 @@ export class AdminService {
 
     }
 
-    deleteUser(userId:String):Observable<any>{
-      return this.http.delete<any>(``)
-      .pipe(
-        catchError((error) =>{
-          return new Observable<userDetailsResponse[]>
-        })
-      )
-
-
-    }
+    deleteUser(userId: string): Observable<any> {
+      return this.http.delete<any>(`${this.private_URL}/admin/delete/${userId}`)
+          .pipe(
+              catchError((error) => {
+                  console.error('Error deleting user:', error);
+                  return throwError(() => new Error('Error deleting user'));
+              })
+          );
+  }
+  
 
 
 

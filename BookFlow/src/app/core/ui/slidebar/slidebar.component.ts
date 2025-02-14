@@ -1,5 +1,5 @@
 // slidebar.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -33,7 +33,21 @@ interface ExpandedItems {
   templateUrl: './slidebar.component.html',
   styleUrls: ['./slidebar.component.css']
 })
-export class SlidebarComponent {
+export class SlidebarComponent implements OnInit{
+
+  userRole: string = '';
+  baseRoute: string = '';
+
+  public authService = inject(AuthService);
+  public router = inject(Router);
+  
+
+  ngOnInit(): void {
+    this.userRole = this.authService.getUserRole() ?? '';
+    this.baseRoute = this.userRole === 'COMPANY_SUPERADMIN' ? '/superadmin' : '/admin';
+  }
+
+
   expandedItems: ExpandedItems = {
     profile: false,
     settings: false,
@@ -44,9 +58,8 @@ export class SlidebarComponent {
 
 
 
-  public authService = inject(AuthService);
-  public router = inject(Router);
-  
+
+ 
 
   getPageTitle(): string {
     const route = this.router.url.split('/')[2];

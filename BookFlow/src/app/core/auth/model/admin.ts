@@ -1,3 +1,5 @@
+import { CompanyFilter } from "./bookflow"
+
 export interface userDetails{
 
     fullname:String,
@@ -13,7 +15,15 @@ export interface userDetailsResponse extends userDetails{
 
    user_id:string,
    created_at:Date
-   username:string
+   _main_user:boolean
+   
+
+
+}
+export interface UserFilter extends CompanyFilter{
+
+    role?:string
+
 
 
 }

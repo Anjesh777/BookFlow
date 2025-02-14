@@ -8,10 +8,11 @@ import { SendtokenComponent } from './core/reset/sendtoken/sendtoken.component';
 import { ForgotpasswordComponent } from './core/reset/forgotpassword/forgotpassword.component';
 import { SlidebarComponent } from './core/ui/slidebar/slidebar.component';
 import { ProfileComponent } from './core/ui/profile/profile.component';
-import { UsermanagementComponent } from './feature/superadmin/usermanagement/usermanagement.component';
+import { UsermanagementComponent } from './feature/company/admin/usermanagement/usermanagement.component';
 import { CompanymanagementComponent } from './feature/superadmin/companymanagement/companymanagement.component';
-import { NotificationComponent } from './feature/superadmin/notification/notification.component';
+import { BookflowNotificationComponent } from './feature/superadmin/bookflow-notification/bookflow-notification.component';
 import { AdminDashboardComponent } from './feature/company/admin/admin-dashboard/admin-dashboard.component';
+import { AdminNotificationComponent } from './feature/company/admin/admin-notification/admin-notification.component';
 
 export const routes: Routes = [
 
@@ -43,6 +44,7 @@ export const routes: Routes = [
         path: 'superadmin',
         component: SlidebarComponent,
         canActivate: [authGuard],
+        data: { roles: ['COMPANY_SUPERADMIN'] }, 
         children:[
             {
                 path: '',
@@ -66,9 +68,10 @@ export const routes: Routes = [
                 component:CompanymanagementComponent
             },
             {
-                path:'notifications',
-                component:NotificationComponent
-            } 
+                path: 'notifications',
+                component: BookflowNotificationComponent,
+                data: { roles: ['COMPANY_SUPERADMIN', 'COMPANY_ADMIN'] } 
+            }
 
         ]
 
@@ -78,6 +81,7 @@ export const routes: Routes = [
         path: 'admin',
         component: SlidebarComponent,
         canActivate: [authGuard],
+        data: { roles: ['COMPANY_ADMIN'] },
         children:[
             {
                 path: '',
@@ -102,7 +106,7 @@ export const routes: Routes = [
             },
             {
                 path:'notifications',
-                component:NotificationComponent
+                component:AdminNotificationComponent
             } 
 
         ]

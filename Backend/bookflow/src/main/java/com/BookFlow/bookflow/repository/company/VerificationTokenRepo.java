@@ -21,6 +21,7 @@ public interface VerificationTokenRepo extends JpaRepository<VerificationToken, 
 //    void deleteByCompanyId(@Param("companyId") UUID companyId);
 //
     @Modifying
+    @Transactional
     @Query("DELETE FROM VerificationToken vt WHERE vt.user.user_id = :userId")
     void deleteByUserId(@Param("userId") UUID userId);
 

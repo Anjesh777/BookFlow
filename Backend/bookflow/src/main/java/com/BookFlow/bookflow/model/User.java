@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -43,18 +44,18 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @CreationTimestamp
-    private LocalDateTime date;
+    private LocalDate date;
     @Column(name = "is_enable")
     private boolean is_enabled = true;
     @Column(name = "update_at")
     @Nullable
-    private LocalDateTime update_at;
+    private LocalDate update_at;
     @Column(name = "is_main_user")
     private Boolean mainuser=false;
 
 
 
-    public User(UUID user_id, @Nullable String fullname, String email, @Nullable String phone, Role role, LocalDateTime date,boolean mainuser) {
+    public User(UUID user_id, @Nullable String fullname, String email, @Nullable String phone, Role role, LocalDate date,boolean mainuser) {
         this.user_id = user_id;
         this.fullname = fullname;
         this.email = email;
