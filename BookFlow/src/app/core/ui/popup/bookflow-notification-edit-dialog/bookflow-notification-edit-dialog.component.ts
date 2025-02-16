@@ -8,7 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-comment-edit-dialog',
+  selector: 'app-bookflow-notification-edit-dialog',
   standalone: true,
   imports: [ReactiveFormsModule,CommonModule],
   template: `
@@ -97,14 +97,14 @@ import { CommonModule } from '@angular/common';
 </div>
   
   `})
-export class CommentEditDialogComponent {
+export class BookflowNotificationEditDialogComponent {
 
   editForm: FormGroup;
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<CommentEditDialogComponent>,
+    private dialogRef: MatDialogRef<BookflowNotificationEditDialogComponent>,
     private bookflowService: BookflowService,
     @Inject(MAT_DIALOG_DATA) public data: NotificationDataResponse
   ) {

@@ -13,6 +13,7 @@ import { CompanymanagementComponent } from './feature/superadmin/companymanageme
 import { BookflowNotificationComponent } from './feature/superadmin/bookflow-notification/bookflow-notification.component';
 import { AdminDashboardComponent } from './feature/company/admin/admin-dashboard/admin-dashboard.component';
 import { AdminNotificationComponent } from './feature/company/admin/admin-notification/admin-notification.component';
+import { ServiceManagementComponent } from './feature/company/admin/service-management/service-management.component';
 
 export const routes: Routes = [
 
@@ -77,6 +78,8 @@ export const routes: Routes = [
 
 
     },
+    
+
     {
         path: 'admin',
         component: SlidebarComponent,
@@ -107,7 +110,11 @@ export const routes: Routes = [
             {
                 path:'notifications',
                 component:AdminNotificationComponent
-            } 
+            },
+            {
+                path:'servicemanagement',
+                component:ServiceManagementComponent
+            }
 
         ]
 

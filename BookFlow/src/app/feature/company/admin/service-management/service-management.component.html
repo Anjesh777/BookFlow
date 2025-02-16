@@ -1,0 +1,129 @@
+<div class="max-w-7xl mx-auto bg-white rounded-lg shadow">
+    <div class="p-6">
+      <div class="flex justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Service Management</h2>
+        <button  (click)="openAddDialog()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+          <!-- Using a span for the icon (replace with an actual icon as needed) -->
+          <span class="material-icons">add</span>
+          <span>Add Service</span>
+        </button>
+      </div>
+  
+      <!-- Search and Filters -->
+      <div class="flex flex-wrap gap-4 mb-6">
+        <!-- Adjusted container width for search input -->
+        <div class="w-64">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search Service..."
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black"
+            />
+            <svg
+              class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+        </div>
+  
+        <div class="flex flex-wrap gap-4">
+          <select
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black"
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+  
+          <button
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          >
+            Apply Filters
+          </button>
+        </div>
+      </div>
+  
+      <!-- Services Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b">
+              <th class="p-4 text-left text-gray-900">S.N</th>
+              <th class="p-4 text-left text-gray-900">Service Name</th>
+              <th class="p-4 text-left text-gray-900">Category</th>
+              <th class="p-4 text-left text-gray-900">Price</th>
+              <th class="p-4 text-left text-gray-900">Duration</th>
+              <th class="p-4 text-left text-gray-900">Status</th>
+              <th class="p-4 text-left text-gray-900">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="text-black">
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-4">1</td>
+              <td class="p-4">Website Development</td>
+              <td class="p-4">Development</td>
+              <td class="p-4">nrp 1500</td>
+              <td class="p-4">2 weeks</td>
+              <td class="p-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Active
+                </span>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center gap-2">
+                  <button class="text-blue-600 hover:text-blue-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                  <button class="text-red-600 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-4">2</td>
+              <td class="p-4">Social Media Marketing</td>
+              <td class="p-4">Marketing</td>
+              <td class="p-4">nrp 800</td>
+              <td class="p-4">1 month</td>
+              <td class="p-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Active
+                </span>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center gap-2">
+                  <button class="text-blue-600 hover:text-blue-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                  <button class="text-red-600 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  

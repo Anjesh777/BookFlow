@@ -23,7 +23,14 @@ export interface userDetailsResponse extends userDetails{
 export interface UserFilter extends CompanyFilter{
 
     role?:string
+}
+export interface Service{
 
-
+    serviceId:string,
+    serviceName:string,
+    category:string,
+    price: Number,
+    duration: String
+    status:boolean
 
 }

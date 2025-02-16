@@ -22,11 +22,9 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   const userRole = authService.getUserRole();
   
-  // Check for route-specific roles first, then parent route roles
   const routeRoles = route.data?.['roles'] as string[];
   const parentRoles = route.parent?.data?.['roles'] as string[];
   
-  // Use route roles if available, otherwise use parent roles
   const requiredRoles = routeRoles || parentRoles;
 
   if (!requiredRoles || requiredRoles.length === 0) {

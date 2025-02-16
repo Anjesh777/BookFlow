@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { BookflowService } from '../../../core/auth/service/BookFlow-Service/bookflow.service';
 import { NotificationData, NotificationDataResponse } from '../../../core/auth/model/bookflow';
 import { TimeAgoPipe } from '../../../core/pipe/shared/pipes/time-ago.pipe';
-import { CommentEditDialogComponent } from '../../../core/ui/popup/comment-edit-dialog/comment-edit-dialog.component';
+import { BookflowNotificationEditDialogComponent } from '../../../core/ui/popup/bookflow-notification-edit-dialog/bookflow-notification-edit-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 
@@ -65,7 +65,7 @@ export class BookflowNotificationComponent implements OnInit  {
 
 
   openEditDialog(notification: NotificationDataResponse) {
-    const dialogRef = this.dialog.open(CommentEditDialogComponent, {
+    const dialogRef = this.dialog.open(BookflowNotificationEditDialogComponent, {
       width: '500px',
       data: notification
     });
@@ -147,7 +147,6 @@ export class BookflowNotificationComponent implements OnInit  {
 
   deleteNotification(id:number){
 
-    console.log("Meee")
     this.bookflowService.deleteNotification(id).subscribe({
       next: () => {
         console.log('Notification deleted successfully');

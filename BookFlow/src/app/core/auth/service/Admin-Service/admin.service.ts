@@ -1,9 +1,10 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { userDetails, userDetailsResponse, UserFilter } from '../../model/admin';
+import { Service, userDetails, userDetailsResponse, UserFilter } from '../../model/admin';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { NotificationData, NotificationDataResponse } from '../../model/bookflow';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,13 @@ export class AdminService {
         })
       );
     }
+
+    addService(message:Service):Observable<Service>{
+      return this.http.post<Service>(
+        `${this.private_URL}/admin/add-service`,message
+      )
+    }
+
     
     getUsers(): Observable<userDetailsResponse[]>{
       return this.http.get<userDetailsResponse[]>(`${this.private_URL}/admin/get-all`)
@@ -42,10 +50,10 @@ export class AdminService {
       )
     }
 
-    updateUserdetails(userId:string,userData:userDetailsResponse):Observable<userDetailsResponse>{
+    updateUserdetails(Id:number,userData:userDetailsResponse):Observable<userDetailsResponse>{
 
          return this.http.put<userDetailsResponse>(
-                `${this.private_URL}/admin/update/${userId}`,
+                `${this.private_URL}/admin/notification/${Id}`,
                 userData
             ).pipe(
                 tap(response => console.log('Full Response:', response)),
@@ -65,8 +73,52 @@ export class AdminService {
                   return throwError(() => new Error('Error deleting user'));
               })
           );
-  }
+    }
+
+    pushNotification(message:NotificationData):Observable<NotificationDataResponse> {
+      return this.http.post<NotificationDataResponse>(
+        `${this.private_URL}/admin/notification`,message);
+    }
+
+
+
+
+
+    
+    deleteNotification(id: number): Observable<any> {
+      return this.http.delete<any>(`${this.private_URL}/admin/notification/${id}`)
+      .pipe(
+        catchError((error) => {
+          console.error('Error deleting notification:', error);
+          return throwError(() => error);
+        })
+      );
+    }
+
+
   
+    getAllNotification():Observable<NotificationDataResponse[]>{
+      
+      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`).pipe(
+        catchError((error) =>{
+          return new Observable<NotificationDataResponse[]>();
+        })
+
+      )
+    }
+
+    getService():Observable<Service[]>{
+      return this.http.get<Service[]>(`${this.private_URL}/service/get-notification`).pipe(
+        catchError((error) =>{
+          return new Observable<Service[]>();
+        })
+
+      )
+
+
+    }
+  
+
 
 
 
