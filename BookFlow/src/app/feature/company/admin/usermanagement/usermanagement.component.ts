@@ -185,11 +185,6 @@ export class UsermanagementComponent implements OnInit {
         console.error('Error ',error)
         this.loading=false
       }
-
     })
-
-
   }
 }
-
-

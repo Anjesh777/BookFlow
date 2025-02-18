@@ -1,6 +1,6 @@
 package com.BookFlow.bookflow.services;
 
-import com.BookFlow.bookflow.dto.NotificationDTO;
+import com.BookFlow.bookflow.dto.ServiceDTO;
 import com.BookFlow.bookflow.model.*;
 import com.BookFlow.bookflow.repository.CompanyNotificationRepo;
 import com.BookFlow.bookflow.repository.ServiceRepo;
@@ -14,11 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -60,23 +58,61 @@ public class AdminNotificationService {
     }
 
     @Transactional
-    public Services addServicce(Services services) {
+    public void addServicce(Services services) {
         try {
             Company userCompany = getCurrentUserCompany();
-            log.info("Current user company: {}", userCompany);
-
             services.setCompany_id(userCompany);
-            Services savedService = serviceRepo.save(services);
-            log.info("Service saved: {}", savedService);
-            return savedService;
+            serviceRepo.save(services);
         } catch (Exception e) {
-            log.error("Error saving service: ", e);
+            log.error(String.valueOf(e));
             throw e;
         }
     }
 
+    public ServiceDTO updateServices(ServiceDTO service){
 
+        try {
+            serviceRepo.updateService(
+                    service.getService_id(),
+                    service.getServiceName(),
+                    service.getDescription(),
+                    service.getCategory(),
+                    service.getPrice(),
+                    service.getDuration(),
+                    service.isStatus()
+            );
+        }
+        catch (Exception e){
+            log.error(String.valueOf(e));
+        }
+        return service;
+    }
 
+    public List<ServiceDTO> getFilteredServices(ServiceFilterDTO filter) {
+        String searchTerm = filter.getSerchService();
+        Boolean status = filter.getFilter();
+
+        if ((searchTerm == null || searchTerm.trim().isEmpty()) && status == null) {
+            return serviceRepo.findAllServices();
+        }
+
+        if (searchTerm != null && !searchTerm.trim().isEmpty() && status == null) {
+            return serviceRepo.findByServiceNameContaining(searchTerm.trim());
+        }
+
+        if ((searchTerm == null || searchTerm.trim().isEmpty()) && status != null) {
+            return serviceRepo.findByStatus(status);
+        }
+
+        return serviceRepo.findByServiceNameAndStatus(searchTerm.trim(), status);
+    }
+
+    public List<Services> getAllCompanyService(){
+        return serviceRepo.findAllCmpService(getCurrentUserCompany());
+    }
+    public void deleteService(String serviceId){
+         serviceRepo.deleteById(serviceId);
+    }
 
     public List<CompanyNotification> getRecentCompanyNotifications(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
@@ -84,18 +120,13 @@ public class AdminNotificationService {
     }
 
     public void updateNotification(Long id,Notification notification){
-
-
-
         companyNotificationRepo.updateCompanyNotification(
                 id,
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getTargetAudience(),
                 notification.getNotificationType().toString()
-
         );
-
     }
 
     public void deleteComment(Long commentId) {

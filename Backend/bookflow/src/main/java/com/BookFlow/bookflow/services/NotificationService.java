@@ -49,6 +49,12 @@ public class NotificationService {
 
     }
 
+    public  void updateService(NotificationService notificationService){
+
+
+        
+    }
+
     public void deleteComment(Long commentId) {
         notificationRepository.deleteComment(commentId);
     }

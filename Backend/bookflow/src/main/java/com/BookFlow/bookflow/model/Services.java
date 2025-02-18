@@ -21,10 +21,14 @@ public class Services {
 
     @ManyToOne
     @JoinColumn(name = "company_id")
+    @JsonIgnore
     private Company company_id;
 
     @Column(name = "service_name", nullable = false)
     private String serviceName;
+
+    @Column(name = "service_description",nullable = true)
+    private String serviceDescription;
 
     @Column(name = "category")
     private String category;

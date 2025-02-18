@@ -52,7 +52,7 @@ import { Service } from '../../../auth/model/admin';
             <!-- Price and Duration -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2">
-                    <label class="text-sm text-gray-700 font-medium">Price</label>
+                    <label class="text-sm text-gray-700 font-medium">Price (रु)</label>
                     <input type="number" formControlName="price"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter price">
@@ -71,6 +71,15 @@ import { Service } from '../../../auth/model/admin';
                         class="text-sm text-red-500">Duration is required</span>
                 </div>
             </div>
+
+
+            <div class="space-y-2">
+                  <label class="text-sm text-gray-700 font-medium">Description</label>
+                  <textarea formControlName="description" rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter service description"></textarea>
+            </div>
+
 
             <!-- Status -->
             <div class="space-y-2">
@@ -115,6 +124,7 @@ export class AddServiceDialogComponent {
       price: ['', [Validators.required, Validators.min(0)]],
       duration: ['', Validators.required],
       status: [true],
+      description: [''], // Add this line
       serviceId: ['SERVICE_' + Math.random().toString(36).substr(2, 9)]
     });
     

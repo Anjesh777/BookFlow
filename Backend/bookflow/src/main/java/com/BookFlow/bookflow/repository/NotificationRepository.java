@@ -46,6 +46,7 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
             @Param("notificationType") String notificationType
     );
 
+
     @Modifying
     @Transactional
     @Query("DELETE FROM Notification c WHERE c.id = :commentId")

@@ -12,10 +12,11 @@ import java.util.UUID;
 @NoArgsConstructor
 
 public class ServiceDTO {
-    private String serviceId;
+    private String service_id;
     private String serviceName;
     private String category;
     private BigDecimal price;
     private String duration;
     private boolean status;
+    private String description;
 }

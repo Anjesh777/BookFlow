@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { Service, userDetails, userDetailsResponse, UserFilter } from '../../model/admin';
+import { Service, serviceFilter, userDetails, userDetailsResponse, UserFilter } from '../../model/admin';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { NotificationData, NotificationDataResponse } from '../../model/bookflow';
@@ -53,7 +53,7 @@ export class AdminService {
     updateUserdetails(Id:number,userData:userDetailsResponse):Observable<userDetailsResponse>{
 
          return this.http.put<userDetailsResponse>(
-                `${this.private_URL}/admin/notification/${Id}`,
+                `${this.private_URL}/admin/update/${Id}`,
                 userData
             ).pipe(
                 tap(response => console.log('Full Response:', response)),
@@ -65,6 +65,24 @@ export class AdminService {
 
     }
 
+    updateServicedetails(Id:string,serviceData:Service):Observable<Service>{
+
+      return this.http.put<Service>(
+             `${this.private_URL}/admin/service-update/${Id}`,serviceData)
+             .pipe(
+             tap(response => console.log('Full Response:', response)),
+             catchError((error: HttpErrorResponse) => {
+                 console.error('Detailed Error:', error);
+                 return throwError(() => new Error('Failed to update company'));
+             })
+         );
+
+ }
+
+
+
+
+
     deleteUser(userId: string): Observable<any> {
       return this.http.delete<any>(`${this.private_URL}/admin/delete/${userId}`)
           .pipe(
@@ -73,6 +91,19 @@ export class AdminService {
                   return throwError(() => new Error('Error deleting user'));
               })
           );
+    }
+
+    deleteService(serviceId:string):Observable<any>{
+
+      return this.http.delete<any>(`${this.private_URL}/admin/delete-service/${serviceId}`)
+      .pipe(
+        catchError((error) => {
+            console.error('Error deleting user:', error);
+            return throwError(() => new Error('Error deleting service'));
+        })
+    );
+
+
     }
 
     pushNotification(message:NotificationData):Observable<NotificationDataResponse> {
@@ -108,21 +139,26 @@ export class AdminService {
     }
 
     getService():Observable<Service[]>{
-      return this.http.get<Service[]>(`${this.private_URL}/service/get-notification`).pipe(
+      return this.http.get<Service[]>(`${this.private_URL}/admin/get-services`).pipe(
         catchError((error) =>{
           return new Observable<Service[]>();
         })
 
       )
-
-
     }
-  
+
+    getServiceFilterData(filter: serviceFilter): Observable<Service[]> {
+      return this.http.post<Service[]>(
+        `${this.private_URL}/admin/get-service-filter`, filter
+      ).pipe(
+        catchError((error) => {
+          console.error("Filter request failed:", error);
+          return throwError(() => new Error('Failed to filter services: ' + error.message));
+        })
+      );
+    }
 
 
-
-
-
-
-
+    
+    
   }
