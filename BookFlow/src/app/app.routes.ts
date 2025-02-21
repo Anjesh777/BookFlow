@@ -14,6 +14,7 @@ import { BookflowNotificationComponent } from './feature/superadmin/bookflow-not
 import { AdminDashboardComponent } from './feature/company/admin/admin-dashboard/admin-dashboard.component';
 import { AdminNotificationComponent } from './feature/company/admin/admin-notification/admin-notification.component';
 import { ServiceManagementComponent } from './feature/company/admin/service-management/service-management.component';
+import { DaybookEntriesComponent } from './feature/company/account/daybook-entries/daybook-entries.component';
 
 export const routes: Routes = [
 
@@ -114,6 +115,10 @@ export const routes: Routes = [
             {
                 path:'servicemanagement',
                 component:ServiceManagementComponent
+            },
+            {
+                path:'account',
+                component:DaybookEntriesComponent
             }
 
         ]

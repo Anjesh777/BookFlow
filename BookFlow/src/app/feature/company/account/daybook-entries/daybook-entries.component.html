@@ -1,0 +1,197 @@
+<!-- Navigation Bar -->
+<div class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 transition-all duration-300" :class="sidebarOpen ? 'ml-64' : 'ml-0'">
+    <nav class="flex space-x-4">
+
+      <a href="/petty-cash-book" class="px-3 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+        Petty Cash Book
+      </a>
+      <a href="/user-accounting" class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+        Customer Ledger System
+      </a>
+
+    </nav>
+    </div>
+</div>
+  
+  <!-- Main Content -->
+  <div class="max-w-8xl mx-auto bg-white rounded-lg shadow my-8 text-black">
+    <div class="p-6">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Petty Cash Book</h2>
+        <div class="flex gap-2">
+          <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-print"></i>
+            <span>Print</span>
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <i class="fas fa-file-export"></i>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+  
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+          <h3 class="text-sm font-medium text-gray-500">Current Balance</h3>
+          <p class="text-2xl font-bold text-blue-700">₹ {{summary.currentBalance}}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+          <h3 class="text-sm font-medium text-gray-500">Total Receipts (Today)</h3>
+          <p class="text-2xl font-bold text-green-600">₹ {{summary.totalReceiptsToday}}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+          <h3 class="text-sm font-medium text-gray-500">Total Payments (Today)</h3>
+          <p class="text-2xl font-bold text-red-600">₹ {{summary.totalPaymentsToday}}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-purple-500">
+          <h3 class="text-sm font-medium text-gray-500">Pending Reimbursements</h3>
+          <p class="text-2xl font-bold text-purple-600">₹ {{summary.pendingReimbursements}}</p>
+        </div>
+      </div>
+  
+      <!-- Search and Filters -->
+      <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <!-- Left group: Search, Date, Filter & Clear -->
+        <div class="flex flex-wrap gap-4 items-center">
+          <!-- Search Input -->
+          <div class="w-64">
+            <div class="relative">
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+            </div>
+          </div>
+          <!-- Date Picker -->
+          <input
+            type="date"
+            class="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          />
+          <!-- Filter Button -->
+          <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter"></i>
+            <span>Filter</span>
+          </button>
+          <!-- Clear Button -->
+          <button class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+            <i class="fas fa-times"></i>
+            <span>Clear</span>
+          </button>
+        </div>
+        <!-- Right group: Add Transaction -->
+        <div>
+          <button (click)="openAddDialog()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <i class="fas fa-plus"></i>
+            <span>Add Transaction</span>
+          </button>
+        </div>
+      </div>
+  
+      <!-- Transactions Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b">
+              <th class="p-4 text-left text-gray-900">Date</th>
+              <th class="p-4 text-left text-gray-900">Voucher #</th>
+              <th class="p-4 text-left text-gray-900">Description</th>
+              <th class="p-4 text-left text-gray-900">Category</th>
+              <th class="p-4 text-right text-gray-900">Receipt (₹)</th>
+              <th class="p-4 text-right text-gray-900">Payment (₹)</th>
+              <th class="p-4 text-right text-gray-900">Balance (₹)</th>
+              <th class="p-4 text-center text-gray-900">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of transactions; track transaction.id) {
+              <tr class="border-b hover:bg-gray-50">
+                <td class="p-4">{{transaction.date | date:'dd/MM/yyyy'}}</td>
+                <td class="p-4">{{transaction.voucherNumber}}</td>
+                <td class="p-4">{{transaction.description}}</td>
+                <td class="p-4">
+                  <span [ngClass]="{
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium': true,
+                    'bg-emerald-100 text-emerald-800': transaction.category === 'INCOME',
+                    'bg-red-100 text-red-800': transaction.category === 'EXPENSE',
+                    'bg-blue-100 text-blue-800': transaction.category === 'TRANSFER',
+                    'bg-indigo-100 text-indigo-800': transaction.category === 'SALARY',
+                    'bg-amber-100 text-amber-800': transaction.category === 'UTILITIES',
+                    'bg-slate-100 text-slate-800': transaction.category === 'OTHER'
+                  }">
+                    {{getCategoryDisplay(transaction.category)}}
+                  </span>
+                </td>
+                <td class="p-4 text-right text-green-600">
+                  {{transaction.receiptAmount > 0 ? (transaction.receiptAmount | number:'1.2-2') : '-'}}
+                </td>
+                <td class="p-4 text-right text-red-600">
+                  {{transaction.paymentAmount > 0 ? (transaction.paymentAmount | number:'1.2-2') : '-'}}
+                </td>
+                <td class="p-4 text-right font-medium">
+                  {{transaction.balance | number:'1.2-2'}}
+                </td>
+                <td class="p-4">
+                  <div class="flex justify-center gap-2">
+                    <button class="text-blue-600 hover:text-blue-700" (click)="openEditDialog(transaction)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-red-600 hover:text-red-700" (click)="deleteTransaction(transaction.id)">
+                      <i class="fas fa-trash" ></i>
+                    </button>
+                    @if (transaction.reimbursementPending) {
+                      <button class="text-orange-600 hover:text-orange-700">
+                        <i class="fas fa-sync"></i>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+  
+    <!-- Pagination -->
+<div class="bg-gray-50 px-4 py-3 border-t flex items-center justify-between">
+  <div class="flex items-center">
+    <span class="text-sm text-gray-600">
+      Showing {{currentPage * 10 + 1}}-{{Math.min((currentPage + 1) * 10, totalElements)}} of {{totalElements}} entries
+    </span>
+  </div>
+  <div class="flex items-center space-x-1">
+    <button 
+      (click)="onPageChange(currentPage - 1)"
+      [disabled]="currentPage === 0"
+      class="px-3 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    
+    <ng-container *ngFor="let i of getPagesArray()">
+      <button 
+        (click)="onPageChange(i)"
+        [ngClass]="{
+          'bg-red-600 text-white': i === currentPage,
+          'bg-white text-gray-600': i !== currentPage
+        }"
+        class="px-3 py-1 border border-gray-300 rounded hover:bg-red-00">
+        {{ i + 1 }}
+      </button>
+    </ng-container>
+    
+    <button 
+      (click)="onPageChange(currentPage + 1)"
+      [disabled]="currentPage >= totalPages - 1"
+      class="px-3 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+  
+    </div>
+  </div>
+  

@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/all/**","/api/verification/**")
                         .permitAll()
                         .requestMatchers("/api/v1/bookflow/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name())
-                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name(), Role.COMPANY_ADMIN.name())
+                        .requestMatchers("/api/v1/admin/**","/api/v1/account/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name(), Role.COMPANY_ADMIN.name())
                         .requestMatchers("api/v1/user/**").hasAnyAuthority(Role.COMPANY_USER.name())
                         .anyRequest().authenticated()
                 )

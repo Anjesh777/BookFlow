@@ -138,7 +138,7 @@ export class AddServiceDialogComponent {
         price: Number(formData.price)
       };
 
-    console.log(this.serviceForm.value)
+      console.log(this.serviceForm.value)
 
       this.dialogRef.close(serviceData);
     }
