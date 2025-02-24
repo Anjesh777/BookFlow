@@ -165,15 +165,16 @@ exportTransactionsToCSV(query?: string, fromDate?: Date | null, toDate?: Date | 
 
 
 
-importTransactionsFromCsv(file: File): Observable<any> {
+
+importTransactionsFromCsv(file: File) {
   const formData = new FormData();
   formData.append('file', file);
-  return this.http.post(`${this.private_URL}/account/import/csv`, formData, {
+  
+  return this.http.post<any>(`${this.private_URL}/account/import/csv`, formData, {
     reportProgress: true,
     observe: 'events'
   });
 }
-
 
 
 

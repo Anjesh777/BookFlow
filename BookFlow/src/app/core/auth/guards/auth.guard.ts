@@ -13,18 +13,14 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  console.log('Auth Guard - Checking authentication');
-
   if (!authService.isLoggedIn()) {
     console.log('Auth Guard - User not logged in');
     return router.createUrlTree(['/login']);
   }
 
   const userRole = authService.getUserRole();
-  
   const routeRoles = route.data?.['roles'] as string[];
   const parentRoles = route.parent?.data?.['roles'] as string[];
-  
   const requiredRoles = routeRoles || parentRoles;
 
   if (!requiredRoles || requiredRoles.length === 0) {

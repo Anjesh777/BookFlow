@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { UiServiceService } from '../../../../core/ui/ui-service.service';
 import { AccountServiceService } from '../../../../core/auth/service/Account-Service/account-service.service';
 import { AddCashbookDialogComponent } from '../../../../core/ui/popup/add-cashbook-dialog/add-cashbook-dialog.component';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, map, tap } from 'rxjs';
 import { EditCashbookDialogComponent } from '../../../../core/ui/popup/edit-cashbook-dialog/edit-cashbook-dialog.component';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,6 +19,7 @@ import { RouterModule } from '@angular/router';
 import { TimeAgoPipe } from '../../../../core/pipe/shared/pipes/time-ago.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DaterangeComponent } from "../../../../core/ui/daterange/daterange.component";
+import { HttpEventType } from '@angular/common/http';
 
 
 
@@ -253,7 +254,7 @@ export class DaybookEntriesComponent implements OnInit{
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'transactions.csv';
+        link.download = 'cashbook.csv';
         link.click();
         window.URL.revokeObjectURL(url);
         this.loading = false;
@@ -270,23 +271,49 @@ export class DaybookEntriesComponent implements OnInit{
   async handleFileImport(event: any) {
     const file = event.target.files[0];
     if (file) {
-        if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-            this.uiService.showErrorDialog('Please upload a valid CSV file');
-            return;
-        }
-
-        try {
-            const response = await firstValueFrom(this.accountService.importTransactionsFromCsv(file));
-            console.log('Import Response:', response); 
-
-            this.uiService.showSuccessDialog("File upload successful");
-            this.refreshData(); // Refresh the data table
-        } catch (error) {
-            console.error('Error importing CSV:', error);
-            this.uiService.showErrorDialog('Failed to import transactions');
-        }
+      if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+        this.uiService.showErrorDialog('Please upload a valid CSV file');
+        return;
+      }
+    
+      this.loading = true;
+      const formData = new FormData();
+      formData.append('file', file);
+    
+      try {
+        this.accountService.importTransactionsFromCsv(file)
+          .pipe(
+            tap(event => {
+              if (event.type === HttpEventType.UploadProgress && event.total) {
+                const percentDone = Math.round(100 * event.loaded / event.total);
+                console.log(`Upload progress: ${percentDone}%`);
+              }
+            }),
+            filter(event => event.type === HttpEventType.Response),
+            map(event => event.body)
+          )
+          .subscribe({
+            next: (response) => {
+              this.loading = false;
+              this.uiService.showSuccessDialog("File upload successful");
+              this.refreshData();
+              event.target.value = '';
+            },
+            error: (error) => {
+              this.loading = false;
+              console.error('Error importing CSV:', error);
+              this.uiService.showErrorDialog('Failed to import transactions');
+              event.target.value = '';
+            }
+          });
+      } catch (error) {
+        this.loading = false;
+        console.error('Error importing CSV:', error);
+        this.uiService.showErrorDialog('Failed to import transactions');
+        event.target.value = '';
+      }
     }
-}
+  }
 
 
 

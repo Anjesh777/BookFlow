@@ -1,35 +1,45 @@
-import {HttpHeaders, HttpInterceptorFn } from '@angular/common/http';
+import { HttpHeaders, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../service/auth.service';
-
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
   const publicEndpoints = [
-      '/all/login',
-      '/all/registercmp',
-      '/all/resend-token',
-      '/all/set-password',
-      '/all/forgot',
-      '/all/getListOFDistrict',
-      '/verification/resend-token',
-      '/all/reset'
-
+    '/all/login',
+    '/all/registercmp',
+    '/all/resend-token',
+    '/all/set-password',
+    '/all/forgot',
+    '/all/getListOFDistrict',
+    '/verification/resend-token',
+    '/all/reset'
   ];
+
+  // Check if the current request URL is a public endpoint
+  const isPublicEndpoint = publicEndpoints.some(endpoint => 
+    req.url.includes(endpoint)
+  );
+
+  if (isPublicEndpoint) {
+    return next(req);
+  }
+
+  if (!token) {
+    return next(req);
+  }
 
   if (req.body instanceof FormData) {
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}` 
+      'Authorization': `Bearer ${token}`
     });
-
     return next(req.clone({ headers }));
   } else {
     const headers = new HttpHeaders({
-      'Content-Type': 'application/json', 
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
-
-  return next(req.clone({ headers }));
-}};
+    return next(req.clone({ headers }));
+  }
+};

@@ -5,6 +5,7 @@ import com.BookFlow.bookflow.dto.CashBookDTO;
 import com.BookFlow.bookflow.dto.CashBookSummaryDTO;
 import com.BookFlow.bookflow.services.AdminService;
 import com.BookFlow.bookflow.services.CashBookService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -118,13 +119,21 @@ public class CashbookController {
 
 
     @PostMapping(value = "/import/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> importTransactionsFromCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> importTransactionsFromCsv(
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request
+    ) {
         log.info("Received file: {}", file.getOriginalFilename());
-        log.info("Received content type: {}", file.getContentType());
+
+        if (file.getSize() > 30_000_000) {
+            return ResponseEntity.badRequest().body("File size too large");
+        }
 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Please select a file to import");
         }
+
+
 
         try {
             cashBookService.validateCsvFormat(file);
@@ -137,19 +146,10 @@ public class CashbookController {
             return ResponseEntity.ok(response);
         } catch (IOException e) {
             log.error("Error importing CSV file", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing the CSV file");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing the CSV file");
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 //    @GetMapping("/by-date")
 //    public ResponseEntity<Page<CashBookDTO>> getTransactionsByDate(
