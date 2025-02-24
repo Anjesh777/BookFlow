@@ -1,7 +1,9 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CashBook, DashboardSummary, Page, TransactionSummary } from '../../model/account';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, Observable, of, throwError } from 'rxjs';
+import { User } from '../../model/user';
+import { error } from 'console';
 
 @Injectable({
   providedIn: 'root'
@@ -56,16 +58,30 @@ export class AccountServiceService {
   }
 
 
+  
 
-  searchTransactions(
+ searchTransactions(
     query: string,
+    fromDate: Date | null = null,
+    toDate: Date | null = null,
     page: number = 0,
     size: number = 10
 ): Observable<Page<CashBook>> {
+
+
+  
     let params = new HttpParams()
         .set('query', query)
         .set('page', page.toString())
         .set('size', size.toString());
+
+    if (fromDate) {
+        params = params.set('fromDate', fromDate.toISOString().split('T')[0]);
+    }
+    if (toDate) {
+        params = params.set('toDate', toDate.toISOString().split('T')[0]);
+    }
+
     return this.http.get<Page<CashBook>>(`${this.private_URL}/account/search`, { params });
 }
 
@@ -99,7 +115,7 @@ export class AccountServiceService {
   
 
 
-getTransactionSummary(): Observable<DashboardSummary> {  // Changed return type
+getTransactionSummary(): Observable<DashboardSummary> {  
   return this.http.get<DashboardSummary>(`${this.private_URL}/account/summary`);
 }
 
@@ -107,6 +123,58 @@ getTransactionSummary(): Observable<DashboardSummary> {  // Changed return type
 private formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
+
+getAllUsers():Observable<User[]>{
+  return this.http.get<User[]>(`${this.private_URL}/ledger-system/users`).pipe(
+    catchError((error)=>{
+      return new Observable<User[]>();
+    })
+  )
+}
+
+searchUsers(query: string): Observable<User[]> {
+  const params = new HttpParams().set('query', query);
+  
+  return this.http.get<User[]>(`${this.private_URL}/ledger-system/users/search`, { params }).pipe(
+    catchError((error) => {
+      console.error('API ERROR', error);
+      return of([]); 
+    })
+  );
+}
+
+
+exportTransactionsToCSV(query?: string, fromDate?: Date | null, toDate?: Date | null): Observable<Blob> {
+  let params = new HttpParams();
+  
+  if (query) {
+    params = params.set('query', query);
+  }
+  if (fromDate) {
+    params = params.set('fromDate', fromDate.toISOString().split('T')[0]);
+  }
+  if (toDate) {
+    params = params.set('toDate', toDate.toISOString().split('T')[0]);
+  }
+
+  return this.http.get(`${this.private_URL}/account/export/csv`, {
+    params,
+    responseType: 'blob'
+  });
+}
+
+
+
+importTransactionsFromCsv(file: File): Observable<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return this.http.post(`${this.private_URL}/account/import/csv`, formData, {
+    reportProgress: true,
+    observe: 'events'
+  });
+}
+
+
 
 
 

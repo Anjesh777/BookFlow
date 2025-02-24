@@ -1,18 +1,48 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule } from '@angular/forms';
-import { CashBook, DashboardSummary, Page } from '../../../../core/auth/model/account';
+import { CashBook, DashboardSummary, Page, search } from '../../../../core/auth/model/account';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { UiServiceService } from '../../../../core/ui/ui-service.service';
 import { AccountServiceService } from '../../../../core/auth/service/Account-Service/account-service.service';
 import { AddCashbookDialogComponent } from '../../../../core/ui/popup/add-cashbook-dialog/add-cashbook-dialog.component';
 import { firstValueFrom } from 'rxjs';
 import { EditCashbookDialogComponent } from '../../../../core/ui/popup/edit-cashbook-dialog/edit-cashbook-dialog.component';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { RouterModule } from '@angular/router';
+import { TimeAgoPipe } from '../../../../core/pipe/shared/pipes/time-ago.pipe';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DaterangeComponent } from "../../../../core/ui/daterange/daterange.component";
+
+
+
 
 @Component({
   selector: 'app-daybook-entries',
   standalone: true,
-  imports: [CommonModule,FormsModule],
+  imports: [
+    
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatDividerModule,
+    RouterModule,
+    MatSidenavModule,
+    MatListModule,
+    MatToolbarModule,
+    TimeAgoPipe,
+    MatProgressSpinnerModule,
+    DaterangeComponent
+
+  ],
   templateUrl: './daybook-entries.component.html',
   styleUrl: './daybook-entries.component.css'
 })
@@ -25,6 +55,8 @@ export class DaybookEntriesComponent implements OnInit{
   currentPage: number = 0;
   totalPages: number = 0;
   totalElements: number = 0;
+  dateRange: { fromDate: string; toDate: string } | null = null;
+
 
   summary: DashboardSummary = {
     currentBalance: 0,
@@ -32,6 +64,45 @@ export class DaybookEntriesComponent implements OnInit{
     totalPaymentsToday: 0,
     pendingReimbursements: 0
   };
+
+  searchUserTransaction;
+
+  applyFilter() {
+    this.loading = true;
+    const filter: search = {
+      searchText: this.searchUserTransaction.value || '',
+      fromDate: this.dateRange?.fromDate ? new Date(this.dateRange.fromDate) : null,
+      toDate: this.dateRange?.toDate ? new Date(this.dateRange.toDate) : null
+  };
+
+    this.accountService.searchTransactions(filter.searchText,filter.fromDate,filter.toDate, this.currentPage, 10)
+      .subscribe({
+        next: (data: Page<CashBook>) => {
+          this.transactions = data.content;
+          this.totalPages = data.page.totalPages;
+          this.currentPage = data.page.number;
+          this.totalElements = data.page.totalElements;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error searching transactions:', error);
+          this.uiService.showErrorDialog('Failed to search transactions');
+          this.loading = false;
+        }
+      });
+  }
+
+  clearFilters() {
+    this.searchUserTransaction.reset();
+    this.dateRange = null;
+    this.currentPage = 0;
+    this.refreshData();
+  }
+
+
+
+
+
  
 
   constructor(
@@ -41,13 +112,16 @@ export class DaybookEntriesComponent implements OnInit{
     private accountService: AccountServiceService,
   )
   {
+    this.searchUserTransaction= this.fb.control('');
+  }
 
-
+  onDateRangeChange(dateRange: {fromDate: string, toDate: string}) {
+    this.dateRange=dateRange
+    console.log('Date range changed:', dateRange);
   }
   
   ngOnInit(): void {
    this.refreshData()
-
   }
 
 
@@ -113,6 +187,8 @@ export class DaybookEntriesComponent implements OnInit{
   
 
 
+  
+
 
   fetchTransactions(page: number) {
     this.loading = true;
@@ -158,7 +234,59 @@ export class DaybookEntriesComponent implements OnInit{
         this.refreshData();
 
       });
+  }
+
+  exportToCSV() {
+    this.loading = true;
+    const filter = {
+      searchText: this.searchUserTransaction.value || '',
+      fromDate: this.dateRange?.fromDate ? new Date(this.dateRange.fromDate) : undefined,
+      toDate: this.dateRange?.toDate ? new Date(this.dateRange.toDate) : undefined
+    };
+
+    this.accountService.exportTransactionsToCSV(
+      filter.searchText,
+      filter.fromDate,
+      filter.toDate
+    ).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'transactions.csv';
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.loading = false;
+        this.uiService.showSuccessDialog('Export completed successfully');
+      },
+      error: (error) => {
+        console.error('Error exporting transactions:', error);
+        this.uiService.showErrorDialog('Failed to export transactions');
+        this.loading = false;
+      }
+    });
+  }
+
+  async handleFileImport(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+        if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+            this.uiService.showErrorDialog('Please upload a valid CSV file');
+            return;
+        }
+
+        try {
+            const response = await firstValueFrom(this.accountService.importTransactionsFromCsv(file));
+            console.log('Import Response:', response); 
+
+            this.uiService.showSuccessDialog("File upload successful");
+            this.refreshData(); // Refresh the data table
+        } catch (error) {
+            console.error('Error importing CSV:', error);
+            this.uiService.showErrorDialog('Failed to import transactions');
+        }
     }
+}
 
 
 

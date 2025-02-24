@@ -34,3 +34,8 @@ export interface DashboardSummary {
     pendingReimbursements: number;
   }
 
+  export interface search {
+    searchText: string;
+    fromDate?: Date | null;  
+    toDate?: Date | null;    
+  }

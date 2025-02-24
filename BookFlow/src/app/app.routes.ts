@@ -15,6 +15,7 @@ import { AdminDashboardComponent } from './feature/company/admin/admin-dashboard
 import { AdminNotificationComponent } from './feature/company/admin/admin-notification/admin-notification.component';
 import { ServiceManagementComponent } from './feature/company/admin/service-management/service-management.component';
 import { DaybookEntriesComponent } from './feature/company/account/daybook-entries/daybook-entries.component';
+import { LedgerSystemComponent } from './feature/company/account/ledger-system/ledger-system.component';
 
 export const routes: Routes = [
 
@@ -119,6 +120,10 @@ export const routes: Routes = [
             {
                 path:'account',
                 component:DaybookEntriesComponent
+            },
+            {
+                path:'ledger',
+                component:LedgerSystemComponent                
             }
 
         ]

@@ -26,6 +26,7 @@ import { DashboardSummary } from '../../../auth/model/account';
             <div class="space-y-2">
                 <label class="text-sm text-gray-700 font-medium">Date</label>
                 <input type="date" formControlName="date" 
+                [max]="today"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <span *ngIf="transactionForm.get('date')?.hasError('required') && transactionForm.get('date')?.touched"
                     class="text-sm text-red-500">Date is required</span>
@@ -119,6 +120,10 @@ export class AddCashbookDialogComponent implements OnInit{
 
   transactionForm: FormGroup;
   isLoading = false;
+
+
+  today: string = new Date().toISOString().split('T')[0];
+
 
   summary: DashboardSummary = {
     currentBalance: 0,

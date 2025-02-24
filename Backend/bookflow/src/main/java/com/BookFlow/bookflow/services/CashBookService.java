@@ -8,6 +8,10 @@ import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.repository.CashBookRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,12 +21,20 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CashBookService {
 
@@ -109,17 +121,79 @@ public class CashBookService {
         return mapToDTO(updatedTransaction);
     }
 
-    public Page<CashBookDTO> searchTransactions(String query, int page, int size) {
+    public Page<CashBookDTO> searchTransactions(String query, LocalDate fromDate, LocalDate toDate, int page, int size) {
         Company company = getCurrentUserCompany();
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
-        return cashBookRepo.searchByDescription(query, company, pageable).map(this::mapToDTO);
+
+        boolean isQueryEmpty = (query == null || query.trim().isEmpty());
+        boolean isFromDateProvided = (fromDate != null);
+        boolean isToDateProvided = (toDate != null);
+
+        Page<CashBook> transactions;
+
+        if (!isQueryEmpty && isFromDateProvided && isToDateProvided) {
+            // Case 1: Both query and date range provided
+            transactions = cashBookRepo.findByCompanyAndSearchQueryAndDateRange(company, query, fromDate, toDate, pageable);
+        } else if (!isQueryEmpty) {
+            // Case 2: Only query provided
+            transactions = cashBookRepo.findByCompanyAndSearchQuery(company, query, pageable);
+        } else if (isFromDateProvided && isToDateProvided) {
+            // Case 3: Only date range provided
+            transactions = cashBookRepo.findByCompanyAndDateRange(company, fromDate, toDate, pageable);
+        } else {
+            // Case 4: No filters, return all transactions
+            transactions = cashBookRepo.findByCompany(company, pageable);
+        }
+
+        return transactions.map(this::mapToDTO);
     }
 
-    public Page<CashBookDTO> getTransactionsByDate(LocalDate date, int page, int size) {
+    public byte[] exportTransactionsToCSV(String query, LocalDate fromDate, LocalDate toDate) throws IOException {
         Company company = getCurrentUserCompany();
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        return cashBookRepo.findByDate(date, company, pageable).map(this::mapToDTO);
+        List<CashBook> transactions;
+
+        // Use existing search logic but get all results without pagination
+        if (query != null && !query.trim().isEmpty() && fromDate != null && toDate != null) {
+            transactions = cashBookRepo.findByCompanyAndSearchQueryAndDateRangeNoPage(company, query, fromDate, toDate);
+        } else if (query != null && !query.trim().isEmpty()) {
+            transactions = cashBookRepo.findByCompanyAndSearchQueryNoPage(company, query);
+        } else if (fromDate != null && toDate != null) {
+            transactions = cashBookRepo.findByCompanyAndDateRangeNoPage(company, fromDate, toDate);
+        } else {
+            transactions = cashBookRepo.findByCompanyNoPage(company);
+        }
+
+        StringWriter sw = new StringWriter();
+        CSVPrinter csvPrinter = new CSVPrinter(sw, CSVFormat.DEFAULT.withHeader(
+                "Date", "Voucher Number", "Description", "Category",
+                "Receipt Amount", "Payment Amount", "Balance", "Reimbursement Pending"
+        ));
+
+        for (CashBook transaction : transactions) {
+            csvPrinter.printRecord(
+                    transaction.getDate(),
+                    transaction.getVoucherNumber(),
+                    transaction.getDescription(),
+                    transaction.getCategory(),
+                    transaction.getReceiptAmount(),
+                    transaction.getPaymentAmount(),
+                    transaction.getBalance(),
+                    transaction.isReimbursementPending()
+            );
+        }
+
+        csvPrinter.flush();
+        return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
+
+
+
+
+//    public Page<CashBookDTO> getTransactionsByDate(LocalDate date, int page, int size) {
+//        Company company = getCurrentUserCompany();
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+//        return cashBookRepo.findByDate(date, company, pageable).map(this::mapToDTO);
+//    }
 
     public CashBookSummaryDTO getTransactionSummary() {
         Company company = getCurrentUserCompany();
@@ -246,6 +320,74 @@ public class CashBookService {
             cashBookRepo.save(t);
         }
     }
+
+    public List<CashBookDTO> importCsv(MultipartFile file) throws IOException {
+        List<CashBookDTO> importedTransactions = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy"); // ✅ Handle single-digit months/days
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreHeaderCase()
+                    .withTrim());
+
+            for (CSVRecord record : csvParser) {
+                CashBookDTO transaction = new CashBookDTO();
+
+                try {
+                    transaction.setDate(LocalDate.parse(record.get("Date"), formatter));
+
+                    transaction.setVoucherNumber(record.get("Voucher Number"));
+                    transaction.setDescription(record.get("Description"));
+                    transaction.setCategory(record.get("Category"));
+
+                    String receiptStr = record.get("Receipt Amount");
+                    String paymentStr = record.get("Payment Amount");
+
+                    transaction.setReceiptAmount(receiptStr.isEmpty() ? BigDecimal.ZERO :
+                            new BigDecimal(receiptStr.replace("₹", "").trim()));
+                    transaction.setPaymentAmount(paymentStr.isEmpty() ? BigDecimal.ZERO :
+                            new BigDecimal(paymentStr.replace("₹", "").trim()));
+
+                    transaction.setReimbursementPending(Boolean.parseBoolean(record.get("Reimbursement Pending")));
+
+                    // Save to database
+                    CashBookDTO savedTransaction = addTransaction(transaction);
+                    importedTransactions.add(savedTransaction);
+                } catch (Exception e) {
+                    log.error("Error parsing CSV record: " + record, e);
+                }
+            }
+        }
+
+        return importedTransactions;
+    }
+
+
+    public void validateCsvFormat(MultipartFile file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null) {
+                throw new IllegalArgumentException("CSV file is empty");
+            }
+
+            Set<String> requiredHeaders = Set.of(
+                    "Date", "Voucher Number", "Description", "Category",
+                    "Receipt Amount", "Payment Amount", "Reimbursement Pending"
+            );
+
+            Set<String> actualHeaders = Arrays.stream(headerLine.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toSet());
+
+            if (!actualHeaders.containsAll(requiredHeaders)) {
+                throw new IllegalArgumentException("CSV file is missing required headers");
+            }
+        }
+    }
+
+
+
 
 
 

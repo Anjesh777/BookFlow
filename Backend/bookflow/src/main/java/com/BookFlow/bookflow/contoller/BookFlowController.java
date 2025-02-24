@@ -102,7 +102,9 @@ public class BookFlowController {
 
     @PostMapping("/search")
     public ResponseEntity<List<Company>> searchCompanies(@RequestBody CompanyFilterDTO filter) {
+
         List<Company> results = companyService.searchCompanies(filter);
+
         return ResponseEntity.ok(results);
     }
 

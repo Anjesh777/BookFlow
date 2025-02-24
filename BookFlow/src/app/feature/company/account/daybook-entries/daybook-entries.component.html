@@ -1,17 +1,20 @@
-<!-- Navigation Bar -->
 <div class="bg-white shadow">
-    <div class="max-w-7xl mx-auto px-4 py-4 transition-all duration-300" :class="sidebarOpen ? 'ml-64' : 'ml-0'">
-    <nav class="flex space-x-4">
-
-      <a href="/petty-cash-book" class="px-3 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
-        Petty Cash Book
-      </a>
-      <a href="/user-accounting" class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
-        Customer Ledger System
-      </a>
-
-    </nav>
-    </div>
+  <div class="max-w-7xl mx-auto px-4 py-4 transition-all duration-300" :class="sidebarOpen ? 'ml-64' : 'ml-0'">
+      <nav class="flex space-x-4">
+          <a routerLink="/admin/account"
+             routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+             [routerLinkActiveOptions]="{exact: true}"
+             class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+              Cash Book
+          </a>
+          <a routerLink="/admin/ledger"
+             routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+             [routerLinkActiveOptions]="{exact: true}"
+             class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+              Customer Ledger System
+          </a>
+      </nav>
+  </div>
 </div>
   
   <!-- Main Content -->
@@ -21,11 +24,12 @@
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-900">Petty Cash Book</h2>
         <div class="flex gap-2">
-          <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <i class="fas fa-print"></i>
-            <span>Print</span>
-          </button>
-          <button class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <input type="file" accept=".csv" style="display: none" #fileInput (change)="handleFileImport($event)">
+        <button (click)="fileInput.click()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <i class="fas fa-file-import"></i>
+          <span>Import</span>
+        </button>
+          <button (click)="exportToCSV()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             <i class="fas fa-file-export"></i>
             <span>Export</span>
           </button>
@@ -62,28 +66,26 @@
               <input
                 type="text"
                 placeholder="Search transactions..."
+                [formControl]="searchUserTransaction"
                 class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
               <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
             </div>
           </div>
+
           <!-- Date Picker -->
-          <input
-            type="date"
-            class="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-          />
-          <!-- Filter Button -->
-          <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <i class="fas fa-filter"></i>
-            <span>Filter</span>
+          <app-daterange (dateRangeChange)="onDateRangeChange($event)"></app-daterange>
+
+          <button (click)="applyFilter()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            Apply Filters
           </button>
-          <!-- Clear Button -->
-          <button class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+          
+          <button (click)="clearFilters()" class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
             <i class="fas fa-times"></i>
             <span>Clear</span>
           </button>
         </div>
-        <!-- Right group: Add Transaction -->
+
         <div>
           <button (click)="openAddDialog()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             <i class="fas fa-plus"></i>

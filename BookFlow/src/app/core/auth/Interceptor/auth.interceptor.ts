@@ -19,15 +19,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   ];
 
-  if (publicEndpoints.some(endpoint => req.url.includes(endpoint))) {
-      return next(req);
-  }
+  if (req.body instanceof FormData) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}` 
+    });
 
-
-  const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
+    return next(req.clone({ headers }));
+  } else {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json', 
       'Authorization': `Bearer ${token}`
-  });
+    });
 
   return next(req.clone({ headers }));
-};
+}};
