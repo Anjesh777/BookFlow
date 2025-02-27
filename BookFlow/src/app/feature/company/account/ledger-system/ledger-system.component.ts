@@ -15,6 +15,9 @@ import { DaterangeComponent } from "../../../../core/ui/daterange/daterange.comp
 import { MatExpansionModule } from '@angular/material/expansion';
 import { User } from '../../../../core/auth/model/user';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { AddLedgerDialogComponent } from '../../../../core/ui/popup/add-ledger-dialog/add-ledger-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { LedgerEntry, LedgerSummary } from '../../../../core/auth/model/account';
 
 @Component({
   selector: 'app-ledger-system',
@@ -39,19 +42,44 @@ import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
   styleUrl: './ledger-system.component.css'
 })
 export class LedgerSystemComponent implements OnInit, OnDestroy {
-  allUsers: User[] = []; // Store all users
-  filteredUsers: User[] = []; // Store filtered users
+  allUsers: User[] = []; 
+  filteredUsers: User[] = []; 
   searchControl = new FormControl('');
   isLoading = false;
+  selectedUser: User | null = null; 
+  ledgerSummary: LedgerSummary | null = null;
+  ledgerEntries: LedgerEntry[] = [];
+  
+  
   private destroy$ = new Subject<void>();
 
-  constructor(private accountService: AccountServiceService) {}
+  openAddLedgerDialog(): void {
+    if (!this.selectedUser) {
+      return;
+    }
+    
+    const dialogRef = this.dialog.open(AddLedgerDialogComponent, {
+      width: '600px',
+      disableClose: true
+    });
+    const dialogInstance = dialogRef.componentInstance;
+    console.log('Setting user ID for ledger entry:', this.selectedUser.user_id);
 
+    dialogInstance.setUserId(this.selectedUser.user_id);
+
+  }
+
+
+  
+  constructor(private accountService: AccountServiceService,  private dialog: MatDialog
+  ) {}
+  
   ngOnInit() {
-    // Load all users
+    
+    
     this.loadAllUsers();
 
-    // Setup search with debounce
+    
     this.searchControl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -60,11 +88,14 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
       this.filterUsers(query || '');
     });
   }
-
+  
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+
+
 
   private loadAllUsers(): void {
     this.isLoading = true;
@@ -73,7 +104,7 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (users) => {
           this.allUsers = users || [];
-          this.filteredUsers = this.allUsers; // Initially show all users
+          this.filteredUsers = this.allUsers; 
           this.isLoading = false;
         },
         error: (error) => {
@@ -84,7 +115,7 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
         }
       });
   }
-
+  
   private filterUsers(query: string): void {
     query = query.toLowerCase().trim();
     
@@ -92,9 +123,8 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
       this.filteredUsers = this.allUsers;
       return;
     }
-
+    
     this.filteredUsers = this.allUsers.filter(user => {
-      // Adjust these conditions based on your User model properties
       return (
         user.fullname?.toLowerCase().includes(query) ||
         user.email?.toLowerCase().includes(query) ||
@@ -102,5 +132,45 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
         user.user_id?.toString().includes(query)
       );
     });
+  }
+
+  selectUser(user: User): void {
+    this.selectedUser = user;
+    this.loadUserLedger(user.user_id);
+  }
+
+  clearSelectedUser(): void {
+    this.selectedUser = null;
+  }
+
+  loadUserLedger(userId: string): void {
+    this.isLoading = true;
+    
+    this.accountService.getUserLedgerSummary(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          this.ledgerSummary = summary;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading ledger summary:', error);
+          this.isLoading = false;
+        }
+      });
+      
+    this.accountService.getUserLedgerEntries(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (entries) => {
+          this.ledgerEntries = entries;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading ledger entries:', error);
+          this.ledgerEntries = [];
+          this.isLoading = false;
+        }
+      });
   }
 }

@@ -43,6 +43,9 @@ public class CashBookService {
     @Autowired
     private UserRepo userRepo;
 
+
+
+
     private Company getCurrentUserCompany() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = authentication.getName();

@@ -76,7 +76,7 @@ export class DaybookEntriesComponent implements OnInit{
       toDate: this.dateRange?.toDate ? new Date(this.dateRange.toDate) : null
   };
 
-    this.accountService.searchTransactions(filter.searchText,filter.fromDate,filter.toDate, this.currentPage, 10)
+    this.accountService.searchTransactions(filter.searchText,filter.fromDate,filter.toDate, this.currentPage, 50)
       .subscribe({
         next: (data: Page<CashBook>) => {
           this.transactions = data.content;
@@ -143,7 +143,7 @@ export class DaybookEntriesComponent implements OnInit{
     this.loading = true;
     Promise.all([
       firstValueFrom(this.accountService.getTransactionSummary()),
-      firstValueFrom(this.accountService.getAllTransactions(this.currentPage, 10))
+      firstValueFrom(this.accountService.getAllTransactions(this.currentPage, 50))
     ])
       .then(([summaryData, transactionsData]) => {
         if (summaryData) {
@@ -193,7 +193,7 @@ export class DaybookEntriesComponent implements OnInit{
 
   fetchTransactions(page: number) {
     this.loading = true;
-    this.accountService.getAllTransactions(page, 10).subscribe({
+    this.accountService.getAllTransactions(page, 50).subscribe({
       next: (data: Page<CashBook>) => {
         this.transactions = data.content; 
         this.totalPages = data.page.totalPages;

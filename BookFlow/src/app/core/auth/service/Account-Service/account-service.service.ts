@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CashBook, DashboardSummary, Page, TransactionSummary } from '../../model/account';
+import { CashBook, DashboardSummary, LedgerEntry, LedgerSummary, Page, TransactionSummary } from '../../model/account';
 import { catchError, Observable, of, throwError } from 'rxjs';
 import { User } from '../../model/user';
 import { error } from 'console';
@@ -25,6 +25,8 @@ export class AccountServiceService {
       })
      );
   }
+
+  
 
   getTransactionById(id: number): Observable<CashBook> {
     return this.http.get<CashBook>(`${this.private_URL}/account/transaction/${id}`)
@@ -65,7 +67,7 @@ export class AccountServiceService {
     fromDate: Date | null = null,
     toDate: Date | null = null,
     page: number = 0,
-    size: number = 10
+    size: number = 50
 ): Observable<Page<CashBook>> {
 
 
@@ -176,6 +178,84 @@ importTransactionsFromCsv(file: File) {
   });
 }
 
+
+addLedgerData(record: LedgerEntry): Observable<LedgerEntry>{
+
+  return this.http.post<LedgerEntry>(`${this.private_URL}/ledger-system/add/ledger`, record)
+      .pipe(
+        catchError((error) =>{
+          console.error('API ERROR',error)
+          return new Observable<LedgerEntry>();
+        })
+       );
+}
+
+getUserLedgerEntries(userId: string): Observable<LedgerEntry[]> {
+  return this.http.get<LedgerEntry[]>(`${this.private_URL}/ledger-system/user/${userId}/entries`)
+    .pipe(
+      catchError((error) => {
+        console.error('API ERROR', error);
+        return of([]);
+      })
+    );
+}
+
+getUserLedgerEntriesByDateRange(userId: string, startDate: string, endDate: string): Observable<LedgerEntry[]> {
+  let params = new HttpParams()
+    .set('startDate', startDate)
+    .set('endDate', endDate);
+    
+  return this.http.get<LedgerEntry[]>(`${this.private_URL}/ledger-system/user/${userId}/entries/daterange`, { params })
+    .pipe(
+      catchError((error) => {
+        console.error('API ERROR', error);
+        return of([]);
+      })
+    );
+}
+
+getUserLedgerSummary(userId: string): Observable<LedgerSummary> {
+  return this.http.get<LedgerSummary>(`${this.private_URL}/ledger-system/user/${userId}/summary`)
+    .pipe(
+      catchError((error) => {
+        console.error('API ERROR', error);
+        return new Observable<LedgerSummary>();
+      })
+    );
+}
+
+getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
+  return this.http.get<LedgerEntry>(`${this.private_URL}/ledger-system/entry/${entryId}`)
+    .pipe(
+      catchError((error) => {
+        console.error('API ERROR', error);
+        return new Observable<LedgerEntry>();
+      })
+    );
+  }
+
+
+  deleteLedgerEntry(entryId: string): Observable<void> {
+    return this.http.delete<void>(`${this.private_URL}/ledger-system/entry/${entryId}`)
+      .pipe(
+        catchError((error) => {
+          console.error('API ERROR', error);
+          return new Observable<void>();
+        })
+      );
+  }
+
+  searchLedgerEntries(term: string): Observable<LedgerEntry[]> {
+    const params = new HttpParams().set('term', term);
+    
+    return this.http.get<LedgerEntry[]>(`${this.private_URL}/ledger-system/search`, { params })
+      .pipe(
+        catchError((error) => {
+          console.error('API ERROR', error);
+          return of([]);
+        })
+      );
+  }
 
 
 

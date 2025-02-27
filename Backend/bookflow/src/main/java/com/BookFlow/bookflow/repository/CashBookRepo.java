@@ -95,7 +95,7 @@ public interface CashBookRepo extends JpaRepository<CashBook, Long> {
             @Param("id") Long id
     );
 
-    @Query("SELECT t FROM CashBook t WHERE t.company_id = :companyId AND t.id < :id ORDER BY t.id DESC")
+    @Query("SELECT t FROM CashBook t WHERE t.company_id = :companyId AND t.id < :id ORDER BY t.id DESC LIMIT 1")
     Optional<CashBook> findTopByCompanyAndIdLessThan(
             @Param("companyId") Company companyId,
             @Param("id") Long id

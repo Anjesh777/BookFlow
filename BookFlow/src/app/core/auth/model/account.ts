@@ -39,3 +39,19 @@ export interface DashboardSummary {
     fromDate?: Date | null;  
     toDate?: Date | null;    
   }
+
+  export interface LedgerEntry {
+    entryId: string;
+    date: string;
+    particulars: string;
+    amount: number;
+    type: 'debit' | 'credit';
+    userId: string | number;
+  }
+
+  export interface LedgerSummary {
+    totalCredits: number;
+    totalDebits: number;
+    balance: number;
+  }
+  

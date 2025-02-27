@@ -10,5 +10,6 @@ export interface User {
     update_at: string;
     mainuser: boolean;
     _enabled: boolean;
+    status:boolean
   }
   

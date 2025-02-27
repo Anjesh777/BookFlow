@@ -1,24 +1,17 @@
 package com.BookFlow.bookflow.contoller;
 
-import com.BookFlow.bookflow.dto.CashBookDTO;
-import com.BookFlow.bookflow.dto.UserDTO;
-import com.BookFlow.bookflow.dto.UserDetailsDTO;
+import com.BookFlow.bookflow.dto.LedgerDTO;
+import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.dto.UserDetailsResponse;
-import com.BookFlow.bookflow.model.Company;
-import com.BookFlow.bookflow.model.User;
-import com.BookFlow.bookflow.repository.UserRepo;
 import com.BookFlow.bookflow.services.LedgerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,15 +23,10 @@ public class LedgerSystemController {
 
     private final LedgerService ledgerService;
 
-
     @Autowired
-    private UserRepo userRepo;
-
     public LedgerSystemController(LedgerService ledgerService) {
         this.ledgerService = ledgerService;
     }
-
-    @Autowired
 
 
     @GetMapping("/users")
@@ -53,24 +41,98 @@ public class LedgerSystemController {
         }
     }
 
-    @Transactional
-    public List<User> getAllCmpUsers() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
-
-        if(currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
+    @PostMapping("/add/ledger")
+    public ResponseEntity<LedgerDTO> addLedger(@RequestBody LedgerDTO ledgerDTO) {
+        try {
+            log.info("Adding new ledger entry: {}", ledgerDTO);
+            LedgerDTO savedRecord = ledgerService.addRecord(ledgerDTO);
+            return new ResponseEntity<>(savedRecord, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error adding ledger entry", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // Get the company ID from the user's company object
-        Company userCompany = currentUser.get().getCompany_id();
-        UUID companyId = userCompany.getCompany_id();
-
-
-        return userRepo.findByCompanyId(companyId);
     }
 
 
+    @GetMapping("/user/{userId}/entries")
+    public ResponseEntity<List<LedgerDTO>> getUserLedgerEntries(
+            @PathVariable UUID userId) {
+        try {
+            log.info("Fetching ledger entries for user: {}", userId);
+            List<LedgerDTO> entries = ledgerService.getLedgerEntriesByUser(userId);
+            return ResponseEntity.ok(entries);
+        } catch (Exception e) {
+            log.error("Error fetching user ledger entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GetMapping("/user/{userId}/entries/daterange")
+    public ResponseEntity<List<LedgerDTO>> getUserLedgerEntriesByDateRange(
+            @PathVariable UUID userId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            log.info("Fetching ledger entries for user: {} between {} and {}", userId, startDate, endDate);
+            List<LedgerDTO> entries = ledgerService.getLedgerEntriesByUserAndDateRange(userId, startDate, endDate);
+            return ResponseEntity.ok(entries);
+        } catch (Exception e) {
+            log.error("Error fetching user ledger entries by date range", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GetMapping("/ledger/summary")
+    public ResponseEntity<LedgerSummaryDTO> getLedgerSummary(@PathVariable UUID userId) {
+        try {
+            log.info("Fetching ledger summary for user: {}", userId);
+            LedgerSummaryDTO summary = ledgerService.getUserLedgerSummary(userId);
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            log.error("Error fetching user ledger summary", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GetMapping("/entry/{entryId}")
+    public ResponseEntity<LedgerDTO> getLedgerEntry(@PathVariable String entryId) {
+        try {
+            log.info("Fetching ledger entry: {}", entryId);
+            Optional<LedgerDTO> entry = ledgerService.getLedgerEntryById(entryId);
+            return entry.map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Error fetching ledger entry", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @DeleteMapping("/entry/{entryId}")
+    public ResponseEntity<Void> deleteLedgerEntry(@PathVariable String entryId) {
+        try {
+            log.info("Deleting ledger entry: {}", entryId);
+            boolean deleted = ledgerService.deleteLedgerEntry(entryId);
+            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error deleting ledger entry", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GetMapping("/search")
+    public ResponseEntity<List<LedgerDTO>> searchLedgerEntries(@RequestParam String term) {
+        try {
+            log.info("Searching ledger entries with term: {}", term);
+            List<LedgerDTO> results = ledgerService.searchLedgerEntries(term);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            log.error("Error searching ledger entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

@@ -66,17 +66,7 @@ public class CashbookController {
         }
     }
 
-    @DeleteMapping("/transaction/{id}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
-        try {
-            cashBookService.deleteTransaction(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
 
     @GetMapping("/search")
     public ResponseEntity<Page<CashBookDTO>> searchTransactions(
@@ -84,7 +74,7 @@ public class CashbookController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "50") int size) {
 
         try {
 
@@ -163,6 +153,22 @@ public class CashbookController {
 //            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 //        }
 //    }
+
+    @DeleteMapping("/transaction/{id}")
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+        try {
+            cashBookService.deleteTransaction(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+         } catch (RuntimeException e) {
+            log.error("error is ",e);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            log.error("error is ",e);
+
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     @GetMapping("/summary")
     public ResponseEntity<CashBookSummaryDTO> getTransactionSummary() {

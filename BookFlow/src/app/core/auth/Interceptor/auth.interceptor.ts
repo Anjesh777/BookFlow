@@ -17,7 +17,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/all/reset'
   ];
 
-  // Check if the current request URL is a public endpoint
   const isPublicEndpoint = publicEndpoints.some(endpoint => 
     req.url.includes(endpoint)
   );
