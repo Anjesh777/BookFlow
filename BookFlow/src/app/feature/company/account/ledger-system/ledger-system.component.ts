@@ -42,6 +42,7 @@ import { LedgerEntry, LedgerSummary } from '../../../../core/auth/model/account'
   styleUrl: './ledger-system.component.css'
 })
 export class LedgerSystemComponent implements OnInit, OnDestroy {
+
   allUsers: User[] = []; 
   filteredUsers: User[] = []; 
   searchControl = new FormControl('');
@@ -49,24 +50,22 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
   selectedUser: User | null = null; 
   ledgerSummary: LedgerSummary | null = null;
   ledgerEntries: LedgerEntry[] = [];
-  
-  
+
+
   private destroy$ = new Subject<void>();
+
 
   openAddLedgerDialog(): void {
     if (!this.selectedUser) {
       return;
     }
-    
     const dialogRef = this.dialog.open(AddLedgerDialogComponent, {
       width: '600px',
       disableClose: true
     });
     const dialogInstance = dialogRef.componentInstance;
     console.log('Setting user ID for ledger entry:', this.selectedUser.user_id);
-
     dialogInstance.setUserId(this.selectedUser.user_id);
-
   }
 
 
@@ -76,8 +75,8 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
   
   ngOnInit() {
     
-    
     this.loadAllUsers();
+    this.loadCompanyLedgerSummary();
 
     
     this.searchControl.valueChanges.pipe(
@@ -134,6 +133,25 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  deleteRecord(queryID: string): void {
+    this.accountService.deleteLedgerEntry(queryID)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          console.log(`Ledger entry with ID ${queryID} deleted successfully.`);
+          if (this.selectedUser) {
+            this.loadUserLedger(this.selectedUser.user_id);
+          }
+        },
+        error: (error) => {
+          console.error(`Error deleting ledger entry with ID ${queryID}:`, error);
+        }
+      });
+  }
+
+  
+
   selectUser(user: User): void {
     this.selectedUser = user;
     this.loadUserLedger(user.user_id);
@@ -141,6 +159,8 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
 
   clearSelectedUser(): void {
     this.selectedUser = null;
+    this.loadCompanyLedgerSummary();
+
   }
 
   loadUserLedger(userId: string): void {
@@ -173,4 +193,24 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  loadCompanyLedgerSummary(): void {
+    this.isLoading = true;
+    console.log('Attempting to load company ledger summary');
+    
+    this.accountService.getCompanyLedgerSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          console.log('Company ledger summary loaded:', summary);
+          this.ledgerSummary = summary;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading company ledger summary:', error);
+          this.isLoading = false;
+        }
+      });
+  }
+
 }

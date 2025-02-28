@@ -1,5 +1,6 @@
 package com.BookFlow.bookflow.repository;
 
+import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.dto.UserGrowthDTO;
 import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.Company;
@@ -20,10 +21,16 @@ import java.util.UUID;
 @Repository
 public interface UserRepo extends JpaRepository<User,UUID> {
 
+    @Query("SELECT NEW com.BookFlow.bookflow.dto.LedgerSummaryDTO(" +
+            "COALESCE(SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE 0 END), 0), " +
+            "COALESCE(SUM(CASE WHEN l.type = 'debit' THEN l.amount ELSE 0 END), 0), " +
+            "COALESCE(SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END), 0)) " +
+            "FROM Ledger l WHERE l.companyID = :company")
+    LedgerSummaryDTO getCompanySummary(@Param("company") Company company);
+
     Optional<User> findByUsername(String username);
     Optional<User> findByRole(String username);
 
-    //void deleteByCompanyId(UUID id);
 
     Optional<User> findByEmail(String email);
     Long countByEmail(String email);
@@ -36,10 +43,6 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     @Modifying
     @Query("DELETE FROM User u WHERE u.user_id = :userId AND u.mainuser = false")
     void deleteByUserId(@Param("userId") UUID userId);
-
-
-
-
 
 
     @Query(value = """

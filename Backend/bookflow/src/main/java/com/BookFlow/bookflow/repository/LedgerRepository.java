@@ -1,5 +1,6 @@
 package com.BookFlow.bookflow.repository;
 
+import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.Ledger;
 import com.BookFlow.bookflow.model.User;
@@ -36,18 +37,18 @@ public interface LedgerRepository extends JpaRepository<Ledger,String> {
     Optional<Ledger> findByEntryIDAndCompanyID(String entryID, Company company);
 
     @Query("SELECT " +
-            "SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE 0 END) as totalCredits, " +
-            "SUM(CASE WHEN l.type = 'debit' THEN l.amount ELSE 0 END) as totalDebits, " +
-            "SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END) as balance " +
+            "COALESCE(SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE 0 END), 0) as totalCredits, " +
+            "COALESCE(SUM(CASE WHEN l.type = 'debit' THEN l.amount ELSE 0 END), 0) as totalDebits, " +
+            "COALESCE(SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END), 0) as balance " +
             "FROM Ledger l WHERE l.companyID = :company")
     Object[] getCompanySummary(@Param("company") Company company);
 
-    @Query("SELECT " +
-            "SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE 0 END) as totalCredits, " +
-            "SUM(CASE WHEN l.type = 'debit' THEN l.amount ELSE 0 END) as totalDebits, " +
-            "SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END) as balance " +
+    @Query("SELECT NEW com.BookFlow.bookflow.dto.LedgerSummaryDTO(" +
+            "COALESCE(SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE 0 END), 0), " +
+            "COALESCE(SUM(CASE WHEN l.type = 'debit' THEN l.amount ELSE 0 END), 0), " +
+            "COALESCE(SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END), 0)) " +
             "FROM Ledger l WHERE l.userID = :user")
-    Object[] getUserSummary(@Param("user") User user);
+    LedgerSummaryDTO getUserSummary(@Param("user") User user);
 
     @Query("SELECT l.balance FROM Ledger l WHERE l.userID = :user ORDER BY l.date DESC, l.entryID DESC LIMIT 1")
     Optional<BigDecimal> findLatestUserBalance(@Param("user") User user);
@@ -55,8 +56,6 @@ public interface LedgerRepository extends JpaRepository<Ledger,String> {
     @Query("SELECT l FROM Ledger l WHERE l.userID.user_id = :userId ORDER BY l.date DESC, l.entryID DESC")
     List<Ledger> findByUserIdOrderByDateDesc(@Param("userId") UUID userId);
 
-    @Query("SELECT COUNT(l) FROM Ledger l WHERE l.userID = :user")
-    Long countByUser(@Param("user") User user);
 
     @Query("SELECT l FROM Ledger l WHERE l.companyID = :company AND " +
             "(LOWER(l.particulars) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +

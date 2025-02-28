@@ -77,7 +77,6 @@ public class LedgerService {
         Company company = getCurrentUserCompany();
         User user = null;
 
-        // Get user either from DTO or current user
         if (ledgerDTO.getUser_id() != null && !ledgerDTO.getUser_id().isEmpty()) {
             user = userRepo.findById(UUID.fromString(ledgerDTO.getUser_id()))
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + ledgerDTO.getUser_id()));
@@ -144,28 +143,40 @@ public class LedgerService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        // Verify the user belongs to the current company
         Company currentCompany = getCurrentUserCompany();
         if (!user.getCompany_id().equals(currentCompany)) {
             throw new RuntimeException("User does not belong to the current company");
         }
 
-        Object[] summary = ledgerRepository.getUserSummary(user);
-
-        if (summary == null || summary.length < 3) {
-            return new LedgerSummaryDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
-        }
-
-        BigDecimal totalCredits = (BigDecimal) (summary[0] != null ? summary[0] : BigDecimal.ZERO);
-        BigDecimal totalDebits = (BigDecimal) (summary[1] != null ? summary[1] : BigDecimal.ZERO);
-        BigDecimal balance = (BigDecimal) (summary[2] != null ? summary[2] : BigDecimal.ZERO);
-
-        return new LedgerSummaryDTO(totalCredits, totalDebits, balance);
+        LedgerSummaryDTO summary = ledgerRepository.getUserSummary(user);
+        return summary != null ? summary : new LedgerSummaryDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    /**
-     * Get a specific ledger entry by ID
-     */
+    public LedgerSummaryDTO getCompanyLedgerSummary() {
+        Company company = getCurrentUserCompany();
+        Object[] summaryData = ledgerRepository.getCompanySummary(company);
+
+        if (summaryData != null && summaryData.length > 0) {
+            Object[] innerData = (Object[]) summaryData[0];
+
+            if (innerData != null && innerData.length >= 3) {
+                BigDecimal totalCredits = (BigDecimal) innerData[0];
+                BigDecimal totalDebits = (BigDecimal) innerData[1];
+                BigDecimal currentBalance = (BigDecimal) innerData[2];
+
+                return new LedgerSummaryDTO(
+                        totalCredits != null ? totalCredits : BigDecimal.ZERO,
+                        totalDebits != null ? totalDebits : BigDecimal.ZERO,
+                        currentBalance != null ? currentBalance : BigDecimal.ZERO
+                );
+            }
+        }
+
+        return new LedgerSummaryDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+
+
     public Optional<LedgerDTO> getLedgerEntryById(String entryId) {
         Company company = getCurrentUserCompany();
         Optional<Ledger> ledgerEntry = ledgerRepository.findByEntryIDAndCompanyID(entryId, company);
@@ -173,10 +184,7 @@ public class LedgerService {
         return ledgerEntry.map(this::mapToDTO);
     }
 
-    /**
-     * Delete a ledger entry
-     * Note: In a real system, consider soft deletion or audit trail
-     */
+
     @Transactional
     public boolean deleteLedgerEntry(String entryId) {
         Company company = getCurrentUserCompany();
@@ -198,13 +206,10 @@ public class LedgerService {
         return false;
     }
 
-    /**
-     * Update balances for all entries after a deletion
-     */
+
     private void updateBalancesAfterDeletion(List<Ledger> entries) {
         BigDecimal runningBalance = BigDecimal.ZERO;
 
-        // Sort by date ascending
         entries.sort((a, b) -> a.getDate().compareTo(b.getDate()));
 
         for (Ledger entry : entries) {
@@ -230,9 +235,7 @@ public class LedgerService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Map entity to DTO
-     */
+
     private LedgerDTO mapToDTO(Ledger ledger) {
         LedgerDTO dto = new LedgerDTO(
                 ledger.getEntryID(),
@@ -245,7 +248,7 @@ public class LedgerService {
                 ledger.getUserID() != null ? ledger.getUserID().getUser_id().toString() : null
         );
 
-        dto.setAmount(ledger.getBalance());
+        dto.setBalance(ledger.getBalance());
 
         return dto;
     }

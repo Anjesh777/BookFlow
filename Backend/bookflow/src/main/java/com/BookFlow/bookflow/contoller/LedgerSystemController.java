@@ -3,6 +3,7 @@ package com.BookFlow.bookflow.contoller;
 import com.BookFlow.bookflow.dto.LedgerDTO;
 import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.dto.UserDetailsResponse;
+import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.services.LedgerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,8 @@ public class LedgerSystemController {
     public LedgerSystemController(LedgerService ledgerService) {
         this.ledgerService = ledgerService;
     }
+
+
 
 
     @GetMapping("/users")
@@ -84,7 +88,7 @@ public class LedgerSystemController {
     }
 
 
-    @GetMapping("/ledger/summary")
+    @GetMapping("/user/{userId}/summary")
     public ResponseEntity<LedgerSummaryDTO> getLedgerSummary(@PathVariable UUID userId) {
         try {
             log.info("Fetching ledger summary for user: {}", userId);
@@ -92,6 +96,18 @@ public class LedgerSystemController {
             return ResponseEntity.ok(summary);
         } catch (Exception e) {
             log.error("Error fetching user ledger summary", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/company/summary")
+    public ResponseEntity<LedgerSummaryDTO> getCompanySummary() {
+        try {
+            log.info("Fetching overall company ledger summary");
+            LedgerSummaryDTO summary = ledgerService.getCompanyLedgerSummary();
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            log.error("Error fetching company ledger summary", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

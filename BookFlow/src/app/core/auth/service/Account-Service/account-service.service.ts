@@ -259,6 +259,17 @@ getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
 
 
 
+  getCompanyLedgerSummary(): Observable<LedgerSummary> {
+    return this.http.get<LedgerSummary>(`${this.private_URL}/ledger-system/company/summary`)
+      .pipe(
+        catchError((error) => {
+          return new Observable<LedgerSummary>();
+        })
+      );
+  }
+
+  
+
 
 
 
