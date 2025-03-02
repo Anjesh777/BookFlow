@@ -134,34 +134,17 @@ export class AddLedgerDialogComponent {
         amount: Number(formData.amount),
         user_id: this.userId,
       };
-
+  
       this.accountService.addLedgerData(ledgerData).subscribe({
-       next: (response) => {
-                     console.log('Transaction added successfully:', response);
-                     this.dialogRef.close()
-                     
-                    //  this.accountService.getTransactionSummary().subscribe({
-                    //    next: (data: DashboardSummary) => {
-                    //      this.dialogRef.close({
-                    //        // transaction: transactionData,
-                    //        // summary: data
-                    //      });
-                    //    },
-                    //    error: (error) => {
-                    //      console.error('Error fetching summary:', error);
-                    //      this.isLoading = false;
-                    //    }
-                    //  });
-       
-                
-                   },
-                   error: (error) => {
-                     console.error('Failed to add transaction:', error);
-                     this.isLoading = false;
-                   }
-        
-      })
-
+        next: (response) => {
+          console.log('Transaction added successfully:', response);
+          this.dialogRef.close({ success: true });
+        },
+        error: (error) => {
+          console.error('Failed to add transaction:', error);
+          this.isLoading = false;
+        }
+      });
     }
   }
 

@@ -46,12 +46,18 @@ export interface DashboardSummary {
     particulars: string;
     amount: number;
     type: 'debit' | 'credit';
-    userId: string | number;
+    userId: string;
+    note: string;
+    referenceNumber: string;
+    
   }
 
   export interface LedgerSummary {
     totalCredits: number;
     totalDebits: number;
     balance: number;
+    outstandingBalance?: number; 
+
+
   }
   

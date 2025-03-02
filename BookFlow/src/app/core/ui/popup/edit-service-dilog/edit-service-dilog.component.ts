@@ -36,7 +36,6 @@ import { Service } from '../../../auth/model/admin';
         <h4 class="text-xl text-gray-800 font-semibold mb-6">{{ isEdit ? 'Edit Service' : 'Add Service' }}</h4>
 
         <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()" class="space-y-4">
-            <!-- Service Name -->
             <div class="space-y-2">
                 <label class="text-sm text-gray-700 font-medium">Service Name</label>
                 <input type="text" formControlName="name" 
@@ -46,7 +45,6 @@ import { Service } from '../../../auth/model/admin';
                     class="text-sm text-red-500">Service name is required</span>
             </div>
 
-            <!-- Category and Price -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2">
                     <label class="text-sm text-gray-700 font-medium">Category</label>
@@ -90,10 +88,10 @@ import { Service } from '../../../auth/model/admin';
                 <div class="space-y-2">
                     <label class="text-sm text-gray-700 font-medium">Status</label>
                     <select formControlName="status"
-    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-    <option [ngValue]="true">Active</option>
-    <option [ngValue]="false">Inactive</option>
-</select>
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                      <option [ngValue]="true">Active</option>
+                      <option [ngValue]="false">Inactive</option>
+                    </select>
                 </div>
             </div>
 
@@ -142,7 +140,6 @@ export class EditServiceDilogComponent {
   }
 
   ngOnInit(): void {
-    // Additional initialization if needed
   }
 
   private initForm(): FormGroup {
@@ -162,15 +159,14 @@ export class EditServiceDilogComponent {
       this.isSubmitting = true;
       const formValue = this.serviceForm.value;
       
-      // Create the service data object with proper mapping
       const serviceData = {
         service_id: formValue.id,
         serviceName: formValue.name,
         category: formValue.category,
         price: formValue.price,
         duration: formValue.duration,
-        status: formValue.status, // This should already be a boolean
-        serviceDescription: formValue.description // Make sure the property name matches
+        status: formValue.status,
+        serviceDescription: formValue.description 
       };
   
       if (this.isEdit) {
@@ -178,7 +174,7 @@ export class EditServiceDilogComponent {
           next: (response) => {
             this.isSubmitting = false;
             this.adminService.getService();
-            this.dialogRef.close(response); // Close with the updated service
+            this.dialogRef.close(response); 
           },
           error: (error) => {
             console.error('Error updating service:', error);

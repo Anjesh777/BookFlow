@@ -6,13 +6,20 @@ import com.BookFlow.bookflow.dto.UserDetailsResponse;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.services.LedgerService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +70,7 @@ public class LedgerSystemController {
             @PathVariable UUID userId) {
         try {
             log.info("Fetching ledger entries for user: {}", userId);
+
             List<LedgerDTO> entries = ledgerService.getLedgerEntriesByUser(userId);
             return ResponseEntity.ok(entries);
         } catch (Exception e) {
@@ -70,6 +78,7 @@ public class LedgerSystemController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
 
     @GetMapping("/user/{userId}/entries/daterange")
@@ -87,12 +96,29 @@ public class LedgerSystemController {
         }
     }
 
+    @PutMapping("/entry/{entryId}")
+    public ResponseEntity<LedgerDTO> updateLedgerEntry(
+            @PathVariable String entryId,
+            @RequestBody LedgerDTO updatedLedgerDTO) {
+        try {
+            log.info("Updating ledger entry: {}", updatedLedgerDTO.getReferenceNumber());
+
+            LedgerDTO updatedEntry = ledgerService.updateLedgerEntry(entryId, updatedLedgerDTO);
+            return ResponseEntity.ok(updatedEntry);
+        } catch (Exception e) {
+            log.error("Error updating ledger entry", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
 
     @GetMapping("/user/{userId}/summary")
     public ResponseEntity<LedgerSummaryDTO> getLedgerSummary(@PathVariable UUID userId) {
         try {
             log.info("Fetching ledger summary for user: {}", userId);
             LedgerSummaryDTO summary = ledgerService.getUserLedgerSummary(userId);
+
             return ResponseEntity.ok(summary);
         } catch (Exception e) {
             log.error("Error fetching user ledger summary", e);
@@ -126,6 +152,53 @@ public class LedgerSystemController {
         }
     }
 
+    @GetMapping("/export/{userId}")
+    public ResponseEntity<byte[]> exportLedgerToCSV(@PathVariable UUID userId) {
+        try {
+            List<LedgerDTO> ledgerEntries = ledgerService.getLedgerEntriesByUser(userId);
+            LedgerSummaryDTO ledgerSummary = ledgerService.getUserLedgerSummary(userId);
+            StringWriter stringWriter = new StringWriter();
+
+            BigDecimal totalLedgerBalance = ledgerSummary.getBalance().max(BigDecimal.ZERO);
+            BigDecimal totalCredits = ledgerSummary.getTotalCredits().max(BigDecimal.ZERO);
+            BigDecimal totalDebits = ledgerSummary.getTotalDebits().max(BigDecimal.ZERO);
+            BigDecimal outstandingBalance = ledgerSummary.getOutstandingBalance().max(BigDecimal.ZERO);
+
+            try (CSVPrinter csvPrinter = new CSVPrinter(stringWriter, CSVFormat.DEFAULT
+                    .withHeader("Date", "Particulars", "Type", "Amount", "Balance"))) {
+
+                for (LedgerDTO entry : ledgerEntries) {
+                    csvPrinter.printRecord(
+                            entry.getDate(),
+                            entry.getParticulars(),
+                            entry.getType(),
+                            entry.getAmount(),
+                            entry.getBalance()
+                    );
+                }
+
+                csvPrinter.println();
+                csvPrinter.printRecord("Total Ledger Balance", "", "", "", totalLedgerBalance);
+                csvPrinter.printRecord("Total Credits", "", "", "", totalCredits);
+                csvPrinter.printRecord("Total Debits", "", "", "", totalDebits);
+                csvPrinter.printRecord("Outstanding Balance", "", "", "", outstandingBalance);
+
+                csvPrinter.flush();
+            }
+
+            byte[] csvBytes = stringWriter.toString().getBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=ledger_export.csv");
+            headers.add("Content-Type", "text/csv");
+
+            return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+
 
     @DeleteMapping("/entry/{entryId}")
     public ResponseEntity<Void> deleteLedgerEntry(@PathVariable String entryId) {
@@ -151,4 +224,7 @@ public class LedgerSystemController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+
 }

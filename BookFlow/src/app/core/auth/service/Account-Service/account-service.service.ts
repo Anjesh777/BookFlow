@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CashBook, DashboardSummary, LedgerEntry, LedgerSummary, Page, TransactionSummary } from '../../model/account';
-import { catchError, Observable, of, throwError } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { User } from '../../model/user';
 import { error } from 'console';
 
@@ -47,6 +47,11 @@ export class AccountServiceService {
       })
      );
   }
+
+  updateLedgerEntry(entryId: string, data: any): Observable<any> {
+    return this.http.put(`${this.private_URL}/ledger-system/entry/${entryId}`, data);
+  }
+  
 
   deleteTransaction(id: number): Observable<void> {
     return this.http.delete<void>(`${this.private_URL}/account/transaction/${id}`)
@@ -165,6 +170,15 @@ exportTransactionsToCSV(query?: string, fromDate?: Date | null, toDate?: Date | 
   });
 }
 
+exportLedgerToCSV(id:String): Observable<Blob> {
+  let params = new HttpParams();
+
+  return this.http.get(`${this.private_URL}/ledger-system/export/${id}`, {
+    params,
+    responseType: 'blob'
+  });
+}
+
 
 
 
@@ -217,12 +231,17 @@ getUserLedgerEntriesByDateRange(userId: string, startDate: string, endDate: stri
 getUserLedgerSummary(userId: string): Observable<LedgerSummary> {
   return this.http.get<LedgerSummary>(`${this.private_URL}/ledger-system/user/${userId}/summary`)
     .pipe(
+      map(summary => {
+        summary.outstandingBalance = Math.max(summary.totalDebits - summary.totalCredits,0);
+        return summary;
+      }),
       catchError((error) => {
         console.error('API ERROR', error);
         return new Observable<LedgerSummary>();
       })
     );
 }
+
 
 getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
   return this.http.get<LedgerEntry>(`${this.private_URL}/ledger-system/entry/${entryId}`)
@@ -267,6 +286,8 @@ getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
         })
       );
   }
+
+  
 
   
 

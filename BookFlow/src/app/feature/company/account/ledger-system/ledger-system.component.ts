@@ -18,6 +18,7 @@ import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { AddLedgerDialogComponent } from '../../../../core/ui/popup/add-ledger-dialog/add-ledger-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { LedgerEntry, LedgerSummary } from '../../../../core/auth/model/account';
+import { EditLedgerDialogComponent } from '../../../../core/ui/popup/edit-ledger-dialog/edit-ledger-dialog.component';
 
 @Component({
   selector: 'app-ledger-system',
@@ -43,6 +44,7 @@ import { LedgerEntry, LedgerSummary } from '../../../../core/auth/model/account'
 })
 export class LedgerSystemComponent implements OnInit, OnDestroy {
 
+  today: string = new Date().toISOString().split('T')[0];
   allUsers: User[] = []; 
   filteredUsers: User[] = []; 
   searchControl = new FormControl('');
@@ -54,6 +56,9 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  startDateControl = new FormControl('');
+  endDateControl = new FormControl('');
+
 
   openAddLedgerDialog(): void {
     if (!this.selectedUser) {
@@ -63,9 +68,43 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
       width: '600px',
       disableClose: true
     });
+    
     const dialogInstance = dialogRef.componentInstance;
     console.log('Setting user ID for ledger entry:', this.selectedUser.user_id);
     dialogInstance.setUserId(this.selectedUser.user_id);
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        if (this.selectedUser) {
+          this.loadUserLedger(this.selectedUser?.user_id);
+        } else {
+          this.loadCompanyLedgerSummary();
+        }
+      }
+    });
+  }
+
+  editLedgerEntry(entry: LedgerEntry): void {
+    if (!this.selectedUser) {
+      return;
+    }
+    
+    const userId = this.selectedUser.user_id;
+    
+    const dialogRef = this.dialog.open(EditLedgerDialogComponent, {
+      width: '600px',
+      disableClose: true,
+      data: {
+        entry: entry,
+        userId: userId
+      }
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.loadUserLedger(userId);
+      }
+    });
   }
 
 
@@ -93,8 +132,45 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  filterByDateRange(): void {
+    if (!this.selectedUser) {
+      return;
+    }
+    
+    const startDate = this.startDateControl.value;
+    const endDate = this.endDateControl.value;
+    
+    if (!startDate || !endDate) {
+      console.error('Both start and end dates are required');
+      return;
+    }
+    
+    this.isLoading = true;
+    this.accountService.getUserLedgerEntriesByDateRange(
+      this.selectedUser.user_id, 
+      startDate, 
+      endDate
+    ).pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (entries) => {
+        this.ledgerEntries = entries;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error filtering ledger by date range:', error);
+        this.isLoading = false;
+      }
+    });
+  }
 
-
+  clearDateFilter(): void {
+    this.startDateControl.setValue('');
+    this.endDateControl.setValue('');
+    
+    if (this.selectedUser) {
+      this.loadUserLedger(this.selectedUser.user_id);
+    }
+  }
 
   private loadAllUsers(): void {
     this.isLoading = true;
@@ -162,15 +238,18 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
     this.loadCompanyLedgerSummary();
 
   }
-
+  
   loadUserLedger(userId: string): void {
     this.isLoading = true;
-    
+  
     this.accountService.getUserLedgerSummary(userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (summary) => {
           this.ledgerSummary = summary;
+          summary.outstandingBalance = Math.max(summary.totalDebits - summary.totalCredits,0);
+
+
           this.isLoading = false;
         },
         error: (error) => {
@@ -178,7 +257,7 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         }
       });
-      
+  
     this.accountService.getUserLedgerEntries(userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -193,6 +272,7 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
         }
       });
   }
+  
 
   loadCompanyLedgerSummary(): void {
     this.isLoading = true;
@@ -204,6 +284,7 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
         next: (summary) => {
           console.log('Company ledger summary loaded:', summary);
           this.ledgerSummary = summary;
+          summary.outstandingBalance = Math.max(summary.totalDebits - summary.totalCredits,0);
           this.isLoading = false;
         },
         error: (error) => {
@@ -212,5 +293,59 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+
+  exportToCSV(): void {
+  this.isLoading = true;
+  
+  if (this.selectedUser) {
+    this.accountService.exportLedgerToCSV(this.selectedUser.user_id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          const fileName = `ledger_${this.selectedUser?.fullname || this.selectedUser?.user_id}_${new Date().toISOString().split('T')[0]}.csv`;
+          link.download = fileName;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error exporting ledger to CSV:', error);
+          this.isLoading = false;
+        }
+      });
+  } else {
+   
+    const startDate = this.startDateControl.value;
+    const endDate = this.endDateControl.value;
+    
+    this.accountService.exportTransactionsToCSV(
+      '',  
+      startDate ? new Date(startDate) : null,
+      endDate ? new Date(endDate) : null
+    ).pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `company_ledger_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error exporting company ledger to CSV:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+}
+
+  
+  
 
 }

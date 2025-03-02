@@ -13,4 +13,9 @@ public class LedgerSummaryDTO {
     private BigDecimal totalCredits;
     private BigDecimal totalDebits;
     private BigDecimal balance;
+
+    public BigDecimal getOutstandingBalance() {
+        return totalDebits.subtract(totalCredits);
+    }
+
 }

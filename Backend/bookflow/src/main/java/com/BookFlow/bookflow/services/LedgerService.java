@@ -41,8 +41,25 @@ public class LedgerService {
         if (currentUser.isEmpty()) {
             throw new RuntimeException("Current user not found");
         }
-
         return currentUser.get().getCompany_id();
+    }
+
+    public LedgerDTO updateLedgerEntry(String entryId, LedgerDTO updatedLedgerDTO) {
+        Optional<Ledger> existingEntry = ledgerRepository.findById(entryId);
+
+        if (existingEntry.isPresent()) {
+            Ledger ledger = existingEntry.get();
+            ledger.setAmount(updatedLedgerDTO.getAmount());
+            ledger.setType(updatedLedgerDTO.getType());
+            ledger.setParticulars(updatedLedgerDTO.getParticulars());
+            ledger.setNote(updatedLedgerDTO.getNote());
+            ledger.setRefrenceNumber(updatedLedgerDTO.getReferenceNumber());
+
+            ledgerRepository.save(ledger);
+            return mapToDTO(ledger);
+        } else {
+            throw new RuntimeException("Ledger entry not found");
+        }
     }
 
 
@@ -52,6 +69,9 @@ public class LedgerService {
         return userRepo.findByUsername(currentUsername)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
     }
+
+
+
 
 
     public List<UserDetailsResponse> getAllUsers() {
@@ -229,7 +249,6 @@ public class LedgerService {
     public List<LedgerDTO> searchLedgerEntries(String searchTerm) {
         Company company = getCurrentUserCompany();
         List<Ledger> results = ledgerRepository.searchLedgerEntries(company, searchTerm);
-
         return results.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
