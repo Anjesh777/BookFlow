@@ -1,1 +1,229 @@
-<p>admin-dashboard works!</p>
+
+    
+
+    <div class="dashboard-container bg-gray-50">
+        <div class="dashboard-card">
+            <div class="card-header ">
+                <h2>Finnical Activities</h2>
+            </div>
+
+
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                 <mat-icon class="stat-icon">groups</mat-icon>
+                 
+                 <div class="stat-content">
+                   <h3>Total Cashbook</h3>
+                   <p class="stat-number">100</p>
+                 </div>
+               </div>
+           
+               <div class="stat-card">
+                 <mat-icon class="stat-icon">business</mat-icon>
+                 <div class="stat-content">
+                   <h3>Total Ledger Entries</h3>
+                   <p class="stat-number">90</p>
+                 </div>
+               </div>
+           
+               <div class="stat-card">
+                 <mat-icon class="stat-icon">support_agent</mat-icon>
+                 <div class="stat-content">
+                   <h3>Total Outstanding balance</h3>
+                   <p class="stat-number">24</p>
+                 </div>
+               </div>
+
+               
+               <div class="stat-card">
+                <mat-icon class="stat-icon">support_agent</mat-icon>
+                <div class="stat-content">
+                  <h3>Service Booked</h3>
+                  <p class="stat-number">24</p>
+                  <span class="stat-trend ">+3 pending</span>
+                </div>
+              </div>
+             </div>
+
+        </div>
+       
+  
+      <!-- Main Content Grid -->
+      <div class="dashboard-grid pt-8 text-black">
+        <div class="dashboard-card">
+            <div class="card-header flex justify-between items-center">
+                <h2>Cashbook</h2>
+        
+                <!-- Dropdown Filter -->
+                <select [(ngModel)]="selectedFilter" (change)="fetchTransactionData()" class="border p-2 rounded">
+                    <option value="month">Monthly Transactions</option>
+                    <option value="day">Daily Transactions</option>
+                </select>
+        
+                <select *ngIf="selectedFilter === 'day'" [(ngModel)]="selectedMonth" (change)="fetchTransactionData()" class="border p-2 rounded">
+                    <option *ngFor="let month of last12Months" [value]="month.value">{{ month.label }}</option>
+                </select>
+            
+            </div>
+        
+            <hr class="border-gray-200">
+        
+            <!-- Transactions Table -->
+            <div class="p-6">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 px-4 py-2">Date</th>
+                            <th class="border border-gray-300 px-4 py-2">Transaction Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let key of transactionData | keyvalue">
+                            <td class="border border-gray-300 px-4 py-2">{{ key.key }}</td>
+                            <td class="border border-gray-300 px-4 py-2">₹ {{ key.value }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+  
+        <div class="dashboard-card">
+            <div class="card-header">
+              <h2>Quick Actions</h2>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="card-content">
+              <div class="quick-actions-grid">
+                <button mat-raised-button color="primary" routerLink="/superadmin/companies">
+                  <mat-icon>add_business</mat-icon>
+                  Manage Company
+                </button>
+                <button mat-raised-button color="primary" routerLink="/superadmin/notifications">
+                  <mat-icon>person_add</mat-icon>
+                  Push notification
+                </button>
+                <button mat-raised-button color="primary">
+                  <mat-icon>settings</mat-icon>
+                  System Settings
+                </button>
+                <button mat-raised-button color="primary">
+                  <mat-icon>backup</mat-icon>
+                  Backup Data
+                </button>
+      
+              </div>
+            </div>
+          </div>
+      
+      </div>
+  
+      <div class="mt-6">
+        <div class="bg-white rounded-lg shadow-lg border border-gray-100">
+          <div class="p-6 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+              <span class="material-icons text-gray-600">notifications</span>
+              <h2 class="text-xl font-semibold text-gray-800">Recent Notifications</h2>
+            </div>
+            <button class="text-indigo-600 hover:bg-gray-50 px-3 py-1 rounded">
+              <span class="flex items-center gap-1">
+                <span>View All</span>
+                <span class="material-icons">chevron_right</span>
+              </span>
+            </button>
+          </div>
+          
+          <hr class="border-gray-200">
+          
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="bg-gray-50 hover:bg-gray-100 transition-all duration-200 rounded-lg p-4 border border-gray-200">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 mt-1">
+                    <div class="w-3 h-3 rounded-full bg-green-600"></div>
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                      <h4 class="font-medium text-gray-800 truncate">System Update Complete</h4>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">2 hours ago</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">The system update has been successfully completed. All services are now running on the latest version.</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-white bg-green-600 text-xs px-2 py-1 rounded-full">
+                        SUCCESS
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <div class="bg-gray-50 hover:bg-gray-100 transition-all duration-200 rounded-lg p-4 border border-gray-200">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 mt-1">
+                    <div class="w-3 h-3 rounded-full bg-blue-600"></div>
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                      <h4 class="font-medium text-gray-800 truncate">New Feature Available</h4>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">5 hours ago</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">We've added new reporting features to the dashboard. Check them out in the analytics section.</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-white bg-blue-600 text-xs px-2 py-1 rounded-full">
+                        INFORMATION
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <div class="bg-gray-50 hover:bg-gray-100 transition-all duration-200 rounded-lg p-4 border border-gray-200">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 mt-1">
+                    <div class="w-3 h-3 rounded-full bg-yellow-600"></div>
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                      <h4 class="font-medium text-gray-800 truncate">Storage Usage Warning</h4>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">1 day ago</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">Your storage usage is approaching 80% of your allocated quota. Consider upgrading your plan or cleaning up unused data.</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-white bg-yellow-600 text-xs px-2 py-1 rounded-full">
+                        WARNING
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <div class="bg-gray-50 hover:bg-gray-100 transition-all duration-200 rounded-lg p-4 border border-gray-200">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 mt-1">
+                    <div class="w-3 h-3 rounded-full bg-red-600 ring-4 ring-red-100"></div>
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                      <h4 class="font-medium text-gray-800 truncate">API Connection Error</h4>
+                      <span class="text-xs text-gray-500 whitespace-nowrap">2 days ago</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">There was an error connecting to the payment processing API. The system will retry automatically.</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-white bg-red-600 text-xs px-2 py-1 rounded-full">
+                        ERROR
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+

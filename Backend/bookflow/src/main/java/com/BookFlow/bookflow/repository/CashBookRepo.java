@@ -15,6 +15,24 @@ import java.util.Optional;
 
 public interface CashBookRepo extends JpaRepository<CashBook, Long> {
 
+    @Query("SELECT TO_CHAR(c.date, 'Month'), SUM(c.receiptAmount) FROM CashBook c " +
+            "GROUP BY TO_CHAR(c.date, 'Month')")
+    List<Object[]> getMonthlyTransactionSummary();
+
+
+    @Query(value = "SELECT EXTRACT(DAY FROM date) as day, SUM(receipt_amount - payment_amount) as total_amount " +
+            "FROM cash_book " +
+            "WHERE EXTRACT(MONTH FROM date) = :month AND EXTRACT(YEAR FROM date) = :year " +
+            "GROUP BY EXTRACT(DAY FROM date) " +
+            "ORDER BY day", nativeQuery = true)
+    List<Object[]> getDailyTransactionSummary(@Param("month") int month, @Param("year") int year);
+
+
+
+
+
+
+
 
     @Query("SELECT t FROM CashBook t WHERE t.company_id = :company")
     Page<CashBook> findByCompany(@Param("company") Company company, Pageable pageable);

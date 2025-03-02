@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -197,6 +198,30 @@ public class CashbookController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/transactions/monthly")
+    public ResponseEntity<Map<String, BigDecimal>> getMonthlyTransactionSummary() {
+        try {
+            Map<String, BigDecimal> monthlyData = cashBookService.getMonthlyTransactionSummary();
+            return new ResponseEntity<>(monthlyData, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching monthly transactions", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/transactions/daily")
+    public ResponseEntity<Map<String, BigDecimal>> getDailyTransactionSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+        try {
+            Map<String, BigDecimal> dailyData = cashBookService.getDailyTransactionSummary(month);
+            return new ResponseEntity<>(dailyData, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching daily transactions", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 
 

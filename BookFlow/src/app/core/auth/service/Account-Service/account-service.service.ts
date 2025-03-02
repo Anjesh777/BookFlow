@@ -12,6 +12,8 @@ export class AccountServiceService {
 
 
   private readonly private_URL ="http://localhost:8811/api/v1"
+  private apiBaseUrl = 'http://localhost:8811/api/v1/account/transactions'; 
+
 
 
   constructor(private http: HttpClient) { }
@@ -287,10 +289,13 @@ getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
       );
   }
 
-  
+  getMonthlyTransactions(): Observable<{ [key: string]: number }> {
+    return this.http.get<{ [key: string]: number }>(`${this.apiBaseUrl}/monthly`);
+  }
 
-  
-
+  getDailyTransactions(month: string): Observable<{ [key: string]: number }> {
+    return this.http.get<{ [key: string]: number }>(`${this.apiBaseUrl}/daily?month=${month}`);
+  }
 
 
 

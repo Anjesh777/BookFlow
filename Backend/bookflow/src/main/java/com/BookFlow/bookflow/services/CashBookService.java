@@ -389,6 +389,36 @@ public class CashBookService {
         }
     }
 
+    public Map<String, BigDecimal> getMonthlyTransactionSummary() {
+        List<Object[]> results = cashBookRepo.getMonthlyTransactionSummary();
+        Map<String, BigDecimal> summary = new HashMap<>();
+
+        for (Object[] row : results) {
+            String month = (String) row[0];
+            BigDecimal totalAmount = (BigDecimal) row[1];
+            summary.put(month, totalAmount);
+        }
+        return summary;
+    }
+
+    public Map<String, BigDecimal> getDailyTransactionSummary(LocalDate month) {
+        int extractedMonth = month.getMonthValue();
+        int extractedYear = month.getYear();
+
+
+        List<Object[]> results = cashBookRepo.getDailyTransactionSummary(extractedMonth, extractedYear);
+
+
+        Map<String, BigDecimal> summary = new HashMap<>();
+        for (Object[] row : results) {
+            String day = String.format("%02d", ((Number)row[0]).intValue());
+            BigDecimal totalAmount = (BigDecimal) row[1];
+            summary.put(day, totalAmount);
+        }
+        return summary;
+    }
+
+
 
 
 
