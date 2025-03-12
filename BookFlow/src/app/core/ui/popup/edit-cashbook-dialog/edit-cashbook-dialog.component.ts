@@ -66,22 +66,21 @@ import { CashBook } from '../../../auth/model/account';
             </select>
           </div>
 
-          <!-- Amount Fields -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="text-sm text-gray-700 font-medium">Receipt Amount (₹)</label>
-              <input type="number" formControlName="receiptAmount"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0.00">
-            </div>
+  <div class="space-y-2">
+    <label class="text-sm text-gray-700 font-medium">Receipt Amount (₹)</label>
+    <input type="number" formControlName="receiptAmount"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+      placeholder="0.00" readonly>
+  </div>
 
-            <div class="space-y-2">
-              <label class="text-sm text-gray-700 font-medium">Payment Amount (₹)</label>
-              <input type="number" formControlName="paymentAmount"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0.00">
-            </div>
-          </div>
+  <div class="space-y-2">
+    <label class="text-sm text-gray-700 font-medium">Payment Amount (₹)</label>
+    <input type="number" formControlName="paymentAmount"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+      placeholder="0.00" readonly>
+  </div>
+</div>
 
           <!-- Reimbursement Status (Checkbox) -->
           <div class="space-y-2">
@@ -133,11 +132,10 @@ export class EditCashbookDialogComponent {
       voucherNumber: new FormControl(this.data.voucherNumber),
       description: new FormControl(this.data.description, [Validators.required]),
       category: new FormControl(this.data.category, [Validators.required]),
-      receiptAmount: new FormControl(this.data.receiptAmount),
-      paymentAmount: new FormControl(this.data.paymentAmount),
+      receiptAmount: new FormControl({value: this.data.receiptAmount, disabled: true}),
+      paymentAmount: new FormControl({value: this.data.paymentAmount, disabled: true}),
       balance: new FormControl(this.data.balance),
       reimbursementPending: new FormControl(this.data.reimbursementPending)
-
     });
   }
 

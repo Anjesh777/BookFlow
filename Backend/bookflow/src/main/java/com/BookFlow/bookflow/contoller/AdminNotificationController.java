@@ -2,9 +2,7 @@ package com.BookFlow.bookflow.contoller;
 
 
 import com.BookFlow.bookflow.dto.NotificationDTO;
-import com.BookFlow.bookflow.dto.UserDetailsResponse;
 import com.BookFlow.bookflow.enums.NotificationType;
-import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.CompanyNotification;
 import com.BookFlow.bookflow.model.Notification;
 import com.BookFlow.bookflow.services.AdminNotificationService;
@@ -15,9 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+
 import java.util.List;
-import java.util.UUID;
+
 
 @Slf4j
 @RestController
@@ -28,16 +26,17 @@ public class AdminNotificationController {
     private final UserService userService;
     private final CompanyService companyService;
     private final AdminNotificationService adminNotificationService;
+private final NotificationService notificationService;
 
-
-    public AdminNotificationController(UserService userService, CompanyService companyService, NotificationService notificationService, AdminNotificationService adminNotificationService) {
+    public AdminNotificationController(UserService userService, CompanyService companyService, NotificationService notificationService, AdminNotificationService adminNotificationService, NotificationService notificationService1) {
         this.userService = userService;
         this.companyService = companyService;
         this.adminNotificationService = adminNotificationService;
+        this.notificationService = notificationService1;
     }
 
     @PostMapping("/notification")
-    public ResponseEntity<CompanyNotification> createNotification(@RequestBody NotificationDTO notificationDTO) {
+    public ResponseEntity<Notification> createNotification(@RequestBody NotificationDTO notificationDTO) {
         System.out.println("Received DTO: " + notificationDTO);
 
         try {
@@ -50,7 +49,7 @@ public class AdminNotificationController {
 
             log.info(String.valueOf(notification));
 
-            CompanyNotification savedNotification = adminNotificationService.addAdminNotification(notification);
+            Notification savedNotification = adminNotificationService.addAdminNotification(notification);
             return ResponseEntity.ok(savedNotification);
 
         } catch (IllegalArgumentException e) {
@@ -63,12 +62,39 @@ public class AdminNotificationController {
         }
     }
 
-
-
     @GetMapping("/get-notification")
     public ResponseEntity<List<CompanyNotification>> getAllNotifications() {
         try {
             List<CompanyNotification> notifications = adminNotificationService.getRecentCompanyNotifications(10);
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.out.println("Error fetching notifications: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/get-all-notification")
+    public ResponseEntity<List<CompanyNotification>> getAll() {
+        try {
+            List<CompanyNotification> notifications = adminNotificationService.getAllCompanyNotification(10);
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.out.println("Error fetching notifications: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
+
+
+
+
+
+
+    @GetMapping("/get-adminNotication")
+    public ResponseEntity<List<Notification>> getAllAdminNotifications() {
+        try {
+            List<Notification> notifications = adminNotificationService.getAllAdminCompanyNotification(10);
             return ResponseEntity.ok(notifications);
         } catch (Exception e) {
             System.out.println("Error fetching notifications: " + e.getMessage());
@@ -84,8 +110,8 @@ public class AdminNotificationController {
             notification.setMessage(request.getMessage());
             notification.setTargetAudience(request.getTargetAudience());
             notification.setNotificationType(NotificationType.valueOf(request.getNotificationType()));
+            notificationService.updateUserNotification(id, notification);
 
-            adminNotificationService.updateNotification(id, notification);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.out.println("Error updating notification: " + e.getMessage());
@@ -111,6 +137,7 @@ public class AdminNotificationController {
         }
 
     }
+
 
 
 

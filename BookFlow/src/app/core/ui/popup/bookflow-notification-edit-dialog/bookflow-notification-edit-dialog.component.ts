@@ -54,7 +54,7 @@ import { CommonModule } from '@angular/common';
                     <select formControlName="targetAudience"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <option value="All User">All Users</option>
-                        <option value="Admim">Admin</option>
+                        <option value="Admin">Admin</option>
                         <option value="User">User</option>
                     </select>
 

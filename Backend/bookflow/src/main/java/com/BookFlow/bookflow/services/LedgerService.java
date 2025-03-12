@@ -17,9 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -243,9 +241,36 @@ public class LedgerService {
         }
     }
 
-    /**
-     * Search ledger entries
-     */
+    public Map<String, BigDecimal> getMonthlyTransactionSummary() {
+        List<Object[]> results = ledgerRepository.getMonthlyTransactionSummary();
+        Map<String, BigDecimal> summary = new HashMap<>();
+
+        for (Object[] row : results) {
+            String month = (String) row[0];
+            BigDecimal totalAmount = (BigDecimal) row[1];
+            summary.put(month, totalAmount);
+        }
+        return summary;
+    }
+
+    public Map<String, BigDecimal> getDailyTransactionSummary(LocalDate month) {
+        Company company = getCurrentUserCompany();
+
+        int extractedMonth = month.getMonthValue();
+        int extractedYear = month.getYear();
+
+        List<Object[]> results = ledgerRepository.getDailyTransactionSummary(
+                extractedMonth, extractedYear, company.getCompany_id());
+
+        Map<String, BigDecimal> summary = new HashMap<>();
+        for (Object[] row : results) {
+            String day = String.format("%02d", ((Number)row[0]).intValue());
+            BigDecimal totalAmount = (BigDecimal) row[1];
+            summary.put(day, totalAmount);
+        }
+        return summary;
+    }
+
     public List<LedgerDTO> searchLedgerEntries(String searchTerm) {
         Company company = getCurrentUserCompany();
         List<Ledger> results = ledgerRepository.searchLedgerEntries(company, searchTerm);
@@ -253,6 +278,8 @@ public class LedgerService {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
+
+
 
 
     private LedgerDTO mapToDTO(Ledger ledger) {

@@ -3,7 +3,6 @@ package com.BookFlow.bookflow.contoller;
 
 import com.BookFlow.bookflow.dto.CashBookDTO;
 import com.BookFlow.bookflow.dto.CashBookSummaryDTO;
-import com.BookFlow.bookflow.services.AdminService;
 import com.BookFlow.bookflow.services.CashBookService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +29,8 @@ import java.util.Optional;
 @RequestMapping("/api/v1/account")
 public class CashbookController {
 
-
     @Autowired
     private CashBookService cashBookService;
-
-
 
     @PostMapping("/transaction")
     public ResponseEntity<CashBookDTO> addTransaction(@RequestBody CashBookDTO transactionDTO) {
@@ -183,6 +179,8 @@ public class CashbookController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
     @GetMapping("/transactions")
     public ResponseEntity<Page<CashBookDTO>> getAllTransactions(

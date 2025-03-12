@@ -16,6 +16,7 @@ import { AdminNotificationComponent } from './feature/company/admin/admin-notifi
 import { ServiceManagementComponent } from './feature/company/admin/service-management/service-management.component';
 import { DaybookEntriesComponent } from './feature/company/account/daybook-entries/daybook-entries.component';
 import { LedgerSystemComponent } from './feature/company/account/ledger-system/ledger-system.component';
+import { UserDashboardComponent } from './feature/user/user-dashboard/user-dashboard.component';
 
 export const routes: Routes = [
 
@@ -121,6 +122,35 @@ export const routes: Routes = [
                 path:'account',
                 component:DaybookEntriesComponent
             },
+            {
+                path:'ledger',
+                component:LedgerSystemComponent                
+            }
+
+        ]
+
+
+    },
+
+    {
+        path: 'user',
+        component: SlidebarComponent,
+        canActivate: [authGuard],
+        data: { roles: ['COMPANY_USER'] },
+        children:[
+            {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+            },        
+            {
+                path: 'dashboard',
+                component: UserDashboardComponent
+            }, 
+            {
+                path: 'booking',
+                component: UserDashboardComponent
+            }, 
             {
                 path:'ledger',
                 component:LedgerSystemComponent                

@@ -1,10 +1,13 @@
 package com.BookFlow.bookflow.services;
 
+import com.BookFlow.bookflow.dto.CompanyDashbooksummaryDto;
 import com.BookFlow.bookflow.dto.UserDetailsDTO;
 import com.BookFlow.bookflow.dto.UserFilterDTO;
 import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.User;
+import com.BookFlow.bookflow.repository.CashBookRepo;
+import com.BookFlow.bookflow.repository.LedgerRepository;
 import com.BookFlow.bookflow.repository.UserRepo;
 import com.BookFlow.bookflow.repository.UserRepoFilter;
 import com.BookFlow.bookflow.repository.company.CompanyRepo;
@@ -18,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +37,10 @@ public class AdminService {
     private CompanyRepo companyRepo;
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private CashBookRepo cashBookRepo;
+    @Autowired
+    private LedgerRepository ledgerRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -243,8 +251,25 @@ public class AdminService {
     }
 
 
+    public CompanyDashbooksummaryDto getSummary() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        Company userCompany = userRepo.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Current user not found"))
+                .getCompany_id();
+        UUID companyId = userCompany.getCompany_id();
 
+        int numberOfUsersInCmp = userRepo.countUsersByCompanyId(companyId);
+        int numberofCashbook = cashBookRepo.countUsersByCashbook(companyId);
+        int numberofLedger = ledgerRepository.countUsersByLedger(companyId);
+        int numberofServicebooked = 0; // You might want to implement this counter
 
+        CompanyDashbooksummaryDto summaryDto = new CompanyDashbooksummaryDto();
+        summaryDto.setTotalUsers(new BigDecimal(numberOfUsersInCmp));
+        summaryDto.setTotalCashbook(new BigDecimal(numberofCashbook));
+        summaryDto.setTotalLedger(new BigDecimal(numberofLedger));
+        summaryDto.setServiceBooked(new BigDecimal(numberofServicebooked));
 
-
+        return summaryDto;
+    }
 }

@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,7 @@ public class CashBookService {
     }
 
 
+
     @Transactional
     public CashBookDTO addTransaction(CashBookDTO transactionDTO) {
         Company company = getCurrentUserCompany();
@@ -99,6 +101,10 @@ public class CashBookService {
                 .filter(t -> t.getCompany_id().equals(company))
                 .map(this::mapToDTO);
     }
+
+
+
+
 
     @Transactional
     public CashBookDTO updateTransaction(Long id, CashBookDTO transactionDTO) {
@@ -188,10 +194,6 @@ public class CashBookService {
         csvPrinter.flush();
         return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
-
-
-
-
 //    public Page<CashBookDTO> getTransactionsByDate(LocalDate date, int page, int size) {
 //        Company company = getCurrentUserCompany();
 //        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
@@ -201,12 +203,10 @@ public class CashBookService {
     public CashBookSummaryDTO getTransactionSummary() {
         Company company = getCurrentUserCompany();
         CashBookSummaryDTO summary = new CashBookSummaryDTO();
-
         // Get current balance safely
         BigDecimal currentBalance = cashBookRepo.findLatestBalance(company)
                 .orElse(BigDecimal.ZERO);
         summary.setCurrentBalance(currentBalance);
-
         // Get today's totals
         LocalDate today = LocalDate.now();
         BigDecimal receiptsToday = cashBookRepo.findTotalReceiptsForToday(today, company);
@@ -214,11 +214,9 @@ public class CashBookService {
 
         summary.setTotalReceiptsToday(receiptsToday);
         summary.setTotalPaymentsToday(paymentsToday);
-
         // Get pending reimbursements
         BigDecimal pendingReimbursements = cashBookRepo.findTotalPendingReimbursements(company);
         summary.setPendingReimbursements(pendingReimbursements);
-
         return summary;
     }
 
@@ -324,9 +322,21 @@ public class CashBookService {
         }
     }
 
+    private LocalDate parseDate(String dateStr) {
+        try {
+            return LocalDate.parse(dateStr);
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("M/d/yyyy"));
+            } catch (DateTimeParseException ex) {
+                log.error("Could not parse date: " + dateStr, ex);
+                throw ex;
+            }
+        }
+    }
+
     public List<CashBookDTO> importCsv(MultipartFile file) throws IOException {
         List<CashBookDTO> importedTransactions = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy"); // ✅ Handle single-digit months/days
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
@@ -338,7 +348,8 @@ public class CashBookService {
                 CashBookDTO transaction = new CashBookDTO();
 
                 try {
-                    transaction.setDate(LocalDate.parse(record.get("Date"), formatter));
+                    // Use the parseDate method instead of direct parsing
+                    transaction.setDate(parseDate(record.get("Date")));
 
                     transaction.setVoucherNumber(record.get("Voucher Number"));
                     transaction.setDescription(record.get("Description"));
@@ -402,12 +413,12 @@ public class CashBookService {
     }
 
     public Map<String, BigDecimal> getDailyTransactionSummary(LocalDate month) {
+        Company company = getCurrentUserCompany();
+
         int extractedMonth = month.getMonthValue();
         int extractedYear = month.getYear();
 
-
-        List<Object[]> results = cashBookRepo.getDailyTransactionSummary(extractedMonth, extractedYear);
-
+        List<Object[]> results = cashBookRepo.getDailyTransactionSummary(extractedMonth, extractedYear, company.getCompany_id());
 
         Map<String, BigDecimal> summary = new HashMap<>();
         for (Object[] row : results) {

@@ -4,6 +4,7 @@ import { CashBook, DashboardSummary, LedgerEntry, LedgerSummary, Page, Transacti
 import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { User } from '../../model/user';
 import { error } from 'console';
+import { NotificationData } from '../../model/bookflow';
 
 @Injectable({
   providedIn: 'root'
@@ -289,7 +290,7 @@ getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
       );
   }
 
-  getMonthlyTransactions(): Observable<{ [key: string]: number }> {
+   getMonthlyTransactions(): Observable<{ [key: string]: number }> {
     return this.http.get<{ [key: string]: number }>(`${this.apiBaseUrl}/monthly`);
   }
 
@@ -297,7 +298,27 @@ getLedgerEntryById(entryId: string): Observable<LedgerEntry> {
     return this.http.get<{ [key: string]: number }>(`${this.apiBaseUrl}/daily?month=${month}`);
   }
 
+  getLedgerMonthlyTransaction(): Observable<{ [key: string]: number }> {
+    return this.http.get<{ [key: string]: number }>(`${this.private_URL}/ledger-system/transactions/monthly`);
+  }
+  
+  getLedgerDailyTransaction(month: string): Observable<{ [key: string]: number }> {
+    return this.http.get<{ [key: string]: number }>(`${this.private_URL}/ledger-system/transactions/daily?month=${month}`);
+  }
 
+  getSummaryDailyTransaction(){
+   
+    return this.http.get<TransactionSummary>(`${this.private_URL}/admin/summary`)
+    .pipe(
+      catchError((error) =>{
+        console.error('API ERROR',error)
+        return new Observable<TransactionSummary>();
+      })
+    );
+
+  }
+
+  
 
 
 }

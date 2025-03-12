@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CompanyNotificationRepo extends JpaRepository<CompanyNotification,Long> {
@@ -35,13 +36,25 @@ public interface CompanyNotificationRepo extends JpaRepository<CompanyNotificati
             @Param("notificationType") String notificationType
     );
 
-
     @Modifying
     @Transactional
     @Query("DELETE FROM CompanyNotification c WHERE c.id = :commentId")
     void deleteComment(@Param("commentId") Long commentId);
 
+    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'User'  ORDER BY cn.createdAt DESC")
+    List<CompanyNotification> findForAllUsers(@Param("company") Company company, Pageable pageable);
 
+    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'Admin'  ORDER BY cn.createdAt DESC")
+    List<CompanyNotification> findForAdmins(@Param("company") Company company, Pageable pageable);
+
+    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'Users' ORDER BY cn.createdAt DESC")
+    List<CompanyNotification> findForUsers(@Param("company") Company company, Pageable pageable);
+
+    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'All User' ORDER BY cn.createdAt DESC")
+    List<CompanyNotification> findAllByCompany(Pageable pageable);
+
+    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.company_id = :company AND cn.id = :id")
+    CompanyNotification findByIdAndCompany(@Param("id") Long id, @Param("company") Company company);
 
 
 }

@@ -4,8 +4,10 @@ import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.dto.UserGrowthDTO;
 import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.Company;
+import com.BookFlow.bookflow.model.Notification;
 import com.BookFlow.bookflow.model.User;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -38,6 +40,9 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     @Query("SELECT u FROM User u WHERE u.company_id.company_id = :companyId")
     List<User> findByCompanyId(@Param("companyId") UUID companyId);
 
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.company_id.company_id = :companyId")
+    int countUsersByCompanyId(@Param("companyId") UUID companyId);
 
     @Transactional
     @Modifying
@@ -94,5 +99,12 @@ public interface UserRepo extends JpaRepository<User,UUID> {
             @Param("isEnabled") boolean isEnabled,
             @Param("updateDate") LocalDate updateDate
     );
+
+    @Query("SELECT n FROM Notification n WHERE n.company_id = :company AND n.targetAudience = 'Users' ORDER BY n.createdAt DESC")
+    List<Notification> findRecentUserNotifications(@Param("company") Company company, Pageable pageable);
+
+
+
+
 
 }

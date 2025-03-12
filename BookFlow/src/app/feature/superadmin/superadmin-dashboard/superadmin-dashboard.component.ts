@@ -18,6 +18,7 @@ import { ResourceUsage } from '../../../core/auth/model/resourceusage';
 import { ResourceUsageService } from '../../../core/auth/service/Resource-Service/resource-usage.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { interval } from 'rxjs';
+import { AccountServiceService } from '../../../core/auth/service/Account-Service/account-service.service';
 
 
 @Component({
@@ -47,16 +48,15 @@ export class SuperadminDashboardComponent implements OnInit {
   notificationList: NotificationDataResponse[] = []; 
 
 
-    isLoading: boolean = false;
+  isLoading: boolean = false;
+  userCount: number = 0;
+  companyCount: number = 0;
+  userGrowth: String = '';
+  companyGrowth: String = '';
+  companyList: companyDetails[] = [];
+  companyOnline: number =0;
 
-    userCount: number = 0;
-    companyCount: number = 0;
-    userGrowth: String = '';
-    companyGrowth: String = '';
-    companyList: companyDetails[] = [];
-    companyOnline: number =0;
-
-    resourceUsage: ResourceUsage = {
+  resourceUsage: ResourceUsage = {
       storage: { used: 0, total: 0, percentage: 0 },
       memory: { used: 0, total: 0, percentage: 0 },
       cpu: { percentage: 0 }
@@ -71,7 +71,8 @@ export class SuperadminDashboardComponent implements OnInit {
          private uiService: UiServiceService,
           public dialog: MatDialog,
           private bookflowService: BookflowService,
-          private resourceService: ResourceUsageService
+          private resourceService: ResourceUsageService,
+          private accountService: AccountServiceService
 
 
         
@@ -106,26 +107,8 @@ export class SuperadminDashboardComponent implements OnInit {
           this.isLoading = false;
         }
       });
+
   }
-
-  // getAllComment(){
-
-  //   setTimeout(() =>{
-
-  //     this.bookflowService.getAllNotification()
-  //       .subscribe({
-  //         next:(response) =>{
-  //           this.notificationList=response;
-  //           console.log(this.notificationList)
-  //         },
-  //         error:(error) =>{
-  //           console.log('Error', error)
-  //         }
-
-
-  //       })
-  //   })
-  // }
 
 
   fetchResourceUsage() {
@@ -141,7 +124,7 @@ export class SuperadminDashboardComponent implements OnInit {
   }
 
 
-    getAllThreeComment(){
+  getAllThreeComment(){
   
       setTimeout(() =>{
   
@@ -159,10 +142,8 @@ export class SuperadminDashboardComponent implements OnInit {
           })
       })
       
-    }
+  }
   
-
-
   fetchCompanyData() {
   
     this.isLoading = true;

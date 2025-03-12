@@ -1,5 +1,6 @@
 package com.BookFlow.bookflow.repository;
 
+import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.Notification;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
@@ -46,15 +47,14 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
             @Param("notificationType") String notificationType
     );
 
-
     @Modifying
     @Transactional
     @Query("DELETE FROM Notification c WHERE c.id = :commentId")
     void deleteComment(@Param("commentId") Long commentId);
 
+    @Query("SELECT n FROM Notification n WHERE n.company_id = :company AND n.targetAudience = 'Users' ORDER BY n.createdAt DESC")
+    List<Notification> findRecentUserNotifications(@Param("company") Company company, Pageable pageable);
 
-    @Query("SELECT n FROM Notification n ORDER BY n.createdAt DESC")
-    List<Notification> findRecentNotifications(Pageable pageable);
 
 
 }

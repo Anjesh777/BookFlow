@@ -57,7 +57,11 @@ export interface DashboardSummary {
     totalDebits: number;
     balance: number;
     outstandingBalance?: number; 
-
-
   }
-  
+
+  export interface HomeDashboard {
+    TotalCashbook:number
+    TotalLedger:number
+    ServiceBooked:number
+    TotalUsers:number
+  }  

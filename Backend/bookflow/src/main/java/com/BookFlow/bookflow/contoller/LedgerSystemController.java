@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,8 +37,6 @@ public class LedgerSystemController {
     public LedgerSystemController(LedgerService ledgerService) {
         this.ledgerService = ledgerService;
     }
-
-
 
 
     @GetMapping("/users")
@@ -63,6 +62,8 @@ public class LedgerSystemController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    
 
 
     @GetMapping("/user/{userId}/entries")
@@ -225,6 +226,27 @@ public class LedgerSystemController {
         }
     }
 
+    @GetMapping("/transactions/monthly")
+    public ResponseEntity<Map<String, BigDecimal>> getMonthlyTransactionSummary() {
+        try {
+            Map<String, BigDecimal> monthlyData = ledgerService.getMonthlyTransactionSummary();
+            return new ResponseEntity<>(monthlyData, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching monthly ledger transactions", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
+    @GetMapping("/transactions/daily")
+    public ResponseEntity<Map<String, BigDecimal>> getDailyTransactionSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+        try {
+            Map<String, BigDecimal> dailyData = ledgerService.getDailyTransactionSummary(month);
+            return new ResponseEntity<>(dailyData, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching daily ledger transactions", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }

@@ -135,7 +135,7 @@ export class AdminNotficationEditDilogComponent {
         ...this.editForm.value
       };
 
-      this.admin.updateUserdetails(this.data.id, updatedData)
+      this.admin.updateUserNotification(this.data.id, updatedData)
         .subscribe({
           next: (response) => {
             console.log(updatedData)
@@ -148,6 +148,20 @@ export class AdminNotficationEditDilogComponent {
           }
         });
     }
+
+    
+    // this.admin.updateUserdetails(this.data.id, updatedData)
+    // .subscribe({
+    //   next: (response) => {
+    //     console.log(updatedData)
+    //     this.isLoading = false;
+    //     this.dialogRef.close(true);
+    //   },
+    //   error: (error) => {
+    //     this.isLoading = false;
+    //     console.error('Error updating notification:', error);
+    //   }
+    // });
   }
 
 

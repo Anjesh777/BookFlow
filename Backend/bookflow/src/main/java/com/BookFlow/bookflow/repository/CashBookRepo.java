@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface CashBookRepo extends JpaRepository<CashBook, Long> {
 
@@ -23,12 +24,16 @@ public interface CashBookRepo extends JpaRepository<CashBook, Long> {
     @Query(value = "SELECT EXTRACT(DAY FROM date) as day, SUM(receipt_amount - payment_amount) as total_amount " +
             "FROM cash_book " +
             "WHERE EXTRACT(MONTH FROM date) = :month AND EXTRACT(YEAR FROM date) = :year " +
+            "AND company_id = :companyId " +
             "GROUP BY EXTRACT(DAY FROM date) " +
             "ORDER BY day", nativeQuery = true)
-    List<Object[]> getDailyTransactionSummary(@Param("month") int month, @Param("year") int year);
+    List<Object[]> getDailyTransactionSummary(
+            @Param("month") int month,
+            @Param("year") int year,
+            @Param("companyId") UUID companyId);
 
-
-
+    @Query("SELECT COUNT(c) FROM CashBook c WHERE c.company_id.id = :companyId")
+    int countUsersByCashbook(@Param("companyId") UUID companyId);
 
 
 

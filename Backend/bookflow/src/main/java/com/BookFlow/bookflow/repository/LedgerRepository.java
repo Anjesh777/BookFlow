@@ -65,6 +65,24 @@ public interface LedgerRepository extends JpaRepository<Ledger,String> {
             @Param("searchTerm") String searchTerm);
 
 
+    @Query("SELECT TO_CHAR(l.date, 'Month'), SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END) FROM Ledger l " +
+            "GROUP BY TO_CHAR(l.date, 'Month')")
+    List<Object[]> getMonthlyTransactionSummary();
+
+    @Query(value = "SELECT EXTRACT(DAY FROM date) as day, SUM(CASE WHEN type = 'credit' THEN amount ELSE -amount END) as total_amount " +
+            "FROM ledger " +
+            "WHERE EXTRACT(MONTH FROM date) = :month AND EXTRACT(YEAR FROM date) = :year " +
+            "AND company_id = :companyId " +
+            "GROUP BY EXTRACT(DAY FROM date) " +
+            "ORDER BY day",
+            nativeQuery = true)
+    List<Object[]> getDailyTransactionSummary(
+            @Param("month") int month,
+            @Param("year") int year,
+            @Param("companyId") UUID companyId);
+
+    @Query("SELECT COUNT(l) FROM Ledger l WHERE l.companyID.company_id = :companyId")
+    int countUsersByLedger(@Param("companyId") UUID companyId);
 
 
 

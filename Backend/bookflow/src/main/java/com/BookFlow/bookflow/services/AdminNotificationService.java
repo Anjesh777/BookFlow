@@ -3,6 +3,7 @@ package com.BookFlow.bookflow.services;
 import com.BookFlow.bookflow.dto.ServiceDTO;
 import com.BookFlow.bookflow.model.*;
 import com.BookFlow.bookflow.repository.CompanyNotificationRepo;
+import com.BookFlow.bookflow.repository.NotificationRepository;
 import com.BookFlow.bookflow.repository.ServiceRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
 import jakarta.transaction.Transactional;
@@ -23,7 +24,9 @@ import java.util.Optional;
 public class AdminNotificationService {
 
     @Autowired
-    private CompanyNotificationRepo companyNotificationRepo;
+    private NotificationRepository NotificationRepo;
+    @Autowired
+    private CompanyNotificationRepo CompanyNotificationRepo;
     @Autowired
     private UserRepo userRepo;
     @Autowired
@@ -39,13 +42,13 @@ public class AdminNotificationService {
             throw new RuntimeException("Current user not found");
         }
 
-        return currentUser.get().getCompany_id(); // or getCompany() if you've renamed the field
+        return currentUser.get().getCompany_id();
     }
 
-    public CompanyNotification addAdminNotification(Notification notification) {
+    public Notification addAdminNotification(Notification notification) {
         Company userCompany = getCurrentUserCompany();
 
-        CompanyNotification notification1 = new CompanyNotification();
+        Notification notification1 = new Notification();
         notification1.setId(notification.getId());
         notification1.setNotificationType(notification.getNotificationType());
         notification1.setMessage(notification.getMessage());
@@ -54,7 +57,7 @@ public class AdminNotificationService {
         notification1.setCreatedAt(LocalDateTime.now());
         notification1.setTargetAudience(notification.getTargetAudience());
 
-        return companyNotificationRepo.save(notification1);
+        return NotificationRepo.save(notification1);
     }
 
     @Transactional
@@ -116,21 +119,38 @@ public class AdminNotificationService {
 
     public List<CompanyNotification> getRecentCompanyNotifications(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        return companyNotificationRepo.findRecentNotificationsByCompany(getCurrentUserCompany(),pageable);
+        return CompanyNotificationRepo.findForAdmins(getCurrentUserCompany(),pageable);
+    }
+    public List<CompanyNotification> getRecentCompanyAllUserNotifications(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return CompanyNotificationRepo.findForAllUsers(getCurrentUserCompany(),pageable);
+    }
+    public List<CompanyNotification> getRecentUserNotifications(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return CompanyNotificationRepo.findForUsers(getCurrentUserCompany(),pageable);
+    }
+     public List<Notification> getAllAdminCompanyNotification(int limit){
+         Pageable pageable = PageRequest.of(0, limit);
+         return  NotificationRepo.findRecentUserNotifications(getCurrentUserCompany(),pageable);
+     }
+    public List<CompanyNotification> getAllCompanyNotification(int limit){
+        Pageable pageable = PageRequest.of(0, limit);
+        return  CompanyNotificationRepo.findAllByCompany(pageable);
     }
 
-    public void updateNotification(Long id,Notification notification){
-        companyNotificationRepo.updateCompanyNotification(
-                id,
-                notification.getTitle(),
-                notification.getMessage(),
-                notification.getTargetAudience(),
-                notification.getNotificationType().toString()
-        );
-    }
+
+//    public void updateNotification(Long id,Notification notification){
+//        NotificationRepo.updateCompanyNotification(
+//                id,
+//                notification.getTitle(),
+//                notification.getMessage(),
+//                notification.getTargetAudience(),
+//                notification.getNotificationType().toString()
+//        );
+//    }
 
     public void deleteComment(Long commentId) {
-        companyNotificationRepo.deleteComment(commentId);
+        NotificationRepo.deleteComment(commentId);
     }
 
 

@@ -50,10 +50,9 @@ export class AdminService {
       )
     }
 
-    updateUserdetails(Id:number,userData:userDetailsResponse):Observable<userDetailsResponse>{
-
-         return this.http.put<userDetailsResponse>(
-                `${this.private_URL}/admin/update/${Id}`,
+    updateUserNotification(Id:number,userData:NotificationDataResponse):Observable<NotificationDataResponse>{
+         return this.http.put<NotificationDataResponse>(
+                `${this.private_URL}/admin/notification/${Id}`,
                 userData
             ).pipe(
                 tap(response => console.log('Full Response:', response)),
@@ -62,8 +61,22 @@ export class AdminService {
                     return throwError(() => new Error('Failed to update company'));
                 })
             );
-
     }
+
+    updateUserdetails(Id:number,userData:userDetailsResponse):Observable<userDetailsResponse>{
+
+      return this.http.put<userDetailsResponse>(
+             `${this.private_URL}/admin/update/${Id}`,
+             userData
+         ).pipe(
+             tap(response => console.log('Full Response:', response)),
+             catchError((error: HttpErrorResponse) => {
+                 console.error('Detailed Error:', error);
+                 return throwError(() => new Error('Failed to update company'));
+             })
+         );
+
+ }
 
     updateServicedetails(Id:string,serviceData:Service):Observable<Service>{
 
@@ -128,15 +141,15 @@ export class AdminService {
 
 
   
-    getAllNotification():Observable<NotificationDataResponse[]>{
+    // getAllNotification():Observable<NotificationDataResponse[]>{
       
-      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`).pipe(
-        catchError((error) =>{
-          return new Observable<NotificationDataResponse[]>();
-        })
+    //   return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`).pipe(
+    //     catchError((error) =>{
+    //       return new Observable<NotificationDataResponse[]>();
+    //     })
 
-      )
-    }
+    //   )
+    // }
 
     getService():Observable<Service[]>{
       return this.http.get<Service[]>(`${this.private_URL}/admin/get-services`).pipe(
@@ -158,7 +171,54 @@ export class AdminService {
       );
     }
 
+    getAllNotification(){
    
+      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`)
+      .pipe(
+        catchError((error) =>{
+          console.error('API ERROR',error)
+          return new Observable<NotificationDataResponse[]>();
+        })
+      );
+      
+    }
+
+    getNotificationAdmin(){
+   
+      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-adminNotication`)
+      .pipe(
+        catchError((error) =>{
+          console.error('API ERROR',error)
+          return new Observable<NotificationDataResponse[]>();
+        })
+      );
+      
+    }
+
+
+
+    getThreeNotification(){
+      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`)
+      .pipe(
+        catchError((error) =>{
+          console.error('API ERROR',error)
+          return new Observable<NotificationDataResponse[]>();
+        })
+      );
+    }
+
+   
+    getAllUserNotification(){
+     
+      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-all-notification`)
+      .pipe(
+        catchError((error) =>{
+          console.error('API ERROR',error)
+            return new Observable<NotificationDataResponse[]>();
+          })
+        );
+          
+    }
 
 
     

@@ -25,19 +25,20 @@ import { AdminNotficationEditDilogComponent } from '../../../../core/ui/popup/ad
 export class AdminNotificationComponent implements OnInit {
   http = inject(HttpClient);
   messageList: NotificationDataResponse[] = [];
+  
+
   adminNotificationService = inject(AdminService);
 
   notificationForm: FormGroup;
 
   targetAudienceOptions = [
-    { value: 'Users', label: 'All Users' },      // Changed from 'ALL_USERS' to 'Users'
-    { value: 'Admins', label: 'Company Admins' }, // Changed from 'ADMIN' to 'Admins'
-    { value: 'Users', label: 'Company Users' },   // Changed from 'USER' to 'Users'
-    { value: 'Manager', label: 'Company Manager' } // Changed from 'MANAGER' to 'Manager'
+    { value: 'Users', label: 'All Users' },     
+    { value: 'Admins', label: 'Company Admins' }, 
+    { value: 'Users', label: 'Company Users' }
 ];
   
   notificationTypes = [
-    { value: 'INFORMATION', label: 'Information', color: 'text-blue-600' },  // Updated values
+    { value: 'INFORMATION', label: 'Information', color: 'text-blue-600' },  
     { value: 'SUCCESS', label: 'Success', color: 'text-green-600' },
     { value: 'WARNING', label: 'Warning', color: 'text-yellow-600' },
     { value: 'ERROR', label: 'Error', color: 'text-red-600' }
@@ -51,14 +52,14 @@ export class AdminNotificationComponent implements OnInit {
     this.notificationForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       message: ['', [Validators.required, Validators.minLength(10)]],
-      targetAudience: ['Users', Validators.required], // Changed from 'ALL_USERS' to 'Users'
+      targetAudience: ['Users', Validators.required],
       notificationType: ['INFORMATION', Validators.required]
     });
   }
   
   ngOnInit(): void {
 
-    this.getAllComment()
+    this.getAllComment();
 
   }
 
@@ -76,12 +77,11 @@ export class AdminNotificationComponent implements OnInit {
     });
   }
 
-
   getAllComment(){
 
     setTimeout(() =>{
 
-      this.adminNotificationService.getAllNotification()
+      this.adminNotificationService.getNotificationAdmin()
       .subscribe({
         next:(response) =>{
           this.messageList = response
@@ -93,7 +93,6 @@ export class AdminNotificationComponent implements OnInit {
       })
       
     })
-
   }
 
   onSubmit() {
@@ -151,5 +150,8 @@ export class AdminNotificationComponent implements OnInit {
     });
 
   }
+
+  
+
 
 }

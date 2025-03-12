@@ -2,6 +2,7 @@ package com.BookFlow.bookflow.contoller;
 
 import com.BookFlow.bookflow.dto.NotificationDTO;
 import com.BookFlow.bookflow.enums.NotificationType;
+import com.BookFlow.bookflow.model.CompanyNotification;
 import com.BookFlow.bookflow.model.Notification;
 import com.BookFlow.bookflow.services.CompanyService;
 import com.BookFlow.bookflow.services.NotificationService;
@@ -24,6 +25,7 @@ public class NotificationController {
     private final CompanyService companyService;
     private final NotificationService notificationService;
 
+
     public NotificationController(UserService userService, CompanyService companyService, NotificationService notificationService) {
         this.userService = userService;
         this.companyService = companyService;
@@ -31,17 +33,17 @@ public class NotificationController {
     }
 
     @PostMapping("/notification")
-    public ResponseEntity<Notification> createNotification(@RequestBody NotificationDTO notificationDTO) {
+    public ResponseEntity<CompanyNotification> createNotification(@RequestBody NotificationDTO notificationDTO) {
         System.out.println("Received DTO: " + notificationDTO);
 
         try {
-            Notification notification = new Notification();
+            CompanyNotification notification = new CompanyNotification();
             notification.setTitle(notificationDTO.getTitle());
             notification.setMessage(notificationDTO.getMessage());
             notification.setTargetAudience(notificationDTO.getTargetAudience());
             notification.setNotificationType(NotificationType.valueOf(notificationDTO.getNotificationType()));
 
-            Notification savedNotification = notificationService.createNotification(notification);
+            CompanyNotification savedNotification = notificationService.createNotification(notification);
             return ResponseEntity.ok(savedNotification);
 
         } catch (IllegalArgumentException e) {
@@ -55,9 +57,9 @@ public class NotificationController {
     }
 
     @GetMapping("/get-notification")
-    public ResponseEntity<List<Notification>> getAllNotifications() {
+    public ResponseEntity<List<CompanyNotification>> getAllNotifications() {
         try {
-            List<Notification> notifications = notificationService.getRecentNotifications();
+            List<CompanyNotification> notifications = notificationService.getRecentNotifications();
             return ResponseEntity.ok(notifications);
         } catch (Exception e) {
             System.out.println("Error fetching notifications: " + e.getMessage());
@@ -66,9 +68,9 @@ public class NotificationController {
     }
 
     @GetMapping("/get-recent-notification")
-    public ResponseEntity<List<Notification>> getRecent3Notifications() {
+    public ResponseEntity<List<CompanyNotification>> getRecent3Notifications() {
         try {
-            List<Notification> notifications = notificationService.get3Notifications();
+            List<CompanyNotification> notifications = notificationService.get3Notifications();
             return ResponseEntity.ok(notifications);
         } catch (Exception e) {
             System.out.println("Error fetching notifications: " + e.getMessage());
@@ -85,7 +87,7 @@ public class NotificationController {
     ) {
         try {
 
-            Notification notification = new Notification();
+            CompanyNotification notification = new CompanyNotification();
             notification.setTitle(request.getTitle());
             notification.setMessage(request.getMessage());
             notification.setTargetAudience(request.getTargetAudience());

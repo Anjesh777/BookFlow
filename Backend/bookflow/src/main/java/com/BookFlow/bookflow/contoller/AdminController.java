@@ -3,7 +3,10 @@ package com.BookFlow.bookflow.contoller;
 import com.BookFlow.bookflow.dto.*;
 import com.BookFlow.bookflow.enums.Role;
 import com.BookFlow.bookflow.model.Company;
+import com.BookFlow.bookflow.model.CompanyNotification;
+import com.BookFlow.bookflow.model.Notification;
 import com.BookFlow.bookflow.model.User;
+import com.BookFlow.bookflow.services.AdminNotificationService;
 import com.BookFlow.bookflow.services.AdminService;
 import com.BookFlow.bookflow.services.EmailVerificactionService;
 import com.BookFlow.bookflow.services.RegisterCompanyService;
@@ -30,12 +33,15 @@ public class AdminController {
 
 
     private final AdminService adminService;
+    private final AdminNotificationService adminNotificationService;
     private final EmailVerificactionService emailVerificactionService;
 
 
+
     @Autowired
-    public AdminController(AdminService adminService, EmailVerificactionService emailVerificactionService) {
+    public AdminController(AdminService adminService, AdminNotificationService adminNotificationService, EmailVerificactionService emailVerificactionService) {
         this.adminService = adminService;
+        this.adminNotificationService = adminNotificationService;
         this.emailVerificactionService = emailVerificactionService;
     }
 
@@ -86,6 +92,25 @@ public class AdminController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+//
+//    @GetMapping("/get-all-notification")
+//    public ResponseEntity<List<NotificationDTO>> getAllNotifixation(){
+//        try {
+//            List<CompanyNotification> notifications = adminNotificationService.getRecentCompanyAllUserNotifications(5);
+//            List<NotificationDTO> notificationDTOs = notifications.stream()
+//                    .map(this::convertToNotificationDTO)
+//                    .collect(Collectors.toList());
+//
+//            return ResponseEntity.ok(notificationDTOs);
+//        }
+//        catch (RuntimeException e){
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//
+//        }
+//
+//    }
 
     @PutMapping("/update/{userId}")
     public ResponseEntity<Void> updateUser(
@@ -144,6 +169,20 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/summary")
+    public ResponseEntity<CompanyDashbooksummaryDto> getSummaryDashbookSummary(){
+
+        try {
+
+            CompanyDashbooksummaryDto companyDashbooksummar = adminService.getSummary();
+            return ResponseEntity.ok(companyDashbooksummar);
+        }
+        catch (Exception e){
+            log.error("Error is ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 
     private UserDetailsDTO convertToUserDetailsDTO(User user) {
@@ -158,9 +197,21 @@ public class AdminController {
         dto.setCreated_at(String.valueOf(user.getDate()));
         dto.set_main_user(user.getMainuser());
 
-
         return dto;
     }
+
+    private NotificationDTO convertToNotificationDTO(CompanyNotification notification) {
+        return new NotificationDTO(
+                notification.getId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getTargetAudience(),
+                notification.getNotificationType().toString(),
+                notification.getCreatedAt()
+        );
+    }
+
+
 
 
 
