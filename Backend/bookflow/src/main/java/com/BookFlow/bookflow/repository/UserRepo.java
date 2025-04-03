@@ -30,6 +30,9 @@ public interface UserRepo extends JpaRepository<User,UUID> {
             "FROM Ledger l WHERE l.companyID = :company")
     LedgerSummaryDTO getCompanySummary(@Param("company") Company company);
 
+    @Query("SELECT u.fullname FROM User u WHERE u.user_id = :userId")
+    Optional<String> findFullnameById(@Param("userId") UUID userId);
+
     Optional<User> findByUsername(String username);
     Optional<User> findByRole(String username);
 

@@ -1,13 +1,14 @@
 package com.BookFlow.bookflow.contoller;
 
 
+import com.BookFlow.bookflow.dto.BookingDto;
 import com.BookFlow.bookflow.dto.LedgerDTO;
 import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
-import com.BookFlow.bookflow.model.CompanyNotification;
-import com.BookFlow.bookflow.model.Notification;
-import com.BookFlow.bookflow.model.Services;
+import com.BookFlow.bookflow.dto.ServiceDTO;
+import com.BookFlow.bookflow.model.*;
 import com.BookFlow.bookflow.repository.UserRepo;
 import com.BookFlow.bookflow.services.AdminNotificationService;
+import com.BookFlow.bookflow.services.BookingService;
 import com.BookFlow.bookflow.services.LedgerService;
 import com.BookFlow.bookflow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,21 +18,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 
 @Slf4j
 @RestController
 @RequestMapping("api/v1/user")
-public class CustomerService {
+public class CustomerController {
 
     private final LedgerService ledgerService;
 
@@ -41,8 +40,10 @@ public class CustomerService {
 
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private BookingService bookingService;
 
-    public CustomerService(LedgerService ledgerService, UserService userService, AdminNotificationService adminNotificationService) {
+    public CustomerController(LedgerService ledgerService, UserService userService, AdminNotificationService adminNotificationService) {
         this.ledgerService = ledgerService;
         this.userService = userService;
         this.adminNotificationService = adminNotificationService;
@@ -162,6 +163,64 @@ public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @PostMapping("/bookings")
+    public ResponseEntity <BookingDto> getActiveServices(@RequestBody BookingDto Request) {
+        try {
+
+            bookingService.addBooking(Request);
+            return ResponseEntity.ok(Request);
+        } catch (Exception e) {
+            log.error("Error fetching active services", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/upcoming-bookings")
+    public ResponseEntity<List<BookingDto>> getUpcomingBookings() {
+        try {
+            List<BookingDto> upcomingBookings = bookingService.findUpcomingBookingsByUserId();
+            return ResponseEntity.ok(upcomingBookings);
+        } catch (Exception e) {
+            log.error("Error fetching upcoming bookings", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/past-bookings")
+    public ResponseEntity<List<BookingDto>> getPastBookings() {
+        try {
+            List<BookingDto> pastBookings = bookingService.findPastBookingsByUserId();
+            return ResponseEntity.ok(pastBookings);
+        } catch (Exception e) {
+            log.error("Error fetching past bookings", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/bookings/{bookingId}")
+    public ResponseEntity<Object> cancelBooking(@PathVariable String bookingId) {
+        try {
+            boolean deleted = bookingService.deletePendingBookingIfLessThan12Hours(Long.valueOf(bookingId));
+            if (deleted) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Booking successfully canceled");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Booking not found or cannot be canceled (less than 12 hours before appointment)");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error canceling booking: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
+
+
 
 
 

@@ -64,6 +64,10 @@ public interface ServiceRepo extends JpaRepository<Services,String> {
             "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
             "FROM Services s")
     List<ServiceDTO> findAllServices();
+////***
+//    @Query("SELECT s FROM Services s WHERE s.company_id = :company AND s.status = true")
+//    List<Services> findAllActiveServicesByCompany(@Param("company") Company company);
+//
 
 
 

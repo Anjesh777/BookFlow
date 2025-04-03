@@ -61,7 +61,7 @@ public class LedgerService {
     }
 
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = authentication.getName();
         return userRepo.findByUsername(currentUsername)
@@ -105,12 +105,15 @@ public class LedgerService {
         BigDecimal previousBalance = ledgerRepository.findLatestUserBalance(user)
                 .orElse(BigDecimal.ZERO);
 
-        BigDecimal newBalance;
-        if ("credit".equalsIgnoreCase(ledgerDTO.getType())) {
-            newBalance = previousBalance.add(ledgerDTO.getAmount());
-        } else {
-            newBalance = previousBalance.subtract(ledgerDTO.getAmount());
-        }
+//        BigDecimal newBalance;
+//        if ("credit".equalsIgnoreCase(ledgerDTO.getType())) {
+//            newBalance = previousBalance.add(ledgerDTO.getAmount());
+//        } else {
+//            newBalance = previousBalance.subtract(ledgerDTO.getAmount());
+//        }
+
+        BigDecimal newBalance = previousBalance.add(ledgerDTO.getAmount());
+
 
         Ledger ledger = mapToEntity(ledgerDTO, user);
         ledger.setCompanyID(company);
@@ -157,18 +160,41 @@ public class LedgerService {
     }
 
 
+//    public LedgerSummaryDTO getUserLedgerSummary(UUID userId) {
+//        User user = userRepo.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+//
+//        Company currentCompany = getCurrentUserCompany();
+//        if (!user.getCompany_id().equals(currentCompany)) {
+//            throw new RuntimeException("User does not belong to the current company");
+//        }
+//
+//        LedgerSummaryDTO summary = ledgerRepository.getUserSummary(user);
+//        return summary != null ? summary : new LedgerSummaryDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+//    }
+
     public LedgerSummaryDTO getUserLedgerSummary(UUID userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        Company currentCompany = getCurrentUserCompany();
-        if (!user.getCompany_id().equals(currentCompany)) {
-            throw new RuntimeException("User does not belong to the current company");
-        }
+        // Get total credits (positive)
+        BigDecimal totalCredits = ledgerRepository.sumUserCredits(userId)
+                .orElse(BigDecimal.ZERO);
 
-        LedgerSummaryDTO summary = ledgerRepository.getUserSummary(user);
-        return summary != null ? summary : new LedgerSummaryDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        // Get total debits (positive)
+        BigDecimal totalDebits = ledgerRepository.sumUserDebits(userId)
+                .orElse(BigDecimal.ZERO);
+
+        // Current balance is sum of all amounts
+        BigDecimal currentBalance = ledgerRepository.sumAllUserAmounts(userId)
+                .orElse(BigDecimal.ZERO);
+
+
+
+        return new LedgerSummaryDTO(totalCredits, totalDebits, currentBalance);
     }
+
+
 
     public LedgerSummaryDTO getCompanyLedgerSummary() {
         Company company = getCurrentUserCompany();
@@ -231,13 +257,18 @@ public class LedgerService {
         entries.sort((a, b) -> a.getDate().compareTo(b.getDate()));
 
         for (Ledger entry : entries) {
-            if ("credit".equalsIgnoreCase(entry.getType())) {
-                runningBalance = runningBalance.add(entry.getAmount());
-            } else {
-                runningBalance = runningBalance.subtract(entry.getAmount());
-            }
+//            if ("credit".equalsIgnoreCase(entry.getType())) {
+//                runningBalance = runningBalance.add(entry.getAmount());
+//            } else {
+//                runningBalance = runningBalance.subtract(entry.getAmount());
+//            }
+//            entry.setBalance(runningBalance);
+//            ledgerRepository.save(entry);
+
+            runningBalance = runningBalance.add(entry.getAmount());
             entry.setBalance(runningBalance);
             ledgerRepository.save(entry);
+
         }
     }
 

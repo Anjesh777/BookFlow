@@ -84,6 +84,11 @@
         <mat-icon>build</mat-icon>
         <span>Service</span>
       </a>
+      <a mat-list-item routerLink="/admin/que" routerLinkActive="active">
+        <mat-icon>people</mat-icon>
+        <span>Que Management</span>
+      </a>
+
   }
   @else if(authService.getUserRole()=="COMPANY_USER") {
       <a mat-list-item routerLink="/user/dashboard" routerLinkActive="active"
@@ -92,19 +97,17 @@
           <span>Dashboard</span>
       </a>
 
-      <a mat-list-item routerLink="/user/service" routerLinkActive="active">
+      <a mat-list-item routerLink="/user/ledger" routerLinkActive="active">
         <mat-icon>library_books</mat-icon>
         <span>Ledger</span>
       </a>
       
-      <a mat-list-item routerLink="/user/account" routerLinkActive="active">
+      <a mat-list-item routerLink="/user/booking" routerLinkActive="active">
         <mat-icon>people</mat-icon>
         <span>Booking</span>
       </a>
 
       
-
-
   }
 
 

@@ -247,7 +247,7 @@ export class LedgerSystemComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (summary) => {
           this.ledgerSummary = summary;
-          summary.outstandingBalance = Math.max(summary.totalDebits - summary.totalCredits,0);
+      //    summary.outstandingBalance = Math.max(summary.totalDebits - summary.totalCredits,0);
 
 
           this.isLoading = false;

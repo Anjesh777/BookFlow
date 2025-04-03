@@ -12,13 +12,9 @@ export interface userDetails{
     
 }
 export interface userDetailsResponse extends userDetails{
-
    user_id:string,
    created_at:Date
    _main_user:boolean
-   
-
-
 }
 export interface UserFilter extends CompanyFilter{
     role?:string
@@ -31,6 +27,7 @@ export interface Service {
     duration: string;
     status: boolean;
     serviceDescription?: string;
+    
     
 }
 

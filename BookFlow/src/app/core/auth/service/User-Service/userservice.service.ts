@@ -36,6 +36,20 @@ export class UserserviceService {
     );
   }
 
+  getAllUserNotification(){
+     
+    return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/user/get-all-notification`)
+    .pipe(
+      catchError((error) =>{
+        console.error('API ERROR',error)
+          return new Observable<NotificationDataResponse[]>();
+        })
+      );
+        
+  }
+
+
+
 
 
 }

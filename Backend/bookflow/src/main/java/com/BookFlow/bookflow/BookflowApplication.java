@@ -14,5 +14,4 @@ public class  BookflowApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BookflowApplication.class, args);
 	}
-
 }

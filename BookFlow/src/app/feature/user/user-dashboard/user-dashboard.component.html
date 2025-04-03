@@ -252,7 +252,7 @@
         
         <hr class="border-gray-200">
         <div class="p-6">
-          @if (messageList.length === 0 && messageList2.length === 0) {
+          @if (messageList.length === 0 && messageList2.length === 0 && messageList3.length === 0) {
             <div class="text-center py-12">
               <mat-icon class="text-6xl text-gray-300">notifications_none</mat-icon>
               <p class="text-gray-500 mt-3">No notifications yet</p>
@@ -378,6 +378,65 @@
                 </div>
               }
 
+              @for (notification of messageList3; track notification.id) {
+                <div class="bg-white hover:bg-gray-50 transition-all duration-200 rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 mt-0.5">
+                      @if (notification.notificationType === "SUCCESS") {
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      } @else if (notification.notificationType === "INFORMATION") {
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      } @else if (notification.notificationType === "WARNING") {
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      } @else if (notification.notificationType === "ERROR") {
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      }
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                      <div class="flex justify-between items-start">
+                        <h4 class="font-medium text-gray-900 truncate">{{notification.title}}</h4>
+                        <span class="text-xs text-gray-500 whitespace-nowrap ml-2">{{notification.createdAt | timeAgo}}</span>
+                      </div>
+                      
+                      <p class="text-sm text-gray-600 mt-2 line-clamp-2">{{notification.message}}</p>
+                      
+                      <div class="flex items-center gap-2 mt-3">
+                        <span class="px-2.5 py-1 text-xs font-medium rounded-full" 
+                          [ngClass]="{
+                            'bg-green-100 text-green-800': notification.notificationType === 'SUCCESS',
+                            'bg-blue-100 text-blue-800': notification.notificationType === 'INFORMATION',
+                            'bg-yellow-100 text-yellow-800': notification.notificationType === 'WARNING',
+                            'bg-red-100 text-red-800': notification.notificationType === 'ERROR'
+                          }">
+                          {{notification.notificationType}}
+                        </span>
+                        
+                        <span class="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                          {{notification.targetAudience}}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+
 
 
 
@@ -402,21 +461,22 @@
         
       </div>
     </div>
-    
+ 
+
     <!-- Quick Actions Section -->
     <div class="mt-6">
       <div class="bg-white rounded-lg shadow-lg border border-gray-100 p-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button class="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+          <button class="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" [routerLink]="['/user/booking']">
             <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
               <span class="material-icons text-blue-600">add_circle</span>
             </div>
             <span class="text-sm font-medium text-gray-700">Book Service</span>
           </button>
           
-          <button class="flex flex-col items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+          <button class="flex flex-col items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors" [routerLink]="['/user/ledger']">
             <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
               <span class="material-icons text-green-600">account_balance</span>
             </div>

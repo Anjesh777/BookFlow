@@ -9,12 +9,14 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { TimeAgoPipe } from '../../../core/pipe/shared/pipes/time-ago.pipe';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
   imports: [
 MatButtonModule,MatDividerModule,MatIconModule,MatListModule,MatSidenavModule,MatToolbarModule
-,TimeAgoPipe,CommonModule
+,TimeAgoPipe,CommonModule,RouterModule
   ],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
@@ -23,13 +25,15 @@ export class UserDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.getNotificationUser();
     this.getNotificatiByCompany();
-    
+    this.getAllUserNotification();
   }
   
   adminNotificationService = inject(UserserviceService);
   messageList: NotificationDataResponse[] = [];
   messageList2: NotificationDataResponse[] = []
-  
+  messageList3: NotificationDataResponse[] = []
+
+
   getNotificationUser() {
     this.adminNotificationService.getNotificationUser().subscribe({
       next: (data) => {
@@ -41,6 +45,13 @@ export class UserDashboardComponent implements OnInit {
       }
     });
   }
+
+  constructor(
+    private userService:UserserviceService
+  ){
+
+  }
+
 
   getNotificatiByCompany() {
     this.adminNotificationService.getoneNotificationFromCompany().subscribe({
@@ -95,4 +106,19 @@ export class UserDashboardComponent implements OnInit {
         return { bg: 'bg-blue-100', text: 'text-blue-800' };
     }
   }
+
+
+  getAllUserNotification() {
+    this.userService.getAllUserNotification().subscribe({
+      next: (data) => {
+        this.messageList3 = data;
+        console.log('Notification Data:', data);
+      },
+      error: (error) => {
+        console.error('Error:', error);
+      }
+    });
+  }
+
+
 }

@@ -1,0 +1,251 @@
+<div class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 transition-all duration-300" :class="sidebarOpen ? 'ml-64' : 'ml-0'">
+        <nav class="flex space-x-4">
+            <a routerLink="/admin/que"
+               routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+               [routerLinkActiveOptions]="{exact: true}"
+               class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+                Active
+            </a>
+            <a routerLink="/admin/completed"
+               routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+               [routerLinkActiveOptions]="{exact: true}"
+               class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+                Completed
+            </a>
+            <a routerLink="/admin/ledger"
+            routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+            [routerLinkActiveOptions]="{exact: true}"
+            class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+             Cancelled
+         </a>
+
+        </nav>
+    </div>
+  </div>
+
+
+<div class="booking-management bg-gray-50 p-6">
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6">
+        <div class="p-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Que Management</h2>
+            <p class="text-gray-600 mt-2"><em>Manage and track all customer bookings</em></p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6">
+        <div class="p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Imminent Bookings (Next 2 Days)</h3>
+
+            @if (loadingImminentBookings) {
+                <div class="flex justify-center p-6">
+                    <mat-spinner diameter="40"></mat-spinner>
+                </div>
+            } @else if (imminentBookings.length === 0) {
+                <div class="text-center p-6 bg-gray-50 rounded-lg">
+                    <mat-icon class="text-gray-400 mb-2">event_available</mat-icon>
+                    <p class="text-gray-600">No imminent bookings found</p>
+                </div>
+            } @else {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @for (booking of imminentBookings; track booking.bookingId) {
+                        <div [class]="getCardClass(booking)">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-lg font-semibold text-gray-700">{{ booking.serviceName || 'N/A' }}</h4>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" [class]="getStatusClass(booking.bookingStatus)">
+                                    {{ booking.bookingStatus }}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 text-gray-600">
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">badge</mat-icon>
+                                        <span>ID: {{ booking.bookingId }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">person</mat-icon>
+                                        <span>Customer: {{ booking.userName }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">schedule</mat-icon>
+                                        <span>{{ booking.appointmentDate | date:'MMM d, y, h:mm a' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">payments</mat-icon>
+                                        <span class="font-medium">रु {{ booking.expectedAmount || 0 }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">payment</mat-icon>
+                                        <span class="flex items-center gap-2">
+                                            Payment status:
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                                  [ngClass]="{
+                                                    'bg-green-100 text-green-800': booking.paymentStatus === 'SUCCESS',
+                                                    'bg-yellow-100 text-yellow-800': booking.paymentStatus === 'PENDING',
+                                                    'bg-red-100 text-red-800': booking.paymentStatus === 'FAILURE',
+                                                    'bg-gray-100 text-gray-800': !booking.paymentStatus
+                                                  }">
+                                                <ng-container *ngIf="booking.paymentStatus === 'SUCCESS'">Paid</ng-container>
+                                                <ng-container *ngIf="booking.paymentStatus === 'PENDING'">Pending</ng-container>
+                                                <ng-container *ngIf="booking.paymentStatus === 'FAILURE'">Failed</ng-container>
+                                                <ng-container *ngIf="!booking.paymentStatus">Unpaid</ng-container>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="flex gap-2 mt-6">
+                                <button (click)="openEditDialog(booking)" 
+                                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                                    <mat-icon class="text-sm">edit</mat-icon>
+                                    <span>Edit</span>
+                                </button>
+                                <button (click)="changeStatus(booking)"
+                                        class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                                    <mat-icon class="text-sm">sync_alt</mat-icon>
+                                    <span>Status</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6">
+        <div class="p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Sheduling</h3>
+            
+            <!-- Date Range Picker and Filters Section -->
+            <div class="bg-gray-50 rounded-lg border border-gray-200 mb-6 p-4 text-black">
+                <div class="bg-gray-50 rounded-lg border border-gray-200 mb-6 p-4 text-black">
+                    <div class="flex flex-col md:flex-row md:items-end gap-4">
+                        <!-- Date Range Inputs -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                                <input 
+                                    type="datetime-local" 
+                                    [(ngModel)]="startDate" 
+                                    [min]="minDate"
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 
+                                    focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                                <input 
+                                    type="datetime-local" 
+                                    [(ngModel)]="endDate" 
+                                    [min]="startDate"
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </div>
+                        </div>
+                
+                        <!-- Search Input -->
+                        <div class="md:w-64 flex-shrink-0">
+                            <div class="relative">
+                                <input
+                                    type="text"
+                                    [(ngModel)]="searchQuery"
+                                    (input)="onSearchInput()"
+                                    placeholder="Search bookings..."
+                                    class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                />
+                                <svg
+                                    class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </div>
+                        </div>
+                
+                        <!-- Filter Button (for date range only) -->
+                        <button 
+                            (click)="applyFilters()"
+                            class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                            Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (loadingActiveBookings) {
+                <div class="flex justify-center p-6">
+                    <mat-spinner diameter="40"></mat-spinner>
+                </div>
+            } @else if (filteredActiveBookings.length === 0) {
+                <div class="text-center p-6 bg-gray-50 rounded-lg">
+                    <mat-icon class="text-gray-400 mb-2">event_busy</mat-icon>
+                    <p class="text-gray-600">No active bookings found for selected date range</p>
+                </div>
+            } @else {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @for (booking of filteredActiveBookings; track booking.bookingId) {
+                        <div [class]="getCardClass(booking)">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-lg font-semibold text-gray-700">{{ booking.serviceName || 'N/A' }}</h4>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" [class]="getStatusClass(booking.bookingStatus)">
+                                    {{ booking.bookingStatus }}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 text-gray-600">
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">badge</mat-icon>
+                                        <span>ID: {{ booking.bookingId }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">person</mat-icon>
+                                        <span>Customer: {{ booking.userName }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">schedule</mat-icon>
+                                        <span>{{ booking.appointmentDate | date:'MMM d, y, h:mm a' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">payments</mat-icon>
+                                        <span class="font-medium">रु {{ booking.expectedAmount || 0 }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-600">
+                                        <mat-icon class="text-blue-600">payment</mat-icon>
+                                        <span class="flex items-center gap-2">
+                                            Payments:
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                                  [class]="getPaymentStatusClass(booking.paymentStatus)">
+                                                {{ getPaymentStatusText(booking.paymentStatus) }}
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="flex gap-2 mt-6">
+                                <button (click)="openEditDialog(booking)" 
+                                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                                    <mat-icon class="text-sm">edit</mat-icon>
+                                    <span>Edit</span>
+                                </button>
+                                <button (click)="changeStatus(booking)"
+                                        class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                                    <mat-icon class="text-sm">sync_alt</mat-icon>
+                                    <span>Status</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

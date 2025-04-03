@@ -1,9 +1,7 @@
 package com.BookFlow.bookflow.services;
 
-import com.BookFlow.bookflow.model.Company;
-import com.BookFlow.bookflow.model.CompanyNotification;
-import com.BookFlow.bookflow.model.Notification;
-import com.BookFlow.bookflow.model.User;
+import com.BookFlow.bookflow.model.*;
+import com.BookFlow.bookflow.repository.ServiceRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +23,8 @@ public class UserService {
 
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private ServiceRepo serviceRepo;
 
     @Transactional
     public long countServie(){
@@ -47,6 +47,7 @@ public class UserService {
         Pageable pageable = PageRequest.of(0, limit);
         return userRepo.findRecentUserNotifications(getCurrentUserCompany(),pageable);
     }
+
 
 
 

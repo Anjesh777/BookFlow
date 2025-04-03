@@ -17,6 +17,10 @@ import { ServiceManagementComponent } from './feature/company/admin/service-mana
 import { DaybookEntriesComponent } from './feature/company/account/daybook-entries/daybook-entries.component';
 import { LedgerSystemComponent } from './feature/company/account/ledger-system/ledger-system.component';
 import { UserDashboardComponent } from './feature/user/user-dashboard/user-dashboard.component';
+import { BookingPortelComponent } from './feature/user/booking-portel/booking-portel.component';
+import { UserLedgerComponent } from './feature/user/user-ledger/user-ledger.component';
+import { QueManagementComponent } from './feature/company/admin/que-management/que-management.component';
+import { CompletedQueComponent } from './feature/company/admin/que-management/completed-que/completed-que.component';
 
 export const routes: Routes = [
 
@@ -125,6 +129,14 @@ export const routes: Routes = [
             {
                 path:'ledger',
                 component:LedgerSystemComponent                
+            },
+            {
+                path:'que',
+                component:QueManagementComponent
+            },
+            {
+                path:'completed',
+                component:CompletedQueComponent
             }
 
         ]
@@ -149,11 +161,11 @@ export const routes: Routes = [
             }, 
             {
                 path: 'booking',
-                component: UserDashboardComponent
+                component: BookingPortelComponent
             }, 
             {
                 path:'ledger',
-                component:LedgerSystemComponent                
+                component:UserLedgerComponent                
             }
 
         ]

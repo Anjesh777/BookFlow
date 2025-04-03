@@ -85,5 +85,14 @@ public interface LedgerRepository extends JpaRepository<Ledger,String> {
     int countUsersByLedger(@Param("companyId") UUID companyId);
 
 
+    @Query("SELECT SUM(l.amount) FROM Ledger l WHERE l.userID.user_id = :userId AND l.type = 'credit'")
+    Optional<BigDecimal> sumUserCredits(@Param("userId") UUID userId);
+
+    @Query("SELECT SUM(l.amount) FROM Ledger l WHERE l.userID.user_id = :userId AND l.type = 'debit'")
+    Optional<BigDecimal> sumUserDebits(@Param("userId") UUID userId);
+
+    @Query("SELECT SUM(l.amount) FROM Ledger l WHERE l.userID.user_id = :userId")
+    Optional<BigDecimal> sumAllUserAmounts(@Param("userId") UUID userId);
+
 
 }

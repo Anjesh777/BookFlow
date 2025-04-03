@@ -1,0 +1,268 @@
+<div class="booking-portal bg-gray-50 p-6">
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6">
+      <div class="p-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Book a Service</h2>
+        <p class="text-gray-600 mt-2"><em>Browse our services and schedule your appointment</em></p>
+      </div>
+    </div>
+  
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6 p-6">
+      <div class="flex flex-wrap gap-4">
+        <div class="w-full md:w-64">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search services..."
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+            <svg
+              class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+        </div>
+  
+        <div class="w-full md:w-auto text-black">
+          <select class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="" selected>All Categories</option>
+            <option value="Financial">Financial</option>
+            <option value="Renting">Renting</option>
+            <option value="Tax">Tax</option>
+            <option value="Investment">Investment</option>
+          </select>
+        </div>
+  
+       
+  
+        <div class="w-full md:w-auto">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Services Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      @if (service && service.length>0) {
+       @for (item of service; track $index) {
+
+      <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">{{item.serviceName}}</h3>
+           @if (item.status) {
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Active
+            </span>
+           }
+           @else {
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Inactive
+            </span>
+           }
+            
+          </div>
+          
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 text-gray-600">
+              <span class="material-icons text-blue-600">category</span>
+              <span>{{item.category}}</span>
+            </div>
+            
+            <div class="flex items-center gap-2 text-gray-600">
+              <span class="material-icons text-blue-600">schedule</span>
+              <span>{{item.duration}}</span>
+            </div>
+            
+            <div class="flex items-center gap-2 text-gray-600">
+              <span class="material-icons text-blue-600">payments</span>
+              <span class="font-medium text-gray-800">रु {{item.price}}</span>
+            </div>
+            
+            <p class="text-gray-600 text-sm line-clamp-3">{{item.serviceDescription}}</p>
+          </div>
+          
+          @if (item.status) {
+            <button (click)="openBookingDialog(item)" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                <span class="material-icons text-sm">calendar_today</span>
+                <span >Book Now</span>
+              </button>
+            }
+        @else {
+            <button class="w-full mt-6 bg-gray-300 text-gray-600 font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                <span class="material-icons text-sm">calendar_today</span>
+                <span >Not Available</span>
+              </button>
+        }
+          
+
+          
+        </div>
+      </div>
+    }
+    
+  }
+  @else {
+    <div class="col-span-full bg-white rounded-lg shadow-lg border border-gray-100 p-6 text-center">
+      <div class="flex flex-col items-center justify-center py-8">
+        <span class="material-icons text-gray-400 text-5xl mb-4">info</span>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No Services Available</h3>
+        <p class="text-gray-600">There are currently no services available. Please check back later.</p>
+        <button (click)="getAllServices()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center gap-2">
+          <span class="material-icons text-sm">refresh</span>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+  }      
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6 p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Bookings</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (booking of upcomingBookings; track booking.bookingId) {
+            <div class="bg-gray-50 rounded-lg shadow-md border border-gray-200 p-4">
+              <h4 class="text-lg font-semibold text-gray-800">{{ booking.serviceName }}</h4>
+              <p class="text-gray-600 text-sm">Service ID: <span class="font-medium text-green-600">{{ booking.serviceId }}</span></p>
+              <p class="text-gray-600 text-sm">Booking ID: <span class="font-medium text-green-600">{{ booking.bookingId }}</span></p>
+
+              <p class="text-gray-600 text-sm">Payment: 
+                <span class="font-medium" [ngClass]="booking.paymentStatus ? 'text-green-600' : 'text-yellow-600'">
+                  {{ booking.paymentStatus ? 'CORNFOI' : 'PENDING' }}
+                </span>
+              </p>
+              @if (booking.bookingStatus =="CONFIRMED") {
+                <p class="text-gray-600 text-sm">Booking Status: <span class="font-medium text-green-600">{{ booking.bookingStatus }}</span></p>    
+              }
+              @else if (booking.bookingStatus =="CANCELLED") {
+                <p class="text-gray-600 text-sm">Booking Status: <span class="font-medium text-yellow-600">{{ booking.bookingStatus }}</span></p>    
+              }
+
+              @if (booking.bookingNotes) {
+                <p class="text-gray-600 text-sm mt-2">Notes: <span class="font-medium">{{ booking.bookingNotes }}</span></p>
+              }
+              <p class="text-gray-600 text-sm mt-2">Price: <span class="font-medium ">रु <strong>{{ booking.bookingPrice }}</strong></span></p>
+              <p class="text-gray-600 text-sm">Duration: <span class="font-medium">{{ booking.duration }} Hour</span></p>
+              
+              @if (booking.sheduleVerified ==false) {
+                <p class="text-gray-600 text-sm">Schedule Date: <span class="font-medium text-red-500">
+                 NOT YET SHEDULE
+                </span></p>
+              }
+              @else {
+                <p class="text-gray-600 text-sm">Schedule Date: <span class="font-medium">
+                  {{ booking.appointmentDate | date:'MMMM d, y, h:mm a' }}
+                </span></p>
+              }
+              <p class="text-gray-600 text-sm">Booking Date: <span class="font-medium">{{ booking.bookingDate | date:'MMMM d, y' }}</span></p>
+              <div class="flex gap-4">
+               
+                
+                @if (booking.bookingStatus =="PENDING" && !booking.paymentStatus ) {
+                  <button (click)="cancelBooking(booking)"
+                    class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 hover:bg-red-700">
+                    <span class="material-icons text-sm">cancel</span>
+                    <span>Cancel Booking</span>
+                  </button>
+                } @else {
+                  <button
+                    class="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 hover:bg-gray-700">
+                    <span class="material-icons text-sm">cancel</span>
+
+                    <span>Cancel Booking</span>
+                  </button>
+                }
+
+
+                <!-- Payment button -->
+                @if (!booking.paymentStatus) {
+                  <button class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 transition-colors flex items-center justify-center gap-2">
+                    <span class="material-icons text-sm">payment</span>
+                    <span>Make Payment</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          
+          @if (upcomingBookings.length === 0) {
+            <div class="col-span-full text-center py-8">
+              <span class="material-icons text-gray-400 text-5xl mb-4">event_busy</span>
+              <p class="text-gray-500">You don't have any upcoming bookings.</p>
+              <p class="text-gray-500 mt-2">Browse our services above to schedule an appointment.</p>
+            </div>
+          }
+        </div>
+        
+    </div>
+      
+      <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6 p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Previous History</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (booking of pastBookings; track booking.serviceId) {
+            <div class="bg-gray-50 rounded-lg shadow-md border border-gray-200 p-4">
+              <h4 class="text-lg font-semibold text-gray-800">{{ booking.serviceName }}</h4>
+              <p class="text-gray-600 text-sm">Service ID: <span class="font-medium text-green-600">{{ booking.serviceId }}</span></p>
+      
+              <p class="text-gray-600 text-sm">
+                Completed on: <span class="font-medium">{{ booking.appointmentDate | date:'MMMM d, y' }}</span>
+              </p>
+      
+              <p class="text-gray-600 text-sm">Time: <span class="font-medium">{{ booking.fixedDateTime | date:'shortTime' }} - {{ booking.endTime | date:'shortTime' }}</span></p>
+              <p class="text-gray-600 text-sm">Status: 
+                <span class="font-medium text-green-600">Completed</span>
+              </p>
+              
+              @if (booking.bookingNotes) {
+                <p class="text-gray-600 text-sm mt-2">Notes: <span class="font-medium">{{ booking.bookingNotes }}</span></p>
+              }
+              
+              <p class="text-gray-600 text-sm mt-2">Price: <span class="font-medium">रु <strong>{{ booking.bookingPrice }}</strong></span></p>
+              <p class="text-gray-600 text-sm">Duration: <span class="font-medium">{{ booking.duration }} Hour</span></p>
+      
+
+              <p class="text-gray-600 text-sm">Booking Date: <span class="font-medium">{{ booking.bookingDate | date:'MMMM d, y' }}</span></p>
+            <p class="text-gray-600 text-sm">Appointed Date: <span class="font-medium">{{ booking.appointmentDate | date:'MMMM d, y' }}</span></p>
+
+
+              <div class="flex justify-end">
+                <button  class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2">
+                  <span class="material-icons text-sm">replay</span>
+                  <span>Rebook</span>
+                </button>
+                <div>
+                  <div class="flex justify-end">
+                    <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2">
+                      <span class="material-icons text-sm">replay</span>
+                      <span>Rebook</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+          
+          @if (pastBookings.length === 0) {
+            <div class="col-span-full text-center py-8">
+              <span class="material-icons text-gray-400 text-5xl mb-4">history</span>
+              <p class="text-gray-500">You don't have any past bookings.</p>
+              <p class="text-gray-500 mt-2">Once you complete a service, it will appear here.</p>
+            </div>
+          }
+        </div>
+        
+      </div>
+  
+    
+</div>          
+
+           
+            
