@@ -28,6 +28,7 @@ import { FormsModule } from '@angular/forms';
 import { HomeDashboard } from '../../../../core/auth/model/account';
 import { NotificationDataResponse } from '../../../../core/auth/model/bookflow';
 import { AdminService } from '../../../../core/auth/service/Admin-Service/admin.service';
+import { forkJoin } from 'rxjs';
 
 Chart.register(
   LinearScale,
@@ -68,9 +69,22 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
   summaryData: HomeDashboard;
   isLoading: boolean = false;
+  
 
   notificationList: NotificationDataResponse[] = []; 
   notificationList2: NotificationDataResponse[] = [];
+  showAllNotifications: boolean = false;
+  allNotifications: NotificationDataResponse[] = [];
+
+  get combinedAdminNotifications() {
+    return [...this.notificationList, ...this.notificationList2, ...this.allNotifications]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  
+  // Toggle method
+  toggleAdminNotifications() {
+    this.showAllNotifications = !this.showAllNotifications;
+  }
 
 
   transactionData: { [key: string]: number } = {};
@@ -95,9 +109,15 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
   chartOptions: ChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,  
+    layout: {
+      padding: {
+        bottom: 20  
+      }
+    },
     plugins: {
       legend: { display: true },
-      tooltip: { 
+      tooltip: {
         enabled: true,
         callbacks: {
           label: function(context) {
@@ -106,8 +126,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
               label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += new Intl.NumberFormat('en-IN', { 
-                style: 'currency', 
+              label += new Intl.NumberFormat('en-IN', {
+                style: 'currency',
                 currency: 'INR',
                 maximumFractionDigits: 0
               }).format(context.parsed.y);
@@ -128,7 +148,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       }
     }
   };
-
 
 
 
@@ -154,6 +173,31 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     this.last12Months = this.getLast12Months();
   }
 
+  getAllNotifications() {
+    forkJoin({
+      basicNotifications: this.adminService.getThreeNotification(),
+      adminNotifications: this.adminService.getAdminUserNotification(),
+      allUserNotifications: this.adminService.getAllUserNotification() // Add this line
+    }).subscribe({
+      next: (results) => {
+        this.notificationList = results.basicNotifications;
+        this.notificationList2 = results.adminNotifications;
+        // Combine all three notification sets
+        this.allNotifications = [
+          ...results.basicNotifications,
+          ...results.adminNotifications,
+          ...results.allUserNotifications  // Include the new notifications
+        ];
+        console.log("Combined notifications:", this.allNotifications);
+      },
+      error: (error) => {
+        console.log('Error fetching notifications', error);
+      }
+    });
+  }
+
+
+
   
   getAllThreeComment(){
   
@@ -175,16 +219,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     
 }
 
-  ngOnInit(): void {
-    this.fetchTransactionData();
-    this.fetchDailyTransactionData();
-    this.fetchLedgerData();
-    this.fetchRecentSummaryData();
-    this.getAllThreeComment();
-    this.getNotificatiByCompany();
-
-  }
-
+ngOnInit(): void {
+  this.fetchTransactionData();
+  this.fetchDailyTransactionData();
+  this.fetchLedgerData();
+  this.fetchRecentSummaryData();
+  this.getAllNotifications(); 
+ 
+}
   ngAfterViewInit() {
     this.initializeChart();
     this.initializeLedgerChart();

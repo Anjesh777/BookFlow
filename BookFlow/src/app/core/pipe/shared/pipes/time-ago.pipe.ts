@@ -36,6 +36,6 @@ export class TimeAgoPipe implements PipeTransform {
       }
     }
 
-    return value.toString();  // Convert to string for the final fallback
+    return value.toString();  
   }
 }

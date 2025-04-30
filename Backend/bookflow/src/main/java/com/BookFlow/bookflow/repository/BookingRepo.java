@@ -50,6 +50,22 @@ public interface BookingRepo extends JpaRepository<Booking,Long> {
     @Query("DELETE FROM Booking b WHERE b.booking_id = :bookingId AND b.booking_status = 'PENDING' AND b.appointment_date > :cutoffTime")
     int deletePendingBookingById(@Param("bookingId") Long bookingId, @Param("cutoffTime") LocalDateTime cutoffTime);
 
+    @Query("SELECT SUM(b.expectedAmount) FROM Booking b WHERE b.user_id = :userId AND b.payment_status = 'SUCCESS'")
+    BigDecimal sumAllPaymentsByUser(@Param("userId") UUID userId);
 
+    @Query("SELECT MIN(b.appointment_date) FROM Booking b WHERE b.user_id = :userId AND b.appointment_date > CURRENT_TIMESTAMP AND b.booking_status IN ('PENDING', 'CONFIRMED')")
+    LocalDateTime findNextUpcomingBookingDate(@Param("userId") UUID userId);
+
+    @Query("SELECT b.expectedAmount FROM Booking b WHERE b.user_id = :userId AND b.appointment_date > CURRENT_TIMESTAMP AND b.booking_status IN ('PENDING', 'CONFIRMED') ORDER BY b.appointment_date ASC LIMIT 1")
+    BigDecimal findPriceOfNextAppointment(@Param("userId") UUID userId);
+
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.user_id = :userId AND b.booking_status = 'PENDING'")
+    Long countPendingBookingsByUser(@Param("userId") UUID userId);
+
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.user_id = :userId")
+    Long countByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT b FROM Booking b WHERE b.paymentReference = :paymentReference")
+    List<Booking> findByPaymentReference(@Param("paymentReference") String paymentReference);
 
 }

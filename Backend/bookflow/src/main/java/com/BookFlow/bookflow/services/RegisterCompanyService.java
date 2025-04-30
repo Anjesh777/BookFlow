@@ -20,8 +20,7 @@ public class RegisterCompanyService {
     private UserRepo userRepo;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    private EmailVerificactionService emailVerificationService;
+
 
     @Transactional
     public void registerCompany(CompanyDTO companyDTO){
@@ -43,7 +42,8 @@ public class RegisterCompanyService {
         user.setPassword(passwordEncoder.encode(companyDTO.getCompanyPassword()));
         user.setRole(Role.COMPANY_ADMIN);
         user.setMainuser(true);
-
+        user.setPhone(companyDTO.getCompanyPhone());
+        user.set_enabled(true);
 
         userRepo.save(user);
     }

@@ -50,7 +50,7 @@
     </div>
   
     <!-- Services Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+    <div id="servicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
       @if (service && service.length>0) {
        @for (item of service; track $index) {
 
@@ -135,10 +135,13 @@
               <p class="text-gray-600 text-sm">Booking ID: <span class="font-medium text-green-600">{{ booking.bookingId }}</span></p>
 
               <p class="text-gray-600 text-sm">Payment: 
-                <span class="font-medium" [ngClass]="booking.paymentStatus ? 'text-green-600' : 'text-yellow-600'">
-                  {{ booking.paymentStatus ? 'CORNFOI' : 'PENDING' }}
+                <span class="font-medium" [ngClass]="booking.paymentStatus === 'SUCCESS' ? 'text-green-600' : 'text-yellow-600'">
+                  {{ booking.paymentStatus === 'SUCCESS' ? 'CONFIRM' : 'PENDING' }}
                 </span>
               </p>
+
+              
+
               @if (booking.bookingStatus =="CONFIRMED") {
                 <p class="text-gray-600 text-sm">Booking Status: <span class="font-medium text-green-600">{{ booking.bookingStatus }}</span></p>    
               }
@@ -166,7 +169,7 @@
               <div class="flex gap-4">
                
                 
-                @if (booking.bookingStatus =="PENDING" && !booking.paymentStatus ) {
+                @if (booking.bookingStatus === "PENDING" && booking.paymentStatus !== "SUCCESS") {
                   <button (click)="cancelBooking(booking)"
                     class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 hover:bg-red-700">
                     <span class="material-icons text-sm">cancel</span>
@@ -176,17 +179,16 @@
                   <button
                     class="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 hover:bg-gray-700">
                     <span class="material-icons text-sm">cancel</span>
-
                     <span>Cancel Booking</span>
                   </button>
                 }
 
 
                 <!-- Payment button -->
-                @if (!booking.paymentStatus) {
-                  <button class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 transition-colors flex items-center justify-center gap-2">
+                @if (booking.paymentStatus !== "SUCCESS") {
+                  <button (click)="makePayment(booking)" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 transition-colors flex items-center justify-center gap-2">
                     <span class="material-icons text-sm">payment</span>
-                    <span>Make Payment</span>
+                    <span>Pay with eSewa</span>
                   </button>
                 }
               </div>
@@ -234,18 +236,10 @@
 
 
               <div class="flex justify-end">
-                <button  class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2">
+                <button (click)="scrollToServices()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2">
                   <span class="material-icons text-sm">replay</span>
                   <span>Rebook</span>
                 </button>
-                <div>
-                  <div class="flex justify-end">
-                    <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2">
-                      <span class="material-icons text-sm">replay</span>
-                      <span>Rebook</span>
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           }

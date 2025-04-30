@@ -3,13 +3,17 @@ package com.BookFlow.bookflow.services;
 import com.BookFlow.bookflow.dto.LedgerDTO;
 import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.dto.UserDetailsResponse;
+import com.BookFlow.bookflow.model.CashBook;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.Ledger;
 import com.BookFlow.bookflow.model.User;
+import com.BookFlow.bookflow.repository.CashBookRepo;
 import com.BookFlow.bookflow.repository.LedgerRepository;
 import com.BookFlow.bookflow.repository.UserRepo;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,27 +30,26 @@ public class LedgerService {
 
     @Autowired
     private UserRepo userRepo;
-
+    @Autowired
+    private CashBookRepo cashBookRepo;
+    @Autowired
+    private CashBookService cashBookService;
     @Autowired
     private LedgerRepository ledgerRepository;
+    @Autowired
+    private UserContextUtil userContextUtil;
 
 
-    private Company getCurrentUserCompany() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
 
-        if (currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
-        }
-        return currentUser.get().getCompany_id();
-    }
 
+
+    @Transactional
     public LedgerDTO updateLedgerEntry(String entryId, LedgerDTO updatedLedgerDTO) {
         Optional<Ledger> existingEntry = ledgerRepository.findById(entryId);
 
         if (existingEntry.isPresent()) {
             Ledger ledger = existingEntry.get();
+            String previousType = ledger.getType(); // Store the previous type
             ledger.setAmount(updatedLedgerDTO.getAmount());
             ledger.setType(updatedLedgerDTO.getType());
             ledger.setParticulars(updatedLedgerDTO.getParticulars());
@@ -54,6 +57,51 @@ public class LedgerService {
             ledger.setRefrenceNumber(updatedLedgerDTO.getReferenceNumber());
 
             ledgerRepository.save(ledger);
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = authentication.getName();
+            Optional<User> currentUser = userRepo.findByUsername(currentUsername);
+
+            if (currentUser.isEmpty()) {
+                throw new RuntimeException("Current user not found");
+            }
+
+            Company userCompany = currentUser.get().getCompany_id();
+
+            CashBook cashBook = cashBookRepo.findByVoucherNumber(ledger.getRefrenceNumber(), userCompany);
+
+            if (updatedLedgerDTO.getType().equalsIgnoreCase("credit")) {
+                if (cashBook == null) {
+                    // Create new CashBook entry
+                    cashBook = new CashBook();
+                    cashBook.setCompany_id(ledger.getCompanyID());
+                    cashBook.setDate(ledger.getDate());
+                    cashBook.setVoucherNumber(ledger.getRefrenceNumber());
+                    cashBook.setDescription(ledger.getParticulars());
+                    cashBook.setCategory("Ledger Credit");
+                    cashBook.setReceiptAmount(ledger.getAmount());
+                    cashBook.setPaymentAmount(BigDecimal.ZERO);
+
+                    BigDecimal previousBalance = cashBookService.getCurrentBalance(ledger.getCompanyID());
+                    BigDecimal newBalance = previousBalance.add(ledger.getAmount());
+                    cashBook.setBalance(newBalance);
+                } else {
+                    BigDecimal difference = ledger.getAmount().subtract(cashBook.getReceiptAmount());
+                    cashBook.setReceiptAmount(ledger.getAmount());
+                    cashBook.setDescription(ledger.getParticulars());
+                    cashBook.setBalance(cashBook.getBalance().add(difference));
+
+                    cashBookService.recalculateBalances(cashBook, cashBook.getReceiptAmount().subtract(difference),
+                            cashBook.getPaymentAmount());
+                }
+                cashBookRepo.save(cashBook);
+            } else if (updatedLedgerDTO.getType().equalsIgnoreCase("debit") &&
+                    cashBook != null) {
+                cashBookRepo.delete(cashBook);
+                cashBookService.recalculateBalancesAfterDelete(cashBook.getId(),
+                        cashBook.getReceiptAmount(), cashBook.getPaymentAmount(), userCompany);
+            }
+
             return mapToDTO(ledger);
         } else {
             throw new RuntimeException("Ledger entry not found");
@@ -61,19 +109,10 @@ public class LedgerService {
     }
 
 
-    public User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        return userRepo.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Current user not found"));
-    }
-
-
-
 
 
     public List<UserDetailsResponse> getAllUsers() {
-        UUID companyId = getCurrentUserCompany().getCompany_id();
+        UUID companyId = userContextUtil.getCurrentUserCompany().getCompany_id();
         List<User> users = userRepo.findByCompanyId(companyId);
 
         return users.stream()
@@ -92,14 +131,14 @@ public class LedgerService {
     @Transactional
     public LedgerDTO addRecord(LedgerDTO ledgerDTO) {
         log.info("Adding new ledger record: {}", ledgerDTO);
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         User user = null;
 
         if (ledgerDTO.getUser_id() != null && !ledgerDTO.getUser_id().isEmpty()) {
             user = userRepo.findById(UUID.fromString(ledgerDTO.getUser_id()))
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + ledgerDTO.getUser_id()));
         } else {
-            user = getCurrentUser();
+            user = userContextUtil.getCurrentUser();
         }
 
         BigDecimal previousBalance = ledgerRepository.findLatestUserBalance(user)
@@ -130,7 +169,7 @@ public class LedgerService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        Company currentCompany = getCurrentUserCompany();
+        Company currentCompany = userContextUtil.getCurrentUserCompany();
         if (!user.getCompany_id().equals(currentCompany)) {
             throw new RuntimeException("User does not belong to the current company");
         }
@@ -142,12 +181,28 @@ public class LedgerService {
                 .collect(Collectors.toList());
     }
 
+    public List<LedgerDTO> getLedgerEntriesByUserInverted(UUID userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        Company currentCompany = userContextUtil.getCurrentUserCompany();
+        if (!user.getCompany_id().equals(currentCompany)) {
+            throw new RuntimeException("User does not belong to the current company");
+        }
+
+        List<Ledger> ledgerEntries = ledgerRepository.findByUserIdOrderByDateDesc(userId);
+
+        return ledgerEntries.stream()
+                .map(this::mapToDTOInverted)
+                .collect(Collectors.toList());
+    }
+
 
     public List<LedgerDTO> getLedgerEntriesByUserAndDateRange(UUID userId, LocalDate startDate, LocalDate endDate) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        Company currentCompany = getCurrentUserCompany();
+        Company currentCompany = userContextUtil.getCurrentUserCompany();
         if (!user.getCompany_id().equals(currentCompany)) {
             throw new RuntimeException("User does not belong to the current company");
         }
@@ -189,15 +244,27 @@ public class LedgerService {
         BigDecimal currentBalance = ledgerRepository.sumAllUserAmounts(userId)
                 .orElse(BigDecimal.ZERO);
 
+        return new LedgerSummaryDTO(totalCredits, totalDebits, currentBalance);
+    }
 
+    public LedgerSummaryDTO getUserLedgerSummaryInverted(UUID userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        BigDecimal totalDebits = ledgerRepository.sumUserCredits(userId)
+                .orElse(BigDecimal.ZERO);
+
+        BigDecimal totalCredits = ledgerRepository.sumUserDebits(userId)
+                .orElse(BigDecimal.ZERO);
+
+        BigDecimal currentBalance = ledgerRepository.sumAllUserAmounts(userId)
+                .orElse(BigDecimal.ZERO);
 
         return new LedgerSummaryDTO(totalCredits, totalDebits, currentBalance);
     }
 
-
-
     public LedgerSummaryDTO getCompanyLedgerSummary() {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         Object[] summaryData = ledgerRepository.getCompanySummary(company);
 
         if (summaryData != null && summaryData.length > 0) {
@@ -222,7 +289,7 @@ public class LedgerService {
 
 
     public Optional<LedgerDTO> getLedgerEntryById(String entryId) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         Optional<Ledger> ledgerEntry = ledgerRepository.findByEntryIDAndCompanyID(entryId, company);
 
         return ledgerEntry.map(this::mapToDTO);
@@ -231,13 +298,12 @@ public class LedgerService {
 
     @Transactional
     public boolean deleteLedgerEntry(String entryId) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         Optional<Ledger> ledgerEntry = ledgerRepository.findByEntryIDAndCompanyID(entryId, company);
 
         if (ledgerEntry.isPresent()) {
             ledgerRepository.delete(ledgerEntry.get());
 
-            // Recalculate balances for all subsequent entries
             User user = ledgerEntry.get().getUserID();
             List<Ledger> userEntries = ledgerRepository.findByUserIdOrderByDateDesc(user.getUser_id());
 
@@ -273,7 +339,7 @@ public class LedgerService {
     }
 
     public Map<String, BigDecimal> getMonthlyTransactionSummary() {
-        List<Object[]> results = ledgerRepository.getMonthlyTransactionSummary();
+        List<Object[]> results = ledgerRepository.getMonthlyTransactionSummary(userContextUtil.getCurrentUserCompany().getCompany_id());
         Map<String, BigDecimal> summary = new HashMap<>();
 
         for (Object[] row : results) {
@@ -285,7 +351,7 @@ public class LedgerService {
     }
 
     public Map<String, BigDecimal> getDailyTransactionSummary(LocalDate month) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
 
         int extractedMonth = month.getMonthValue();
         int extractedYear = month.getYear();
@@ -302,15 +368,16 @@ public class LedgerService {
         return summary;
     }
 
+
+
+
     public List<LedgerDTO> searchLedgerEntries(String searchTerm) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         List<Ledger> results = ledgerRepository.searchLedgerEntries(company, searchTerm);
         return results.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-
-
 
 
     private LedgerDTO mapToDTO(Ledger ledger) {
@@ -330,6 +397,82 @@ public class LedgerService {
         return dto;
     }
 
+//    private LedgerDTO mapToDTOInverted(Ledger ledger) {
+//        BigDecimal invertedAmount = ledger.getAmount().negate();
+//        String invertedType = "credit".equals(ledger.getType()) ? "debit" : "credit";
+//
+//        LedgerDTO dto = new LedgerDTO(
+//                ledger.getEntryID(),
+//                ledger.getDate(),
+//                ledger.getParticulars(),
+//                invertedAmount, // Use inverted amount
+//                invertedType,   // Use inverted type
+//                ledger.getRefrenceNumber(),
+//                ledger.getNote(),
+//                ledger.getUserID() != null ? ledger.getUserID().getUser_id().toString() : null
+//        );
+//
+//        dto.setBalance(ledger.getBalance());
+//
+//        return dto;
+//    }
+
+
+
+    public Map<String, BigDecimal> getMonthlyLedgerSummary() {
+        User currentUser = userContextUtil.getCurrentUser();
+        List<Object[]> results = ledgerRepository.getMonthlyUserLedgerSummary(currentUser);
+        Map<String, BigDecimal> summary = new HashMap<>();
+
+        for (Object[] row : results) {
+            String month = (String) row[0];
+            BigDecimal totalAmount = (BigDecimal) row[1];
+            summary.put(month, totalAmount);
+        }
+        return summary;
+    }
+
+    private LedgerDTO mapToDTOInverted(Ledger ledger) {
+        BigDecimal invertedAmount = ledger.getAmount(); // Keep the amount positive
+        String invertedType = "credit".equals(ledger.getType()) ? "debit" : "credit";
+
+        LedgerDTO dto = new LedgerDTO(
+                ledger.getEntryID(),
+                ledger.getDate(),
+                ledger.getParticulars(),
+                invertedAmount,
+                invertedType,
+                ledger.getRefrenceNumber(),
+                ledger.getNote(),
+                ledger.getUserID() != null ? ledger.getUserID().getUser_id().toString() : null
+        );
+
+        // The balance might need to be recalculated for the other user's perspective
+        dto.setBalance(ledger.getBalance());
+
+        return dto;
+    }
+
+    public Map<String, BigDecimal> getDailyLedgerSummary(LocalDate month) {
+        User currentUser = userContextUtil.getCurrentUser();
+        int extractedMonth = month.getMonthValue();
+        int extractedYear = month.getYear();
+
+        List<Object[]> results = ledgerRepository.getDailyUserLedgerSummary(
+                extractedMonth,
+                extractedYear,
+                currentUser.getUser_id()
+        );
+
+        Map<String, BigDecimal> summary = new HashMap<>();
+        for (Object[] row : results) {
+            String day = String.format("%02d", ((Number)row[0]).intValue());
+            BigDecimal totalAmount = (BigDecimal) row[1];
+            summary.put(day, totalAmount);
+        }
+        return summary;
+    }
+
 
     private Ledger mapToEntity(LedgerDTO dto, User user) {
         Ledger ledger = new Ledger();
@@ -346,4 +489,17 @@ public class LedgerService {
 
         return ledger;
     }
+
+    public boolean existsByReferenceNumber(String referenceNumber) {
+        Company company = userContextUtil.getCurrentUserCompany();
+        return ledgerRepository.existsByRefrenceNumberAndCompanyID(referenceNumber, company);
+    }
+
+    @Transactional
+    public void deleteByReferenceNumber(String referenceNumber) {
+        Company company = userContextUtil.getCurrentUserCompany();
+        ledgerRepository.deleteByRefrenceNumberAndCompanyID(referenceNumber, company);
+    }
+
+
 }

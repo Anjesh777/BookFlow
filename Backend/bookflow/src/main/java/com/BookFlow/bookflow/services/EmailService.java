@@ -24,14 +24,12 @@ public class EmailService {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper mail = new MimeMessageHelper(message,true, "UTF-8");
-//
-//            SimpleMailMessage mail = new SimpleMailMessage();
 
             mail.setFrom("anjeshmainali348@gmail.com");
             mail.setTo(to);
             mail.setSubject(subject);
             mail.setText(body,true);
-//            javaMailSender.send(mail);
+
             javaMailSender.send(message);
         }
         catch (Exception e){

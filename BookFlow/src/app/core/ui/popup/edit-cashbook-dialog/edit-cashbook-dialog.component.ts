@@ -138,26 +138,30 @@ export class EditCashbookDialogComponent {
       reimbursementPending: new FormControl(this.data.reimbursementPending)
     });
   }
-
   updateTransaction(): void {
     if (this.editForm.valid) {
       const transactionId = this.editForm.get('id')?.value;
-      const transactionData = this.editForm.value;
+      const formValue = {...this.editForm.getRawValue()};
       
-      this.accountService.updateTransaction(transactionId, transactionData).subscribe({
-        next: () => {
-          console.log('Transaction updated successfully ',this.editForm.value);
-          this.accountService.updateTransaction(transactionId,transactionData)
-          this.dialogRef.close(transactionData);
+      this.isSubmitting = true;
+      this.accountService.updateTransaction(transactionId, formValue).subscribe({
+        next: (updatedTransaction) => {
+          console.log('Transaction updated successfully', updatedTransaction);
+          this.dialogRef.close({
+            transaction: updatedTransaction,
+            refreshSummary: true
+          });
         },
         error: (error) => {
           console.error('Error updating transaction:', error);
+          this.isSubmitting = false;
         }
       });
     } else {
       this.editForm.markAllAsTouched();
     }
   }
+  
 
   closeDialog(): void {
     this.dialogRef.close();

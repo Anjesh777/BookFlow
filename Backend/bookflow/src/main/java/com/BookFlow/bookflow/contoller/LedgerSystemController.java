@@ -182,7 +182,7 @@ public class LedgerSystemController {
                 csvPrinter.printRecord("Total Ledger Balance", "", "", "", totalLedgerBalance);
                 csvPrinter.printRecord("Total Credits", "", "", "", totalCredits);
                 csvPrinter.printRecord("Total Debits", "", "", "", totalDebits);
-                csvPrinter.printRecord("Outstanding Balance", "", "", "", outstandingBalance);
+       //         csvPrinter.printRecord("Outstanding Balance", "", "", "", outstandingBalance);
 
                 csvPrinter.flush();
             }

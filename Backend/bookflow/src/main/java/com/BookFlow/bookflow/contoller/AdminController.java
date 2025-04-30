@@ -51,7 +51,7 @@ public class AdminController {
 
         try {
             System.out.println(userdetailsDTO.toString());
-            adminService.registerUser(userdetailsDTO);
+            adminService.registerAdmin(userdetailsDTO);
 
             log.info("User creation successful");
             response.put("status", "success");
@@ -174,7 +174,7 @@ public class AdminController {
 
         try {
 
-            CompanyDashbooksummaryDto companyDashbooksummar = adminService.getSummary();
+            CompanyDashbooksummaryDto companyDashbooksummar = adminService.adminSummary();
             return ResponseEntity.ok(companyDashbooksummar);
         }
         catch (Exception e){

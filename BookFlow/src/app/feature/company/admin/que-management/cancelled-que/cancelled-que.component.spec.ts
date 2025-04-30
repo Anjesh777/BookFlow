@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CompletedQueComponent } from './completed-que.component';
+import { CancelledQueComponent } from './cancelled-que.component';
 
-describe('CompletedQueComponent', () => {
-  let component: CompletedQueComponent;
-  let fixture: ComponentFixture<CompletedQueComponent>;
+describe('CancelledQueComponent', () => {
+  let component: CancelledQueComponent;
+  let fixture: ComponentFixture<CancelledQueComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CompletedQueComponent]
+      imports: [CancelledQueComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CompletedQueComponent);
+    fixture = TestBed.createComponent(CancelledQueComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -15,6 +15,8 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, MatIconModule, MatProgressSpinnerModule, RouterModule, FormsModule],
   templateUrl: './que-management.component.html',
+  
+
   styleUrl: './que-management.component.css'
 })
 export class QueManagementComponent implements OnInit {

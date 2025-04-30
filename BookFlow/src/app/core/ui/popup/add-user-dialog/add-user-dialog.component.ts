@@ -97,7 +97,6 @@ import { userDetails } from '../../../auth/model/admin';
                         <option value="">Select Role</option>
                         <option value="COMPANY_ADMIN">Admin</option>
                         <option value="COMPANY_USER">User</option>
-                        <option value="COMPANY_ACCOUTNAT">Accoutant</option>
 
                     </select>
                     <span *ngIf="userForm.get('role')?.hasError('required') && userForm.get('role')?.touched"
@@ -114,19 +113,7 @@ import { userDetails } from '../../../auth/model/admin';
                 </div>
             </div>
 
-            <!-- Password -->
-            <!-- <div class="space-y-2">
-                <label class="text-sm text-gray-700 font-medium">Password</label>
-                <input type="password" formControlName="password"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter password">
-                <span *ngIf="userForm.get('password')?.hasError('required') && userForm.get('password')?.touched"
-                    class="text-sm text-red-500">Password is required</span>
-                <span *ngIf="userForm.get('password')?.hasError('minlength') && userForm.get('password')?.touched"
-                    class="text-sm text-red-500">Password must be at least 6 characters</span>
-            </div> -->
 
-            <!-- Footer Actions -->
             <div class="flex justify-end items-center gap-4 mt-6 pt-4 border-t border-gray-200">
                 <button type="button" (click)="onCancel()"
                     class="px-5 py-2.5 rounded-lg text-gray-700 text-sm border-none outline-none bg-gray-100 hover:bg-gray-200">

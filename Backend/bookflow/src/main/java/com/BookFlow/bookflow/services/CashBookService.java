@@ -7,6 +7,7 @@ import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.repository.CashBookRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -43,21 +44,11 @@ public class CashBookService {
     private CashBookRepo cashBookRepo;
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private UserContextUtil userContextUtil;
 
 
 
-
-    private Company getCurrentUserCompany() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
-
-        if (currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
-        }
-
-        return currentUser.get().getCompany_id();
-    }
 
     public Page<CashBookDTO> getAllTransactions(int page, int size, String sortBy, String direction) {
         Pageable pageable = PageRequest.of(
@@ -65,16 +56,19 @@ public class CashBookService {
                 size,
                 direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending()
         );
-        Page<CashBook> cashBooks = cashBookRepo.findAll(pageable);
-        // Assuming you have a method to convert a CashBook entity to CashBookDTO:
+        Page<CashBook> cashBooks = cashBookRepo.findByCompany(userContextUtil.getCurrentUserCompany(),pageable);
         return cashBooks.map(this::mapToDTO);
     }
 
 
+    public boolean existsByVoucherNumber(String voucherNumber) {
+        return cashBookRepo.existsByVoucherNumber(voucherNumber);
+    }
+
 
     @Transactional
     public CashBookDTO addTransaction(CashBookDTO transactionDTO) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         CashBook cashBook = mapToEntity(transactionDTO);
 
         BigDecimal previousBalance = getCurrentBalance(company);
@@ -89,49 +83,72 @@ public class CashBookService {
         return mapToDTO(savedTransaction);
     }
 
-    private BigDecimal getCurrentBalance(Company company) {
+    public BigDecimal getCurrentBalance(Company company) {
         return cashBookRepo.findTopByCompanyOrderByIdDesc(company)
                 .map(CashBook::getBalance)
                 .orElse(BigDecimal.ZERO);
     }
 
     public Optional<CashBookDTO> getTransactionById(Long id) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         return cashBookRepo.findById(id)
                 .filter(t -> t.getCompany_id().equals(company))
                 .map(this::mapToDTO);
     }
 
 
-
-
-
     @Transactional
     public CashBookDTO updateTransaction(Long id, CashBookDTO transactionDTO) {
-        Company company = getCurrentUserCompany();
-        CashBook existingTransaction = cashBookRepo.findById(id)
-                .filter(t -> t.getCompany_id().equals(company))
-                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+        Company company = userContextUtil.getCurrentUserCompany();
 
-        BigDecimal oldReceiptAmount = existingTransaction.getReceiptAmount();
-        BigDecimal oldPaymentAmount = existingTransaction.getPaymentAmount();
+        try {
+            CashBook existingTransaction = cashBookRepo.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
 
-        existingTransaction.setDate(transactionDTO.getDate());
-        existingTransaction.setVoucherNumber(transactionDTO.getVoucherNumber());
-        existingTransaction.setDescription(transactionDTO.getDescription());
-        existingTransaction.setCategory(transactionDTO.getCategory());
-        existingTransaction.setReceiptAmount(transactionDTO.getReceiptAmount());
-        existingTransaction.setPaymentAmount(transactionDTO.getPaymentAmount());
-        existingTransaction.setReimbursementPending(transactionDTO.isReimbursementPending());
+            Company transactionCompany = existingTransaction.getCompany_id();
 
-        recalculateBalances(existingTransaction, oldReceiptAmount, oldPaymentAmount);
+            if (!transactionCompany.getCompany_id().equals(company.getCompany_id())) {
+                throw new RuntimeException("Transaction not found with id: " + id + " for current company");
+            }
 
-        CashBook updatedTransaction = cashBookRepo.save(existingTransaction);
-        return mapToDTO(updatedTransaction);
+            BigDecimal oldReceiptAmount = existingTransaction.getReceiptAmount() != null ?
+                    existingTransaction.getReceiptAmount() : BigDecimal.ZERO;
+            BigDecimal oldPaymentAmount = existingTransaction.getPaymentAmount() != null ?
+                    existingTransaction.getPaymentAmount() : BigDecimal.ZERO;
+
+            // Update other fields
+            existingTransaction.setDate(transactionDTO.getDate() != null ?
+                    transactionDTO.getDate() : existingTransaction.getDate());
+            existingTransaction.setVoucherNumber(transactionDTO.getVoucherNumber() != null ?
+                    transactionDTO.getVoucherNumber() : existingTransaction.getVoucherNumber());
+            existingTransaction.setDescription(transactionDTO.getDescription() != null ?
+                    transactionDTO.getDescription() : existingTransaction.getDescription());
+            existingTransaction.setCategory(transactionDTO.getCategory() != null ?
+                    transactionDTO.getCategory() : existingTransaction.getCategory());
+
+            if (transactionDTO.getReceiptAmount() != null) {
+                existingTransaction.setReceiptAmount(transactionDTO.getReceiptAmount());
+            }
+            if (transactionDTO.getPaymentAmount() != null) {
+                existingTransaction.setPaymentAmount(transactionDTO.getPaymentAmount());
+            }
+
+            existingTransaction.setReimbursementPending(transactionDTO.isReimbursementPending());
+
+            recalculateBalances(existingTransaction, oldReceiptAmount, oldPaymentAmount);
+
+            CashBook updatedTransaction = cashBookRepo.save(existingTransaction);
+            return mapToDTO(updatedTransaction);
+        } catch (Exception e) {
+            System.out.println("Error in updateTransaction: " + e.getMessage());
+            throw e;
+        }
     }
 
+
+
     public Page<CashBookDTO> searchTransactions(String query, LocalDate fromDate, LocalDate toDate, int page, int size) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
         boolean isQueryEmpty = (query == null || query.trim().isEmpty());
@@ -141,16 +158,12 @@ public class CashBookService {
         Page<CashBook> transactions;
 
         if (!isQueryEmpty && isFromDateProvided && isToDateProvided) {
-            // Case 1: Both query and date range provided
             transactions = cashBookRepo.findByCompanyAndSearchQueryAndDateRange(company, query, fromDate, toDate, pageable);
         } else if (!isQueryEmpty) {
-            // Case 2: Only query provided
             transactions = cashBookRepo.findByCompanyAndSearchQuery(company, query, pageable);
         } else if (isFromDateProvided && isToDateProvided) {
-            // Case 3: Only date range provided
             transactions = cashBookRepo.findByCompanyAndDateRange(company, fromDate, toDate, pageable);
         } else {
-            // Case 4: No filters, return all transactions
             transactions = cashBookRepo.findByCompany(company, pageable);
         }
 
@@ -158,10 +171,9 @@ public class CashBookService {
     }
 
     public byte[] exportTransactionsToCSV(String query, LocalDate fromDate, LocalDate toDate) throws IOException {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         List<CashBook> transactions;
 
-        // Use existing search logic but get all results without pagination
         if (query != null && !query.trim().isEmpty() && fromDate != null && toDate != null) {
             transactions = cashBookRepo.findByCompanyAndSearchQueryAndDateRangeNoPage(company, query, fromDate, toDate);
         } else if (query != null && !query.trim().isEmpty()) {
@@ -194,27 +206,21 @@ public class CashBookService {
         csvPrinter.flush();
         return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
-//    public Page<CashBookDTO> getTransactionsByDate(LocalDate date, int page, int size) {
-//        Company company = getCurrentUserCompany();
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-//        return cashBookRepo.findByDate(date, company, pageable).map(this::mapToDTO);
-//    }
+
 
     public CashBookSummaryDTO getTransactionSummary() {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         CashBookSummaryDTO summary = new CashBookSummaryDTO();
-        // Get current balance safely
         BigDecimal currentBalance = cashBookRepo.findLatestBalance(company)
                 .orElse(BigDecimal.ZERO);
         summary.setCurrentBalance(currentBalance);
-        // Get today's totals
+
         LocalDate today = LocalDate.now();
         BigDecimal receiptsToday = cashBookRepo.findTotalReceiptsForToday(today, company);
         BigDecimal paymentsToday = cashBookRepo.findTotalPaymentsForToday(today, company);
 
         summary.setTotalReceiptsToday(receiptsToday);
         summary.setTotalPaymentsToday(paymentsToday);
-        // Get pending reimbursements
         BigDecimal pendingReimbursements = cashBookRepo.findTotalPendingReimbursements(company);
         summary.setPendingReimbursements(pendingReimbursements);
         return summary;
@@ -222,7 +228,7 @@ public class CashBookService {
 
     @Transactional
     public void deleteTransaction(Long id) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         CashBook transaction = cashBookRepo.findById(id)
                 .filter(t -> t.getCompany_id().equals(company))
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
@@ -251,10 +257,10 @@ public class CashBookService {
         cashBookRepo.saveAll(subsequentTransactions);
     }
 
-    private void recalculateBalances(CashBook updatedTransaction,
+    public void recalculateBalances(CashBook updatedTransaction,
                                      BigDecimal oldReceiptAmount,
                                      BigDecimal oldPaymentAmount) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
         BigDecimal netChange = updatedTransaction.getReceiptAmount()
                 .subtract(oldReceiptAmount)
                 .subtract(updatedTransaction.getPaymentAmount())
@@ -286,7 +292,8 @@ public class CashBookService {
         }
     }
 
-    private void recalculateBalancesAfterDelete(Long deletedId,
+
+    public void recalculateBalancesAfterDelete(Long deletedId,
                                                 BigDecimal deletedReceiptAmount,
                                                 BigDecimal deletedPaymentAmount,
                                                 Company company) {
@@ -348,7 +355,6 @@ public class CashBookService {
                 CashBookDTO transaction = new CashBookDTO();
 
                 try {
-                    // Use the parseDate method instead of direct parsing
                     transaction.setDate(parseDate(record.get("Date")));
 
                     transaction.setVoucherNumber(record.get("Voucher Number"));
@@ -401,7 +407,7 @@ public class CashBookService {
     }
 
     public Map<String, BigDecimal> getMonthlyTransactionSummary() {
-        List<Object[]> results = cashBookRepo.getMonthlyTransactionSummary();
+        List<Object[]> results = cashBookRepo.getMonthlyTransactionSummary(userContextUtil.getCurrentUserCompany().getCompany_id());
         Map<String, BigDecimal> summary = new HashMap<>();
 
         for (Object[] row : results) {
@@ -413,7 +419,7 @@ public class CashBookService {
     }
 
     public Map<String, BigDecimal> getDailyTransactionSummary(LocalDate month) {
-        Company company = getCurrentUserCompany();
+        Company company = userContextUtil.getCurrentUserCompany();
 
         int extractedMonth = month.getMonthValue();
         int extractedYear = month.getYear();

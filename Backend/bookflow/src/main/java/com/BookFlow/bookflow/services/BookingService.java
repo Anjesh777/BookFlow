@@ -1,6 +1,7 @@
 package com.BookFlow.bookflow.services;
 
 import com.BookFlow.bookflow.dto.BookingDto;
+import com.BookFlow.bookflow.dto.BookingSummaryDTO;
 import com.BookFlow.bookflow.model.Booking;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.Services;
@@ -8,6 +9,7 @@ import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.repository.BookingRepo;
 import com.BookFlow.bookflow.repository.ServiceRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,28 +29,13 @@ public class BookingService {
     private ServiceRepo serviceRepo;
     @Autowired
     private BookingRepo bookingRepo;
+    @Autowired
+    private UserContextUtil userContextUtil;
 
-    private Company getCurrentUserCompany() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
 
-        if (currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
-        }
-
-        return currentUser.get().getCompany_id();
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        return userRepo.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Current user not found"));
-    }
 
     public List<BookingDto> findUpcomingBookingsByUserId() {
-        UUID userId = getCurrentUser().getUser_id();
+        UUID userId = userContextUtil.getCurrentUser().getUser_id();
         List<Booking> upcomingBookings = bookingRepo.findPendingBookingsByUserId(userId);
         return upcomingBookings.stream()
                 .map(this::mapToDto)
@@ -58,7 +44,7 @@ public class BookingService {
 
 
     public List<BookingDto> findPastBookingsByUserId() {
-        UUID userId = getCurrentUser().getUser_id();
+        UUID userId = userContextUtil.getCurrentUser().getUser_id();
         List<Booking> pastBookings = bookingRepo.findCompletedBookingsByUserId(userId);
         return pastBookings.stream()
                 .map(this::mapToDto)
@@ -113,7 +99,6 @@ public class BookingService {
                     java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME));
         }
 
-        // Calculate the expected amount based on the service price and duration
         BigDecimal expectedAmount = calculateExpectedAmount(service.getPrice(),
                 dto.getDuration(),
                 booking.getFixedDatedTime());
@@ -129,7 +114,6 @@ public class BookingService {
         return booking;
     }
 
-    // Fixed method signature to match the calling code
     private BigDecimal calculateExpectedAmount(BigDecimal basePrice, String durationStr, LocalDateTime fixedDatedTime) {
         double durationHours = Double.parseDouble(durationStr);
 
@@ -184,9 +168,33 @@ public class BookingService {
         if (booking.getFixedDatedTime() != null) {
             dto.setFixedDatedTime(booking.getFixedDatedTime().toString());
         }
-
         return dto;
     }
+
+    public BookingSummaryDTO getBookingSummary() {
+
+        UUID userId = userContextUtil.getCurrentUser().getUser_id();
+        BookingSummaryDTO summary = new BookingSummaryDTO();
+
+        BigDecimal totalPayment = bookingRepo.sumAllPaymentsByUser(userId);
+        summary.setTotalPayment(totalPayment != null ? totalPayment : BigDecimal.ZERO);
+
+        LocalDateTime upcomingDate = bookingRepo.findNextUpcomingBookingDate(userId);
+        summary.setUpcomingServiceDate(upcomingDate);
+
+        BigDecimal nextAppointmentPrice = bookingRepo.findPriceOfNextAppointment(userId);
+        summary.setNextAppointmentPrice(nextAppointmentPrice != null ? nextAppointmentPrice : BigDecimal.ZERO);
+
+        Long totalBookings = bookingRepo.countByUserId(userId);
+        summary.setTotalServicesBooked(totalBookings != null ? totalBookings : 0L);
+
+        Long pendingBookings = bookingRepo.countPendingBookingsByUser(userId);
+        summary.setPendingServices(pendingBookings != null ? pendingBookings : 0L);
+
+        return summary;
+    }
+
+
 
 
 

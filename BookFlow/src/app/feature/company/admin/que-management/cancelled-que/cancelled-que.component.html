@@ -1,0 +1,164 @@
+<div class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 transition-all duration-300" :class="sidebarOpen ? 'ml-64' : 'ml-0'">
+      <nav class="flex space-x-4">
+        <a routerLink="/admin/que"
+           routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+           [routerLinkActiveOptions]="{exact: true}"
+           class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+          Active
+        </a>
+        <a routerLink="/admin/completed"
+           routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+           [routerLinkActiveOptions]="{exact: true}"
+           class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600">
+          Cancelled
+        </a>
+      </nav>
+    </div>
+  </div>
+  
+  <div class="booking-management bg-gray-50 p-6">
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6">
+      <div class="p-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Cancelled Bookings</h2>
+        <p class="text-gray-600 mt-2"><em>View all cancelled service bookings</em></p>
+      </div>
+    </div>
+  
+    <div class="bg-white rounded-lg shadow-lg border border-gray-100 mb-6">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Cancelled Bookings History</h3>
+        
+        <!-- Date Range Picker and Filters Section -->
+        <div class="bg-gray-50 rounded-lg border border-gray-200 mb-6 p-4 text-black">
+          <div class="flex flex-col md:flex-row md:items-end gap-4">
+            <!-- Date Range Inputs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="startDate"
+                  class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="endDate"
+                  class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              </div>
+            </div>
+        
+            <!-- Search Input -->
+            <div class="md:w-64 flex-shrink-0">
+              <div class="relative">
+                <input
+                  type="text"
+                  placeholder="Search bookings..."
+                  class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+                <svg
+                  class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+            </div>
+        
+            <!-- Filter Buttons -->
+            <div class="flex gap-2">
+              <button 
+                (click)="filterByDateRange()" 
+                class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Filter
+              </button>
+              <button 
+                (click)="resetFilters()" 
+                class="flex-shrink-0 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Loading Spinner -->
+        @if (isLoading) {
+          <div class="flex justify-center items-center p-12">
+            <mat-spinner diameter="40"></mat-spinner>
+            <span class="ml-3 text-gray-600">Loading bookings...</span>
+          </div>
+        }
+  
+        <!-- No Data Message -->
+        @if (!isLoading && cancelledBookings.length === 0) {
+          <div class="text-center p-8 bg-gray-50 rounded-lg">
+            <p class="text-gray-500">No cancelled bookings found for the selected period.</p>
+          </div>
+        }
+  
+        <!-- Bookings Table -->
+        @if (!isLoading && cancelledBookings.length > 0) {
+          <div class="overflow-x-auto text-black">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b">
+                  <th class="p-4 text-left text-gray-900">Booking ID</th>
+                  <th class="p-4 text-left text-gray-900">Service</th>
+                  <th class="p-4 text-left text-gray-900">Customer</th>
+                  <th class="p-4 text-left text-gray-900">Booking Date</th>
+                  <th class="p-4 text-left text-gray-900">Duration </th>
+                  <th class="p-4 text-right text-gray-900">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (booking of cancelledBookings; track booking.bookingId) {
+                  <tr class="border-b hover:bg-gray-50">
+                    <td class="p-4">{{ booking.bookingId }}</td>
+                    <td class="p-4">{{ booking.serviceName }}</td>
+                    <td class="p-4">{{ booking.userName }}</td>
+                    <td class="p-4">{{ booking.bookingDate| date:'MMM d, y, h:mm a' }}</td>
+                    <td class="p-4">{{booking.duration}} HOUR</td>
+                    <td class="p-4 text-right text-red-600 font-medium">{{booking.bookingPrice}}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+                
+          <!-- Pagination -->
+          <div class="bg-gray-50 px-4 py-3 border-t flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="text-sm text-gray-600">
+                Showing {{ cancelledBookings.length }} entries
+              </span>
+            </div>
+            <!-- Simple pagination implementation - enhance based on your needs -->
+            <div class="flex items-center space-x-1">
+              <button 
+                disabled
+                class="px-3 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              
+              <button 
+                class="px-3 py-1 bg-red-600 text-white border border-gray-300 rounded hover:bg-red-700">
+                1
+              </button>
+              
+              <button 
+                class="px-3 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>

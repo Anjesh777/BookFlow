@@ -3,6 +3,8 @@ package com.BookFlow.bookflow.repository;
 import com.BookFlow.bookflow.model.Booking;
 import com.BookFlow.bookflow.model.Booking.BookingStatus;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -125,5 +127,27 @@ public interface QueRepo extends JpaRepository<Booking, Long> {
             @Param("paymentStatus") String paymentStatus,
             @Param("paymentMethod") String paymentMethod
     );
+
+    @Query("SELECT b FROM Booking b WHERE b.company.company_id = :companyId " +
+            "AND b.booking_status = 'CANCELLED' " +
+            "AND b.booking_date >= :threeMonthsAgo " +
+            "ORDER BY b.booking_date DESC")
+    List<Booking> findRecentCancelledBookingsByCompany(
+            @Param("companyId") UUID companyId,
+            @Param("threeMonthsAgo") LocalDateTime threeMonthsAgo
+    );
+
+    @Query("SELECT b FROM Booking b WHERE b.company.company_id = :companyId " +
+            "AND b.booking_status = 'CANCELLED' " +
+            "AND b.booking_date BETWEEN :startDate AND :endDate " +
+            "ORDER BY b.booking_date DESC")
+    List<Booking> findCancelledBookingsByCompanyAndDateRange(
+            @Param("companyId") UUID companyId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+
+
 
 }

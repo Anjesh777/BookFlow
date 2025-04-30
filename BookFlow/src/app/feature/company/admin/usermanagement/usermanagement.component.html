@@ -31,7 +31,6 @@
           <option value="">All Roles</option>
           <option value="COMPANY_ADMIN">Admin</option>
           <option value="COMPANY_USER">User</option>
-          <option value="COMPANY_MANAGER">Manager</option>
         </select>
 
         <select [formControl]="userStatusControl" class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black">
@@ -71,14 +70,13 @@
               </td>
               <td class="p-4">
                 <div class="flex items-center gap-3">
-                  <img src="/api/placeholder/32/32" alt="Profile" class="w-10 h-10 rounded-full">
                   <div>
                     <div class="font-medium text-gray-900">{{user.account || 'N/A'}}</div>
                     <div class="text-sm text-gray-500">{{user.email}}</div>
                   </div>
                 </div>
               </td>
-              <td class="p-4 text-gray-700">{{user.role === 'COMPANY_ADMIN' ? 'Admin' : (user.role === 'COMPANY_USER' ? 'User' : 'Manager')}}</td>
+              <td class="p-4 text-gray-700">{{user.role === 'COMPANY_ADMIN' ? 'Admin' : (user.role === 'COMPANY_USER' ? 'User' : 'Unknown')}}</td>
               <td class="p-4 text-gray-700">{{user.phone || 'N/A'}}</td>
               <td class="p-4 text-gray-700">{{user.fullname || 'N/A'}}</td>
               <td class="p-4 text-gray-700">{{user.created_at | timeAgo}}</td>

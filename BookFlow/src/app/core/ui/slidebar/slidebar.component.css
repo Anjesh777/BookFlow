@@ -140,15 +140,13 @@ transform: rotate(180deg);
 }
 
 
-/* Ensure content is contained */
 .content {
   padding: 20px;
-  height: calc(100vh - 64px); /* Adjust based on your toolbar height */
+  height: calc(100vh - 64px); 
   overflow: auto;
 }
 
 
-/* Responsive styles */
 @media (max-width: 768px) {
   .sidenav {
     width: 200px;

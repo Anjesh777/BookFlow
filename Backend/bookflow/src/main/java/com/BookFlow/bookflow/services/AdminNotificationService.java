@@ -1,12 +1,12 @@
+// Now, let's clean up the AdminNotificationService to focus only on notifications
+
 package com.BookFlow.bookflow.services;
 
-import com.BookFlow.bookflow.dto.ServiceDTO;
 import com.BookFlow.bookflow.model.*;
 import com.BookFlow.bookflow.repository.CompanyNotificationRepo;
 import com.BookFlow.bookflow.repository.NotificationRepository;
-import com.BookFlow.bookflow.repository.ServiceRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
-import jakarta.transaction.Transactional;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -24,133 +24,64 @@ import java.util.Optional;
 public class AdminNotificationService {
 
     @Autowired
-    private NotificationRepository NotificationRepo;
+    private NotificationRepository notificationRepo;
     @Autowired
-    private CompanyNotificationRepo CompanyNotificationRepo;
+    private CompanyNotificationRepo companyNotificationRepo;
     @Autowired
     private UserRepo userRepo;
     @Autowired
-    private ServiceRepo serviceRepo;
-
-
-    private Company getCurrentUserCompany() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
-
-        if (currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
-        }
-
-        return currentUser.get().getCompany_id();
-    }
+    private UserContextUtil userContextUtil;
 
     public Notification addAdminNotification(Notification notification) {
-        Company userCompany = getCurrentUserCompany();
+        Company userCompany = userContextUtil.getCurrentUserCompany();
 
         Notification notification1 = new Notification();
         notification1.setId(notification.getId());
         notification1.setNotificationType(notification.getNotificationType());
         notification1.setMessage(notification.getMessage());
         notification1.setTitle(notification.getTitle());
-        notification1.setCompany_id(userCompany);  // Ensure the setter expects a Company object
+        notification1.setCompany_id(userCompany);
         notification1.setCreatedAt(LocalDateTime.now());
         notification1.setTargetAudience(notification.getTargetAudience());
 
-        return NotificationRepo.save(notification1);
-    }
-
-    @Transactional
-    public void addServicce(Services services) {
-        try {
-            Company userCompany = getCurrentUserCompany();
-            services.setCompany_id(userCompany);
-            serviceRepo.save(services);
-        } catch (Exception e) {
-            log.error(String.valueOf(e));
-            throw e;
-        }
-    }
-
-    public ServiceDTO updateServices(ServiceDTO service){
-
-        try {
-            serviceRepo.updateService(
-                    service.getService_id(),
-                    service.getServiceName(),
-                    service.getDescription(),
-                    service.getCategory(),
-                    service.getPrice(),
-                    service.getDuration(),
-                    service.isStatus()
-            );
-        }
-        catch (Exception e){
-            log.error(String.valueOf(e));
-        }
-        return service;
-    }
-
-    public List<ServiceDTO> getFilteredServices(ServiceFilterDTO filter) {
-        String searchTerm = filter.getSerchService();
-        Boolean status = filter.getFilter();
-
-        if ((searchTerm == null || searchTerm.trim().isEmpty()) && status == null) {
-            return serviceRepo.findAllServices();
-        }
-
-        if (searchTerm != null && !searchTerm.trim().isEmpty() && status == null) {
-            return serviceRepo.findByServiceNameContaining(searchTerm.trim());
-        }
-
-        if ((searchTerm == null || searchTerm.trim().isEmpty()) && status != null) {
-            return serviceRepo.findByStatus(status);
-        }
-
-        return serviceRepo.findByServiceNameAndStatus(searchTerm.trim(), status);
-    }
-
-    public List<Services> getAllCompanyService(){
-        return serviceRepo.findAllCmpService(getCurrentUserCompany());
-    }
-    public void deleteService(String serviceId){
-         serviceRepo.deleteById(serviceId);
+        return notificationRepo.save(notification1);
     }
 
     public List<CompanyNotification> getRecentCompanyNotifications(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        return CompanyNotificationRepo.findForAdmins(getCurrentUserCompany(),pageable);
+        return companyNotificationRepo.findForAdmins(userContextUtil.getCurrentUserCompany(), pageable);
     }
+
     public List<CompanyNotification> getRecentCompanyAllUserNotifications(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        return CompanyNotificationRepo.findForAllUsers(getCurrentUserCompany(),pageable);
+        return companyNotificationRepo.findForAllUsers(userContextUtil.getCurrentUserCompany(), pageable);
     }
+
     public List<CompanyNotification> getRecentUserNotifications(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        return CompanyNotificationRepo.findForUsers(getCurrentUserCompany(),pageable);
+        return companyNotificationRepo.findForUsers(userContextUtil.getCurrentUserCompany(), pageable);
     }
-     public List<Notification> getAllAdminCompanyNotification(int limit){
-         Pageable pageable = PageRequest.of(0, limit);
-         return  NotificationRepo.findRecentUserNotifications(getCurrentUserCompany(),pageable);
-     }
+
+    public List<Notification> getAllAdminCompanyNotification(int limit){
+        Pageable pageable = PageRequest.of(0, limit);
+        return notificationRepo.findAllRecentUserNotifications(userContextUtil.getCurrentUserCompany(), pageable);
+    }
+
     public List<CompanyNotification> getAllCompanyNotification(int limit){
         Pageable pageable = PageRequest.of(0, limit);
-        return  CompanyNotificationRepo.findAllByCompany(pageable);
+        return companyNotificationRepo.findAllByCompany(pageable);
     }
 
 
-//    public void updateNotification(Long id,Notification notification){
-//        NotificationRepo.updateCompanyNotification(
-//                id,
-//                notification.getTitle(),
-//                notification.getMessage(),
-//                notification.getTargetAudience(),
-//                notification.getNotificationType().toString()
-//        );
-//    }
+    public List<Notification> getAdminRecentNotification(int limit){
+        Pageable pageable = PageRequest.of(0, limit);
+        return notificationRepo.findRecentAdminNotifications(userContextUtil.getCurrentUserCompany(), pageable);
+    }
+
+
 
     public void deleteComment(Long commentId) {
-        NotificationRepo.deleteComment(commentId);
+        notificationRepo.deleteComment(commentId);
     }
 
 

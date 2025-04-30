@@ -50,7 +50,7 @@ public interface CompanyNotificationRepo extends JpaRepository<CompanyNotificati
     @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'Users' ORDER BY cn.createdAt DESC")
     List<CompanyNotification> findForUsers(@Param("company") Company company, Pageable pageable);
 
-    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'All User' ORDER BY cn.createdAt DESC")
+    @Query("SELECT cn FROM CompanyNotification cn WHERE cn.targetAudience = 'All User'  ORDER BY cn.createdAt DESC")
     List<CompanyNotification> findAllByCompany(Pageable pageable);
 
     @Query("SELECT cn FROM CompanyNotification cn WHERE cn.company_id = :company AND cn.id = :id")

@@ -20,11 +20,6 @@ export class QueServiceService {
       ) { }
 
 
-      // getBookingsByStatus(status: BookingStatus): Observable<BookingResponse[]> {
-      //   return this.http.get<BookingResponse[]>(`${this.BASE_URL}/admin/que/status/${status}`);
-      // }
-      
-      
       
       
       getBookingsBetweenDates(dateRange: DateRangeDtoQue): Observable<BookingResponse[]> {
@@ -46,14 +41,6 @@ export class QueServiceService {
       }
 
 
-
-      // updateBookingStatus(bookingId: string,newStatus: BookingStatus): Observable<string> {
-      //   return this.http.put<string>(`${this.BASE_URL}/${bookingId}/admin/que/status`, newStatus);
-      // }
-      // getFutureBookings(): Observable<BookingResponse[]> {
-      //   return this.http.get<BookingResponse[]>(`${this.BASE_URL}/admin/que/future`);
-      // }
-      
       
       
       createBooking(bookingRequest: BookingRequest): Observable<BookingResponse> {
@@ -61,14 +48,6 @@ export class QueServiceService {
       }
       
       
-      
-      // updateBooking(updateRequest: BookingUpdateRequest): Observable<BookingResponse> {
-      //   return this.http.put<BookingResponse>(
-      //     `${this.BASE_URL}/admin/que/update`, 
-      //     updateRequest
-      //   );
-      // }
-
 
 
       updateBookingPayment(bookingId: string, paymentInfo: PaymentInformation): Observable<BookingResponse> {
@@ -113,5 +92,20 @@ export class QueServiceService {
       data
     );
   }
+
+  getRecentCancelledBookings(): Observable<BookingResponse[]> {
+    return this.http.get<BookingResponse[]>(`${this.BASE_URL}/admin/cancelled/recent`);
+  }
+
+  getCancelledBookingsByDateRange(startDate: Date, endDate: Date): Observable<BookingResponse[]> {
+    const params = new HttpParams()
+      .set('startDate', startDate.toISOString())
+      .set('endDate', endDate.toISOString());
+    
+    return this.http.get<BookingResponse[]>(`${this.BASE_URL}/admin/cancelled/filter`, { params });
+  }
+
+ 
+
 
 }

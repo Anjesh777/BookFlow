@@ -40,34 +40,62 @@ public interface ServiceRepo extends JpaRepository<Services,String> {
             @Param("duration") String duration,
             @Param("status") Boolean status);
 
-
-    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
-            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
-            "FROM Services s " +
-            "WHERE LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :serchService, '%'))")
-    List<ServiceDTO> findByServiceNameContaining(@Param("serchService") String serchService);
-
-    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
-            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
-            "FROM Services s " +
-            "WHERE s.status = :filter")
-    List<ServiceDTO> findByStatus(@Param("filter") Boolean filter);
-
-    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
-            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
-            "FROM Services s " +
-            "WHERE LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :serchService, '%')) " +
-            "AND s.status = :filter")
-    List<ServiceDTO> findByServiceNameAndStatus(@Param("serchService") String serchService, @Param("filter") Boolean filter);
-
-    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
-            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
-            "FROM Services s")
-    List<ServiceDTO> findAllServices();
+//
+//    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+//            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+//            "FROM Services s " +
+//            "WHERE LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :serchService, '%'))")
+//    List<ServiceDTO> findByServiceNameContaining(@Param("serchService") String serchService);
+//
+//    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+//            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+//            "FROM Services s " +
+//            "WHERE s.status = :filter")
+//    List<ServiceDTO> findByStatus(@Param("filter") Boolean filter);
+//
+//    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+//            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+//            "FROM Services s " +
+//            "WHERE LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :serchService, '%')) " +
+//            "AND s.status = :filter")
+//    List<ServiceDTO> findByServiceNameAndStatus(@Param("serchService") String serchService, @Param("filter") Boolean filter);
+//
+//    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+//            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+//            "FROM Services s")
+//    List<ServiceDTO> findAllServices();
 ////***
 //    @Query("SELECT s FROM Services s WHERE s.company_id = :company AND s.status = true")
 //    List<Services> findAllActiveServicesByCompany(@Param("company") Company company);
 //
+
+    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+            "FROM Services s WHERE s.company_id = :company")
+    List<ServiceDTO> findAllServicesByCompany(@Param("company") Company company);
+
+
+    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+            "FROM Services s " +
+            "WHERE s.company_id = :company " +
+            "AND (LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :serchService, '%')) OR s.service_id = :serchService)")
+    List<ServiceDTO> findByCompanyAndServiceNameContaining(@Param("company") Company company, @Param("serchService") String serchService);
+
+    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+            "FROM Services s " +
+            "WHERE s.company_id = :company " +
+            "AND s.status = :filter")
+    List<ServiceDTO> findByCompanyAndStatus(@Param("company") Company company, @Param("filter") Boolean filter);
+
+    @Query("SELECT new com.BookFlow.bookflow.dto.ServiceDTO(" +
+            "s.service_id, s.serviceName, s.category, s.price, s.duration, s.status, s.serviceDescription) " +
+            "FROM Services s " +
+            "WHERE s.company_id = :company " +
+            "AND LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :serchService, '%')) " +
+            "AND s.status = :filter")
+    List<ServiceDTO> findByCompanyAndServiceNameAndStatus(@Param("company") Company company, @Param("serchService") String serchService, @Param("filter") Boolean filter);
 
 
 

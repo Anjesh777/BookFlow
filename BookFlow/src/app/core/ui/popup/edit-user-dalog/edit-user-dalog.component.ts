@@ -81,16 +81,21 @@ import { userDetailsResponse } from '../../../auth/model/admin';
                         placeholder="xxxxx">
                     
                 </div>
-
                 <div class="space-y-2">
-                    <label class="text-sm text-gray-700 font-medium">Role</label>
-                    <select formControlName="role"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="COMPANY_ADMIN">Admin</option>
-                        <option value="COMPANY_USER">User</option>
-                        <option value="COMPANY_MANAGER">Manager</option>
-                    </select>
-                </div>
+  <label class="text-sm text-gray-700 font-medium">Role</label>
+  <select formControlName="role"
+      [disabled]="data._main_user===true"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" 
+      [ngClass]="{'hover:cursor-not-allowed': data._main_user===true}">
+    <option value="COMPANY_ADMIN">Admin</option>
+    <option value="COMPANY_USER">User</option>
+  </select>
+  
+  @if (data._main_user === true) {
+    <span class="text-sm text-gray-500 italic">Cannot modify super admin role</span>
+  }
+</div>
+                
             </div>
 
             <!-- Status -->
@@ -143,6 +148,7 @@ export class EditUserDalogComponent implements OnInit{
   ngOnInit(): void {
     if(this.data._main_user===true){
       this.editForm.get('status')?.disable();
+      this.editForm.get('role')?.disable(); 
     }
   }
 
@@ -162,12 +168,10 @@ export class EditUserDalogComponent implements OnInit{
 
 
   updateUser(): void {
-
-    
-
     if (this.editForm.valid) {
       const userId = this.editForm.get('user_id')?.value;
-      const userData = this.editForm.value;
+      // Use getRawValue() instead of value to include disabled controls
+      const userData = this.editForm.getRawValue();
       
       this.adminservice.updateUserdetails(userId, userData).subscribe({
         next: () => {
@@ -187,10 +191,13 @@ export class EditUserDalogComponent implements OnInit{
     this.dialogRef.close();
   }
   
+
   onSubmit(): void {
     if (this.editForm.valid) {
       this.isSubmitting = true;
-      console.log(this.editForm.value)
+      // Get form value with disabled controls included
+      const userData = this.editForm.getRawValue();
+      console.log(userData);
       this.updateUser();
     }
   }

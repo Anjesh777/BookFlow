@@ -83,4 +83,7 @@ public class Booking {
     @Column(name = "payment_method", nullable = true)
     private String paymentMethod;
 
+    @Column(nullable = true)
+    private String paymentReference;
+
 }

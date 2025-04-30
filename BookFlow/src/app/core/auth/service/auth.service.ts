@@ -140,6 +140,7 @@ export class AuthService {
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('refreshToken');
       sessionStorage.removeItem('userRole');
+      sessionStorage.removeItem('username');
       this.isAuthenticated.set(false);
       this.router.navigate(['/login']);
     } catch (error) {
@@ -168,6 +169,14 @@ export class AuthService {
     if (this.isBrowser) {
       const role = sessionStorage.getItem('userRole');
       return role;
+    }
+    return null;
+  }
+
+  getUserName(): string | null {
+    if (this.isBrowser) {
+      const userName = sessionStorage.getItem('username');
+      return userName;
     }
     return null;
   }

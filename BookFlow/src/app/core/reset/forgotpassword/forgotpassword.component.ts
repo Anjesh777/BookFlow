@@ -126,7 +126,6 @@ export class ForgotpasswordComponent implements OnInit {
     this.uiService.toggleShowConfirmPassword();
   }
 
-  // Access the show/hide state
   get showPassword() {
     return this.uiService.showPassword;
   }

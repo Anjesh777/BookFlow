@@ -45,8 +45,6 @@ public class AdminService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailVerificactionService emailVerificactionService;
-//    @Autowired
-//    private TokenService tokenService;
     @Autowired
     private VerificationTokenRepo verificationTokenRepo;
     @Autowired
@@ -55,7 +53,7 @@ public class AdminService {
 
 
     @Transactional
-    public void registerUser(UserDetailsDTO userDetailsDTO){
+    public void registerAdmin(UserDetailsDTO userDetailsDTO){
 
         Optional<User> CompanyDetails =userRepo.findByUsername(userDetailsDTO.getCreatedby());
         String defaultPassword = generateRandomPassword(8);
@@ -96,7 +94,6 @@ public class AdminService {
             throw new RuntimeException("Current user not found");
         }
 
-        // Get the company ID from the user's company object
         Company userCompany = currentUser.get().getCompany_id();
         UUID companyId = userCompany.getCompany_id();
 
@@ -125,19 +122,15 @@ public class AdminService {
 
         System.out.println(filter);
 
-        // Return all users if no filter
         if (filter == null) {
             return convertToDTO(userRepoFilter.findAll(companyId));
         }
 
-        // Process date range
-        // Process date range
         LocalDate fromDate = null;
         LocalDate toDate = null;
         if (filter.getDateRange() != null &&
                 filter.getDateRange().getFromDate() != null &&
                 filter.getDateRange().getToDate() != null) {
-            // Convert java.util.Date to LocalDate
             fromDate = filter.getDateRange().getFromDate().toInstant()
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate();
@@ -146,7 +139,6 @@ public class AdminService {
                     .toLocalDate();
         }
 
-        // Process search term
         String search = (filter.getSearch() != null && !filter.getSearch().trim().isEmpty()) ?
                 filter.getSearch().trim() : null;
 
@@ -164,7 +156,6 @@ public class AdminService {
         // Process status
         Boolean status = filter.getStatus();
 
-        // Determine which filters are active
         boolean hasSearch = (search != null);
         boolean hasDateRange = (fromDate != null && toDate != null);
         boolean hasRole = (role != null);
@@ -251,7 +242,7 @@ public class AdminService {
     }
 
 
-    public CompanyDashbooksummaryDto getSummary() {
+    public CompanyDashbooksummaryDto adminSummary() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = authentication.getName();
         Company userCompany = userRepo.findByUsername(currentUsername)

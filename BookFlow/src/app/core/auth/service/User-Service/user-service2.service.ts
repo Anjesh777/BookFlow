@@ -88,7 +88,23 @@ export class UserService2Service {
         );
       }
 
-
-    
+      getMonthlyLedgerSummary(): Observable<Map<string, number>> {
+        return this.http.get<Map<string, number>>(`${this.private_URL}/user/ledger/monthly`).pipe(
+          catchError((error: HttpErrorResponse) => {
+            console.error('Error loading monthly ledger summary:', error);
+            return throwError(() => error);
+          })
+        );
+      }
+      
+      getDailyLedgerSummary(month: string): Observable<Map<string, number>> {
+        const params = new HttpParams().set('month', month);
+        return this.http.get<Map<string, number>>(`${this.private_URL}/user/ledger/daily`, { params }).pipe(
+          catchError((error: HttpErrorResponse) => {
+            console.error('Error loading daily ledger summary:', error);
+            return throwError(() => error);
+          })
+        );
+      }
 
 }

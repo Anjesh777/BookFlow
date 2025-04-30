@@ -118,16 +118,18 @@
                 <td class="p-4">
                   <span [ngClass]="{
                     'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium': true,
-                    'bg-emerald-100 text-emerald-800': transaction.category === 'INCOME',
-                    'bg-red-100 text-red-800': transaction.category === 'EXPENSE',
-                    'bg-blue-100 text-blue-800': transaction.category === 'TRANSFER',
-                    'bg-indigo-100 text-indigo-800': transaction.category === 'SALARY',
-                    'bg-amber-100 text-amber-800': transaction.category === 'UTILITIES',
-                    'bg-slate-100 text-slate-800': transaction.category === 'OTHER'
+                    'bg-emerald-100 text-emerald-800': ['income', 'cheque', 'online'].includes(transaction.category.toLowerCase()),
+                    'bg-red-100 text-red-800': transaction.category.toLowerCase() === 'expense',
+                    'bg-blue-100 text-blue-800': transaction.category.toLowerCase() === 'transfer',
+                    'bg-indigo-100 text-indigo-800': transaction.category.toLowerCase() === 'salary',
+                    'bg-amber-100 text-amber-800': transaction.category.toLowerCase() === 'utilities',
+                    'bg-slate-100 text-slate-800': transaction.category.toLowerCase() === 'other',
+                    'bg-gray-200 text-gray-700 italic': !transaction.category || transaction.category.length < 3
                   }">
-                    {{getCategoryDisplay(transaction.category)}}
+                    {{ getCategoryDisplay(transaction.category) }}
                   </span>
                 </td>
+                
                 <td class="p-4 text-right text-green-600">
                   {{transaction.receiptAmount > 0 ? (transaction.receiptAmount | number:'1.2-2') : '-'}}
                 </td>

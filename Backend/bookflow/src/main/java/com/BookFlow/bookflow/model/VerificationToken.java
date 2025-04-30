@@ -16,10 +16,7 @@ public class VerificationToken {
 
     @Column(name = "token")
     private String token;
-//
-//    @OneToOne
-//    @JoinColumn(name = "company_id")
-//    private Company company;
+
 
     @OneToOne
     @JoinColumn(name = "user_id")

@@ -58,7 +58,6 @@ public class AuthenticationService {
             Optional<VerificationToken> verificationToken = verificationTokenRepo.findByUserId(user.getUser_id());
 
 
-            // Check if token doesn't exist or isn't used (meaning user isn't verified)
             if (verificationToken.isEmpty() || !verificationToken.get().isUsed()) {
                 throw new UserNotVerifiedException("Please verify your account before logging in");
             } else if (!user.is_enabled()) {
@@ -130,25 +129,6 @@ public class AuthenticationService {
                 .user_role(userRole)
                 .build();
     }
-
-    public boolean getUserByUsername(String username) {
-        try {
-            // Try to find the user by username
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-            Optional<VerificationToken> token = verificationTokenRepo.findByUserId(user.getUser_id());
-
-            return token.get().isUsed();
-        } catch (Exception e) {
-            log.error("Error getting user by username: " + username, e);
-            return false;
-        }
-    }
-
-
-
-
 
 
 }

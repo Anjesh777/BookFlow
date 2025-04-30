@@ -5,7 +5,11 @@ import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.User;
 import com.BookFlow.bookflow.repository.QueRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,24 +30,9 @@ public class QueService {
     @Autowired
     private UserRepo userRepo;
 
-    private Company getCurrentUserCompany() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
+    @Autowired
+    private UserContextUtil userContextUtil;
 
-        if (currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
-        }
-
-        return currentUser.get().getCompany_id();
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        return userRepo.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Current user not found"));
-    }
 
 
     public List<Booking> getBookingsByUserId(UUID userId) {
@@ -51,7 +40,7 @@ public class QueService {
     }
 
     public List<Booking> getBookingsBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
-        Company currentCompany = getCurrentUserCompany();
+        Company currentCompany = userContextUtil.getCurrentUserCompany();
         return queRepo.findBookingsBetweenDates(startDate, endDate, currentCompany.getCompany_id());
     }
 
@@ -70,7 +59,7 @@ public class QueService {
     }
 
     public List<Booking> getImminentBookings(LocalDateTime now, LocalDateTime upcomingTime) {
-        Company currentCompany = getCurrentUserCompany();
+        Company currentCompany = userContextUtil.getCurrentUserCompany();
         return queRepo.findImminentBookings(now, upcomingTime, currentCompany.getCompany_id());
     }
 
@@ -96,18 +85,18 @@ public class QueService {
 
     public List<Booking> getActiveBookingsForCurrentCompany() {
         LocalDateTime twoDaysLater = LocalDateTime.now().plusDays(2);
-        Company currentCompany = getCurrentUserCompany();
+        Company currentCompany = userContextUtil.getCurrentUserCompany();
         UUID companyId = currentCompany.getCompany_id();
         return queRepo.findActiveBookingsAfterTwoDays(companyId, twoDaysLater);
     }
 
     public List<Booking> getCancelledBookingsForCurrentCompany() {
-        UUID companyId = getCurrentUserCompany().getCompany_id();
+        UUID companyId = userContextUtil.getCurrentUserCompany().getCompany_id();
         return queRepo.findCancleBookingsByCompany(companyId);
     }
 
     public List<Booking> getConfirmedBookingsForCurrentCompany() {
-        UUID companyId = getCurrentUserCompany().getCompany_id();
+        UUID companyId = userContextUtil.getCurrentUserCompany().getCompany_id();
         return queRepo.findCompletedBookingsByCompany(companyId);
     }
 
@@ -120,10 +109,25 @@ public class QueService {
                 bookingStatus,
                 paymentStatus,
                 paymentMethod);
-        }
+
+    }
 
 
+    public List<Booking> getRecentCancelledBookingsForCurrentCompany() {
+        UUID companyId = userContextUtil.getCurrentUserCompany().getCompany_id();
+        LocalDateTime threeMonthsAgo = LocalDateTime.now().minusMonths(3);
+        return queRepo.findRecentCancelledBookingsByCompany(
+                companyId, threeMonthsAgo);
+    }
 
+    public List<Booking> getCancelledBookingsForCurrentCompanyByDateRange(
+            LocalDateTime startDate,
+            LocalDateTime endDate) {
+
+        UUID companyId = userContextUtil.getCurrentUserCompany().getCompany_id();
+        return queRepo.findCancelledBookingsByCompanyAndDateRange(
+                companyId, startDate, endDate);
+    }
 
 
 

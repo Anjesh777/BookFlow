@@ -28,7 +28,6 @@ interface ExpandedItems {
     MatToolbarModule,
     MatButtonModule,
     MatExpansionModule
-    // SuperadminDashboardComponent
 ],
   templateUrl: './slidebar.component.html',
   styleUrls: ['./slidebar.component.css']
@@ -55,22 +54,11 @@ export class SlidebarComponent implements OnInit{
     company: false
   };
 
-
-
-
-
- 
-
   getPageTitle(): string {
     const route = this.router.url.split('/')[2];
     return route.charAt(0).toUpperCase() + route.slice(1) || 'Dashboard';
   }
   
-  
-
-
-
-
   
   toggleSubmenu(key: string) {
     if (key === 'settings') {

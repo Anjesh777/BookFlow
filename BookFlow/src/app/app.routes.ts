@@ -20,7 +20,9 @@ import { UserDashboardComponent } from './feature/user/user-dashboard/user-dashb
 import { BookingPortelComponent } from './feature/user/booking-portel/booking-portel.component';
 import { UserLedgerComponent } from './feature/user/user-ledger/user-ledger.component';
 import { QueManagementComponent } from './feature/company/admin/que-management/que-management.component';
-import { CompletedQueComponent } from './feature/company/admin/que-management/completed-que/completed-que.component';
+import { CancelledQueComponent } from './feature/company/admin/que-management/cancelled-que/cancelled-que.component';
+import { PaymentSuccesComponent } from './feature/user/booking-portel/payment-bundel/payment-succes/payment-succes.component';
+import { PaymentFailureComponent } from './feature/user/booking-portel/payment-bundel/payment-failure/payment-failure.component';
 
 export const routes: Routes = [
 
@@ -135,8 +137,8 @@ export const routes: Routes = [
                 component:QueManagementComponent
             },
             {
-                path:'completed',
-                component:CompletedQueComponent
+                path:'cancled',
+                component:CancelledQueComponent
             }
 
         ]
@@ -166,20 +168,34 @@ export const routes: Routes = [
             {
                 path:'ledger',
                 component:UserLedgerComponent                
-            }
-
+            },
+            {
+                path: 'payment/success',
+                component: PaymentSuccesComponent
+              },
+              {
+                path: 'payment/failure',
+                component: PaymentFailureComponent
+              }
         ]
-
-
     },
 
-
     {
-        path: '**',
-        
-        redirectTo: 'home'
-    }
+        path: 'set-password',
+        component: ForgotpasswordComponent,
+    },
+    {
+        path: 'verification/verify',
+        component: SendtokenComponent,
+    },
+    
+    {
+        path: '',
+        redirectTo: '/login',
+        pathMatch: 'full'
+    },
    
+
     
 
 ];

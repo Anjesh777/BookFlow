@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { Observable, catchError, tap, throwError } from 'rxjs';
 import { companyDetails, CompanyResponse, CompanyFilter, NotificationData, NotificationDataResponse } from '../../model/bookflow';
 import { error } from 'console';
-// import { CompanyCountResponse, UserCountResponse } from '../../model/bookflow';
 
 @Injectable({
   providedIn: 'root'
@@ -96,8 +95,6 @@ getThreeNotification():Observable<NotificationDataResponse[]>{
 
 }
 
-
-// In bookflow.service.ts
 updateNotification(id: number, notification: NotificationDataResponse): Observable<NotificationDataResponse> {
   return this.http.put<NotificationDataResponse>(`${this.private_URL}/bookflow/notification/${id}`, notification);
 }
@@ -111,29 +108,6 @@ deleteNotification(id: number): Observable<any> {
     })
   );
 }
-
-
-
-
-
-  
-
-
-
-
-
-
-
-  // getUserGrowth(): Observable<any> {
-  //   return this.http.get<any>(`${this.private_URL}/bookflow/growth`).pipe(
-  //     catchError((error) => {
-  //         return new Observable<any>();   
-  //     })
-  //   );
-  // }
-
-
-
 
 
 

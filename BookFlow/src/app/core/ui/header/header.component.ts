@@ -24,8 +24,10 @@ export class HeaderComponent {
     return this.authService.isLoggedIn();
   }
 
-
- 
+  login() {
+    this.router.navigate(['/login'], { skipLocationChange: false });
+  }
+  
 
 
 

@@ -3,6 +3,7 @@ import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationDataResponse } from '../../model/bookflow';
 import { catchError, Observable } from 'rxjs';
+import { BookingSummary } from '../../model/booking';
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +49,16 @@ export class UserserviceService {
         
   }
 
+  getBookingSummary(): Observable<BookingSummary> {
+    return this.http.get<BookingSummary>(`${this.private_URL}/user/booking-summary`)
+      .pipe(
+        catchError((error) => {
+          console.error('API ERROR', error);
+          return new Observable<BookingSummary>();
+        })
+      );
+  }
+  
 
 
 

@@ -66,12 +66,26 @@ private final NotificationService notificationService;
     public ResponseEntity<List<CompanyNotification>> getAllNotifications() {
         try {
             List<CompanyNotification> notifications = adminNotificationService.getRecentCompanyNotifications(10);
+
             return ResponseEntity.ok(notifications);
         } catch (Exception e) {
             System.out.println("Error fetching notifications: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
+    @GetMapping("/get-admin-notification")
+    public ResponseEntity<List<Notification>> getCompnayAdminNotifications() {
+        try {
+            List<Notification> notifications = adminNotificationService.getAdminRecentNotification(10);
+
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.out.println("Error fetching notifications: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
 
     @GetMapping("/get-all-notification")
     public ResponseEntity<List<CompanyNotification>> getAll() {

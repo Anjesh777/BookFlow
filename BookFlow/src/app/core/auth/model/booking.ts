@@ -4,7 +4,7 @@ export interface BookingRequest {
     serviceId: string;
     appointmentDate: string;  
     bookingDate: string;      
-    paymentStatus: boolean;
+    paymentStatus: string;
     bookingNotes: string;
     duration: string;
   }
@@ -56,7 +56,6 @@ export interface PaymentInformation {
 export enum PaymentMethod {
   CASH = 'CASH',
   ONLINE = 'ONLINE',
-  NOPAY = 'NOPAY'
 }
 
 export enum PaymentStatus {
@@ -80,3 +79,10 @@ export interface BookingUpdateFullRequest {
   paymentMethod: PaymentMethod;
 }
 
+export interface BookingSummary {
+  totalPayment: number;
+  upcomingServiceDate: string; 
+  nextAppointmentPrice: number;
+  totalServicesBooked: number;
+  pendingServices: number;
+}

@@ -1,20 +1,16 @@
 package com.BookFlow.bookflow.contoller;
 
 
-import com.BookFlow.bookflow.dto.BookingDto;
-import com.BookFlow.bookflow.dto.LedgerDTO;
-import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
-import com.BookFlow.bookflow.dto.ServiceDTO;
+import com.BookFlow.bookflow.dto.*;
 import com.BookFlow.bookflow.model.*;
 import com.BookFlow.bookflow.repository.UserRepo;
-import com.BookFlow.bookflow.services.AdminNotificationService;
-import com.BookFlow.bookflow.services.BookingService;
-import com.BookFlow.bookflow.services.LedgerService;
-import com.BookFlow.bookflow.services.UserService;
+import com.BookFlow.bookflow.services.*;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +18,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 @Slf4j
@@ -42,6 +40,10 @@ public class CustomerController {
     private UserRepo userRepo;
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private AdminServiceManagement adminServiceManagement;
+    @Autowired
+    private UserContextUtil userContextUtil;
 
     public CustomerController(LedgerService ledgerService, UserService userService, AdminNotificationService adminNotificationService) {
         this.ledgerService = ledgerService;
@@ -53,7 +55,7 @@ public class CustomerController {
     @GetMapping("/notification")
 public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
     try {
-        List<Notification> notification = userService.getRecentUserNotifications(2);
+        List<Notification> notification = userService.getRecentUserNotifications(3);
         return ResponseEntity.ok(notification);
     }
     catch (Exception e){
@@ -98,7 +100,7 @@ public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
     @GetMapping("/get-services")
     public ResponseEntity<List<Services>> getCmpService(){
         try {
-            List<Services> services = adminNotificationService.getAllCompanyService();
+            List<Services> services = adminServiceManagement.getAllCompanyServices();
             return ResponseEntity.ok(services);
         }
         catch (Exception e){
@@ -111,7 +113,7 @@ public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
     public ResponseEntity<List<LedgerDTO>> getUserLedgerEntries() {
         try {
 
-            List<LedgerDTO> entries = ledgerService.getLedgerEntriesByUser(ledgerService.getCurrentUser().getUser_id());
+            List<LedgerDTO> entries = ledgerService.getLedgerEntriesByUserInverted(userContextUtil.getCurrentUser().getUser_id());
             return ResponseEntity.ok(entries);
         } catch (Exception e) {
             log.error("Error fetching user ledger entries", e);
@@ -122,14 +124,15 @@ public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportLedgerToCSV() {
         try {
-            List<LedgerDTO> ledgerEntries = ledgerService.getLedgerEntriesByUser(ledgerService.getCurrentUser().getUser_id());
-            LedgerSummaryDTO ledgerSummary = ledgerService.getUserLedgerSummary(ledgerService.getCurrentUser().getUser_id());
+            User currentUser = userContextUtil.getCurrentUser();
+            List<LedgerDTO> ledgerEntries = ledgerService.getLedgerEntriesByUserInverted(userContextUtil.getCurrentUser().getUser_id());
+            LedgerSummaryDTO ledgerSummary = ledgerService.getUserLedgerSummaryInverted(userContextUtil.getCurrentUser().getUser_id());
             StringWriter stringWriter = new StringWriter();
 
             BigDecimal totalLedgerBalance = ledgerSummary.getBalance().max(BigDecimal.ZERO);
             BigDecimal totalCredits = ledgerSummary.getTotalCredits().max(BigDecimal.ZERO);
             BigDecimal totalDebits = ledgerSummary.getTotalDebits().max(BigDecimal.ZERO);
-            BigDecimal outstandingBalance = ledgerSummary.getOutstandingBalance().max(BigDecimal.ZERO);
+            //BigDecimal outstandingBalance = ledgerSummary.getOutstandingBalance().max(BigDecimal.ZERO);
 
             try (CSVPrinter csvPrinter = new CSVPrinter(stringWriter, CSVFormat.DEFAULT
                     .withHeader("Date", "Particulars", "Type", "Amount", "Balance"))) {
@@ -148,7 +151,7 @@ public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
                 csvPrinter.printRecord("Total Ledger Balance", "", "", "", totalLedgerBalance);
                 csvPrinter.printRecord("Total Credits", "", "", "", totalCredits);
                 csvPrinter.printRecord("Total Debits", "", "", "", totalDebits);
-                csvPrinter.printRecord("Outstanding Balance", "", "", "", outstandingBalance);
+          //      csvPrinter.printRecord("Outstanding Balance", "", "", "", outstandingBalance);
 
                 csvPrinter.flush();
             }
@@ -218,9 +221,39 @@ public ResponseEntity<List<Notification>> getUserNotificationPushbyAdmin(){
         }
     }
 
+    @GetMapping("/booking-summary")
+    public ResponseEntity<BookingSummaryDTO> getBookingSummary() {
+        try {
+            BookingSummaryDTO summary = bookingService.getBookingSummary();
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            log.error("Error fetching booking summary", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
+    @GetMapping("/ledger/monthly")
+    public ResponseEntity<Map<String, BigDecimal>> getMonthlyLedgerSummary() {
+        try {
+            Map<String, BigDecimal> monthlyData = ledgerService.getMonthlyLedgerSummary();
+            return new ResponseEntity<>(monthlyData, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching monthly ledger transactions", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-
+    @GetMapping("/ledger/daily")
+    public ResponseEntity<Map<String, BigDecimal>> getDailyLedgerSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+        try {
+            Map<String, BigDecimal> dailyData = ledgerService.getDailyLedgerSummary(month);
+            return new ResponseEntity<>(dailyData, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching daily ledger transactions", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 

@@ -4,7 +4,9 @@ import com.BookFlow.bookflow.dto.LedgerSummaryDTO;
 import com.BookFlow.bookflow.model.Company;
 import com.BookFlow.bookflow.model.Ledger;
 import com.BookFlow.bookflow.model.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -66,8 +68,11 @@ public interface LedgerRepository extends JpaRepository<Ledger,String> {
 
 
     @Query("SELECT TO_CHAR(l.date, 'Month'), SUM(CASE WHEN l.type = 'credit' THEN l.amount ELSE -l.amount END) FROM Ledger l " +
+            "WHERE l.companyID.id = :companyId " +
             "GROUP BY TO_CHAR(l.date, 'Month')")
-    List<Object[]> getMonthlyTransactionSummary();
+    List<Object[]> getMonthlyTransactionSummary(
+            @Param("companyId") UUID companyId
+    );
 
     @Query(value = "SELECT EXTRACT(DAY FROM date) as day, SUM(CASE WHEN type = 'credit' THEN amount ELSE -amount END) as total_amount " +
             "FROM ledger " +
@@ -94,5 +99,32 @@ public interface LedgerRepository extends JpaRepository<Ledger,String> {
     @Query("SELECT SUM(l.amount) FROM Ledger l WHERE l.userID.user_id = :userId")
     Optional<BigDecimal> sumAllUserAmounts(@Param("userId") UUID userId);
 
+    @Query("SELECT TO_CHAR(l.date, 'Month'), " +
+            "SUM(CASE WHEN l.type = 'debit' THEN l.amount ELSE -l.amount END) " + // Swapped credit/debit
+            "FROM Ledger l " +
+            "WHERE l.userID = :user " +
+            "GROUP BY TO_CHAR(l.date, 'Month')")
+    List<Object[]> getMonthlyUserLedgerSummary(@Param("user") User user);
 
+    @Query(value = "SELECT EXTRACT(DAY FROM date) as day, " +
+            "SUM(CASE WHEN type = 'debit' THEN amount ELSE -amount END) as total_amount " + // Swapped credit/debit
+            "FROM ledger " +
+            "WHERE EXTRACT(MONTH FROM date) = :month " +
+            "AND EXTRACT(YEAR FROM date) = :year " +
+            "AND user_id = :userId " +
+            "GROUP BY EXTRACT(DAY FROM date) " +
+            "ORDER BY day", nativeQuery = true)
+    List<Object[]> getDailyUserLedgerSummary(
+            @Param("month") int month,
+            @Param("year") int year,
+            @Param("userId") UUID userId);
+
+
+    @Query("SELECT COUNT(l) > 0 FROM Ledger l WHERE l.refrenceNumber = :referenceNumber AND l.companyID = :company")
+    boolean existsByRefrenceNumberAndCompanyID(String referenceNumber, Company company);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Ledger l WHERE l.refrenceNumber = :referenceNumber AND l.companyID = :company")
+    void deleteByRefrenceNumberAndCompanyID(String referenceNumber, Company company);
 }

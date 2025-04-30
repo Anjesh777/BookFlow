@@ -57,19 +57,15 @@ public class EmailVerificactionService {
 
     @Transactional
     public void createUserCredentialsAndVerification(UserDetailsDTO userDetailsDTO, String defaultPassword) {
-        // Find the user that was just created
         User user = userRepository.findByEmail(userDetailsDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Create verification token
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(token, user);
         tokenRepo.save(verificationToken);
 
-        // Create verification link
         String verificationLink = backendurl + "/api/verification/verify?token=" + token;
 
-        // Send email with credentials and verification link
         sendCredentialsAndVerificationEmail(
                 user.getEmail(),
                 user.getUsername(),
@@ -92,15 +88,6 @@ public class EmailVerificactionService {
         }
     }
 
-
-    public void createUserVerificationToken(User user) {
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(token, user);
-        tokenRepo.save(verificationToken);
-
-        String verificationLink = backendurl + "/api/verification/verify?token=" + token;
-        sendVerificationEmail(user.getEmail(), user.getUsername(), verificationLink);
-    }
 
     private void sendVerificationEmail(String email, String name, String verificationLink) {
         try {

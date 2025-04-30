@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/bookflow/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name())
                         .requestMatchers("/api/v1/admin/**","/api/v1/account/**").hasAnyAuthority(Role.COMPANY_SUPERADMIN.name(), Role.COMPANY_ADMIN.name())
-                        .requestMatchers("api/v1/user/**").hasAnyAuthority(Role.COMPANY_USER.name())
+                        .requestMatchers("api/v1/user/**","api/v1/payment").hasAnyAuthority(Role.COMPANY_USER.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -68,7 +68,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedOrigins(List.of("http://localhost:4200","https://6115-2400-1a00-b030-b618-c169-8157-39db-e0be.ngrok-free.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

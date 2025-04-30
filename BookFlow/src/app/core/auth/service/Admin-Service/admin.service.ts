@@ -28,7 +28,7 @@ export class AdminService {
     addUsers(user: userDetails): Observable<userDetails> {
       return this.http.post<userDetails>(`${this.private_URL}/admin/add-user`, user).pipe(
         catchError((error) => {
-          console.error('API Error:', error); // Add this line
+          console.error('API Error:', error); 
           return new Observable<userDetails>();
         })
       );
@@ -125,9 +125,6 @@ export class AdminService {
     }
 
 
-
-
-
     
     deleteNotification(id: number): Observable<any> {
       return this.http.delete<any>(`${this.private_URL}/admin/notification/${id}`)
@@ -139,17 +136,6 @@ export class AdminService {
       );
     }
 
-
-  
-    // getAllNotification():Observable<NotificationDataResponse[]>{
-      
-    //   return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`).pipe(
-    //     catchError((error) =>{
-    //       return new Observable<NotificationDataResponse[]>();
-    //     })
-
-    //   )
-    // }
 
     getService():Observable<Service[]>{
       return this.http.get<Service[]>(`${this.private_URL}/admin/get-services`).pipe(
@@ -196,7 +182,6 @@ export class AdminService {
     }
 
 
-
     getThreeNotification(){
       return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-notification`)
       .pipe(
@@ -219,6 +204,19 @@ export class AdminService {
         );
           
     }
+
+    getAdminUserNotification(){
+     
+      return this.http.get<NotificationDataResponse[]>(`${this.private_URL}/admin/get-admin-notification`)
+      .pipe(
+        catchError((error) =>{
+          console.error('API ERROR',error)
+            return new Observable<NotificationDataResponse[]>();
+          })
+        );
+          
+    }
+
 
 
     

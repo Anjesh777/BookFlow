@@ -52,8 +52,14 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
     @Query("DELETE FROM Notification c WHERE c.id = :commentId")
     void deleteComment(@Param("commentId") Long commentId);
 
-    @Query("SELECT n FROM Notification n WHERE n.company_id = :company AND n.targetAudience = 'Users' ORDER BY n.createdAt DESC")
-    List<Notification> findRecentUserNotifications(@Param("company") Company company, Pageable pageable);
+    @Query("SELECT n FROM Notification n WHERE n.company_id = :company AND n.targetAudience = 'Admins' or  n.targetAudience = 'All Users' ORDER BY n.createdAt DESC")
+    List<Notification> findRecentAdminNotifications(@Param("company") Company company, Pageable pageable);
+
+
+
+    @Query("SELECT n FROM Notification n WHERE n.company_id = :company ORDER BY n.createdAt DESC")
+    List<Notification> findAllRecentUserNotifications(@Param("company") Company company, Pageable pageable);
+
 
 
 

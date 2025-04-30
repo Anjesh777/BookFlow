@@ -19,10 +19,17 @@ import java.util.UUID;
 @Repository
 public interface CashBookRepo extends JpaRepository<CashBook, Long> {
 
-    @Query("SELECT TO_CHAR(c.date, 'Month'), SUM(c.receiptAmount) FROM CashBook c " +
-            "GROUP BY TO_CHAR(c.date, 'Month')")
-    List<Object[]> getMonthlyTransactionSummary();
+//    @Query("SELECT TO_CHAR(c.date, 'Month'), SUM(c.receiptAmount) FROM CashBook c " +
+//            "WHERE c.company_id.id = :companyId " +
+//            "GROUP BY TO_CHAR(c.date, 'Month')")
+//    List<Object[]> getMonthlyTransactionSummary(@Param("companyId") UUID companyId);
 
+    @Query("SELECT TO_CHAR(c.date, 'Month'), " +
+            "SUM(COALESCE(c.receiptAmount, 0)) - SUM(COALESCE(c.paymentAmount, 0)) " +
+            "FROM CashBook c " +
+            "WHERE c.company_id.id = :companyId " +
+            "GROUP BY TO_CHAR(c.date, 'Month')")
+    List<Object[]> getMonthlyTransactionSummary(@Param("companyId") UUID companyId);
 
     @Query(value = "SELECT EXTRACT(DAY FROM date) as day, SUM(receipt_amount - payment_amount) as total_amount " +
             "FROM cash_book " +
@@ -39,6 +46,9 @@ public interface CashBookRepo extends JpaRepository<CashBook, Long> {
     int countUsersByCashbook(@Param("companyId") UUID companyId);
 
 
+
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM CashBook c WHERE c.voucherNumber = :voucherNumber")
+    boolean existsByVoucherNumber(@Param("voucherNumber") String voucherNumber);
 
 
 
@@ -103,10 +113,13 @@ public interface CashBookRepo extends JpaRepository<CashBook, Long> {
     @Query("SELECT t.balance FROM CashBook t WHERE t.company_id = :companyId ORDER BY t.id DESC LIMIT 1")
     Optional<BigDecimal> findLatestBalance(@Param("companyId") Company companyId);
 
-    @Query("SELECT SUM(t.paymentAmount) FROM CashBook t WHERE t.company_id = :companyId AND t.isReimbursementPending = true")
-    BigDecimal findTotalPendingReimbursements(
-            @Param("companyId") Company companyId
-    );
+//    @Query("SELECT SUM(t.paymentAmount) FROM CashBook t WHERE t.company_id = :companyId AND t.isReimbursementPending = true")
+//    BigDecimal findTotalPendingReimbursements(
+//            @Param("companyId") Company companyId
+//    );
+
+    @Query("SELECT SUM(COALESCE(t.receiptAmount, 0) + COALESCE(t.paymentAmount, 0)) FROM CashBook t WHERE t.company_id = :companyId AND t.isReimbursementPending = true")
+    BigDecimal findTotalPendingReimbursements(@Param("companyId") Company companyId);
 
 
     @Query("SELECT t FROM CashBook t WHERE t.company_id = :companyId AND t.voucherNumber = :voucherNumber")

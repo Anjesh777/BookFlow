@@ -43,7 +43,6 @@ public class ForgotPasswordService {
 
 
 
-        // Delete any existing tokens for this user
         passwordResetTokenRepo.deleteByUserId(user.getUser_id());
 
         String token = UUID.randomUUID().toString();

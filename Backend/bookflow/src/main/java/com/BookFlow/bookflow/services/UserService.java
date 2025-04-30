@@ -3,6 +3,7 @@ package com.BookFlow.bookflow.services;
 import com.BookFlow.bookflow.model.*;
 import com.BookFlow.bookflow.repository.ServiceRepo;
 import com.BookFlow.bookflow.repository.UserRepo;
+import com.BookFlow.bookflow.utils.classes.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -25,27 +26,17 @@ public class UserService {
     private UserRepo userRepo;
     @Autowired
     private ServiceRepo serviceRepo;
+    @Autowired
+    private UserContextUtil userContextUtil;
 
     @Transactional
     public long countServie(){
         return  userRepo.count();
     }
 
-    private Company getCurrentUserCompany() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-        Optional<User> currentUser = userRepo.findByUsername(currentUsername);
-
-        if (currentUser.isEmpty()) {
-            throw new RuntimeException("Current user not found");
-        }
-
-        return currentUser.get().getCompany_id();
-    }
-
     public List<Notification> getRecentUserNotifications(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        return userRepo.findRecentUserNotifications(getCurrentUserCompany(),pageable);
+        return userRepo.findRecentUserNotifications(userContextUtil.getCurrentUserCompany(),pageable);
     }
 
 

@@ -221,9 +221,10 @@ export class DaybookEntriesComponent implements OnInit{
   }
   
   getCategoryDisplay(category: string): string {
-    return category.charAt(0) + category.slice(1).toLowerCase();
+    if (!category) return 'Unknown';
+    return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
   }
-
+  
 
   openAddDialog(cashbook?: CashBook) {
       const dialogRef = this.dialog.open(AddCashbookDialogComponent, {

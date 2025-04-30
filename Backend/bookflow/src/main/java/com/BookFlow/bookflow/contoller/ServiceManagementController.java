@@ -5,6 +5,7 @@ import com.BookFlow.bookflow.dto.ServiceDTO;
 import com.BookFlow.bookflow.model.ServiceFilterDTO;
 import com.BookFlow.bookflow.model.Services;
 import com.BookFlow.bookflow.services.AdminNotificationService;
+import com.BookFlow.bookflow.services.AdminServiceManagement;
 import com.BookFlow.bookflow.services.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,10 @@ import java.util.UUID;
 public class ServiceManagementController {
 
 
-    private final AdminNotificationService adminNotificationService;
+    private final AdminServiceManagement adminServiceManagement;
 
-    public ServiceManagementController(AdminNotificationService adminNotificationService) {
-        this.adminNotificationService = adminNotificationService;
+    public ServiceManagementController(AdminServiceManagement adminServiceManagement) {
+        this.adminServiceManagement = adminServiceManagement;
     }
 
 
@@ -40,7 +41,7 @@ public class ServiceManagementController {
             services.setStatus(serviceDTO.isStatus());
             services.setServiceDescription(serviceDTO.getDescription());
 
-            adminNotificationService.addServicce(services);
+            adminServiceManagement.addService(services);
             return ResponseEntity.ok().build();
         }
         catch (Exception e){
@@ -51,7 +52,7 @@ public class ServiceManagementController {
     @GetMapping("/get-services")
     public ResponseEntity<List<Services>> getCmpService(){
         try {
-            List<Services> services = adminNotificationService.getAllCompanyService();
+            List<Services> services = adminServiceManagement.getAllCompanyServices();
             return ResponseEntity.ok(services);
         }
         catch (Exception e){
@@ -63,7 +64,7 @@ public class ServiceManagementController {
     public ResponseEntity<?> deleteCMPService(@PathVariable String service_id){
 
         try {
-            adminNotificationService.deleteService(service_id);
+            adminServiceManagement.deleteService(service_id);
             return ResponseEntity.ok().build();
         }
         catch (Exception e){
@@ -75,7 +76,7 @@ public class ServiceManagementController {
     public ResponseEntity<ServiceDTO> update(@PathVariable String service_id, @RequestBody ServiceDTO request) {
         try {
             request.setService_id(service_id);
-            ServiceDTO updatedService = adminNotificationService.updateServices(request);
+            ServiceDTO updatedService = adminServiceManagement.updateService(request);
             System.out.print("Service is " + updatedService.toString());
             return ResponseEntity.ok(updatedService); // Return the updated service
         } catch (Exception e) {
@@ -88,7 +89,7 @@ public class ServiceManagementController {
         try {
 
 
-            List<ServiceDTO> filteredServices = adminNotificationService.getFilteredServices(filter);
+            List<ServiceDTO> filteredServices = adminServiceManagement.getFilteredServices(filter);
             return ResponseEntity.ok(filteredServices);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -108,15 +108,6 @@ import { Service } from '../../../auth/model/admin';
                     class="text-sm text-red-500">Appointment time is required</span>
             </div>
 
-            <!-- Payment Status -->
-            <div class="space-y-2">
-                <label class="flex items-center space-x-2">
-                    <input type="checkbox" formControlName="paymentStatus"
-                        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-                    <span class="text-sm text-gray-700 font-medium">Payment Completed</span>
-                </label>
-            </div>
-
             <!-- Booking Notes -->
             <div class="space-y-2">
                 <label class="text-sm text-gray-700 font-medium">Booking Notes</label>

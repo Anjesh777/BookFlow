@@ -33,8 +33,9 @@ public interface UserRepo extends JpaRepository<User,UUID> {
     @Query("SELECT u.fullname FROM User u WHERE u.user_id = :userId")
     Optional<String> findFullnameById(@Param("userId") UUID userId);
 
+
+
     Optional<User> findByUsername(String username);
-    Optional<User> findByRole(String username);
 
 
     Optional<User> findByEmail(String email);
@@ -103,10 +104,11 @@ public interface UserRepo extends JpaRepository<User,UUID> {
             @Param("updateDate") LocalDate updateDate
     );
 
-    @Query("SELECT n FROM Notification n WHERE n.company_id = :company AND n.targetAudience = 'Users' ORDER BY n.createdAt DESC")
+
+
+
+    @Query("SELECT n FROM Notification n WHERE n.company_id = :company AND n.targetAudience = 'Users' or n.targetAudience = 'All Users' ORDER BY n.createdAt DESC")
     List<Notification> findRecentUserNotifications(@Param("company") Company company, Pageable pageable);
-
-
 
 
 

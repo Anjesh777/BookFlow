@@ -7,6 +7,8 @@ import { Router, RouterModule } from '@angular/router';
 import { UiServiceService } from '../../ui/ui-service.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/service/auth.service';
+import { ActivatedRoute } from '@angular/router';
+
 
 @Component({
   selector: 'app-sendtoken',
@@ -20,11 +22,25 @@ export class SendtokenComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
   
+  
 
   constructor(
       private uiService: UiServiceService,
-      public dialog: MatDialog
-    ) {}
+      public dialog: MatDialog,
+      private route: ActivatedRoute
+
+      
+    ) {
+
+      this.route.queryParams.subscribe(params => {
+        const token = params['token'];
+        if (token) {
+          console.log('Token received:', token);
+        }
+      });
+
+
+    }
 
   isLoading: boolean = false;
   http = inject(HttpClient);

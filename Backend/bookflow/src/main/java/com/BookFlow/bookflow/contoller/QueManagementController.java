@@ -176,6 +176,31 @@ public class QueManagementController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/cancelled/recent")
+    public ResponseEntity<List<BookingDto>> getRecentCancelledBookings() {
+        List<Booking> bookings = queService.getRecentCancelledBookingsForCurrentCompany();
+        List<BookingDto> dtos = bookings.stream()
+                .map(queMapper::toBookingDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/cancelled/filter")
+    public ResponseEntity<List<BookingDto>> getCancelledBookingsByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+
+        List<Booking> bookings = queService.getCancelledBookingsForCurrentCompanyByDateRange(startDate, endDate);
+        List<BookingDto> dtos = bookings.stream()
+                .map(queMapper::toBookingDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+
+
 
 
 
